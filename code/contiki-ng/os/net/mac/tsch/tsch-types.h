@@ -142,7 +142,11 @@ enum tsch_timeslot_timing_elements {
 typedef rtimer_clock_t tsch_timeslot_timing_ticks[tsch_ts_elements_count];
 
 /** \brief TSCH timeslot timing elements in micro-seconds */
+#if NETSTACK_CONF_RADIO == sx128x_radio_driver
+typedef uint32_t tsch_timeslot_timing_usec[tsch_ts_elements_count];
+#else
 typedef uint16_t tsch_timeslot_timing_usec[tsch_ts_elements_count];
+#endif
 
 /** \brief Stores data about an incoming packet */
 struct input_packet {

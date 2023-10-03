@@ -1,3 +1,10 @@
+# windows to open
+- upload receiver, transmitter + terminal
+- driver
+- samenvatting + report
+- contiki-ng mac
+- contiki mac
+
 # General overview of the project
 ## Goal of the project
 design a RDC layer for contiki-ng, implement and test several RDC protocols 
@@ -49,13 +56,14 @@ using LoRa 2.4 GHz
   - used pinout: SCK B2, MISO B3, MOSI B1, CS A3, RESET A2, DIO1 A5, BUSY A4
 - hardware shield with sx1280 LoRa transceiver
 
-## Implementation of driver in contiki-ng
+## Implementation of driver in contiki-ng:
 - place src folder inside arch/dev/radio/sx1280
 - place examples in examples/sx1280
 - changes in contiki files:
-  - tsch timing needs an #ifndef somewhere
-  - convert tsch timing to 32 bit instead of 16
-  - Still need to figure out the rest of the things to do to get it working **correctly**
+  - tsch-const.h 82: add #ifndef
+  - tsch_types.h 145: change uint16 to uint32 if using 2.4 GHz   
+  - cc1200-rf-cfg.h 100: change uint16 to uint32
+  
 
 
 
@@ -68,6 +76,3 @@ using LoRa 2.4 GHz
 - Integrate driver into contiki-ng
 - change file structure to contain #region
 - netstack.h: add configuration for RDC layer
-
-testing ****
-test

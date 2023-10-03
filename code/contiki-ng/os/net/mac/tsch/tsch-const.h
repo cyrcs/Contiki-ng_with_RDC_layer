@@ -79,7 +79,9 @@
 #define TSCH_SLOTS_PER_SECOND (1000000 / tsch_timing_us[tsch_ts_timeslot_length])
 
 /* Calculate packet tx/rx duration in rtimer ticks based on packet length in bytes. */
+#ifndef TSCH_PACKET_DURATION
 #define TSCH_PACKET_DURATION(len) US_TO_RTIMERTICKS(RADIO_BYTE_AIR_TIME * ((len) + RADIO_PHY_OVERHEAD))
+#endif
 
 /* Convert rtimer ticks to clock and vice versa */
 #define TSCH_CLOCK_TO_TICKS(c) (((c) * RTIMER_SECOND) / CLOCK_SECOND)
