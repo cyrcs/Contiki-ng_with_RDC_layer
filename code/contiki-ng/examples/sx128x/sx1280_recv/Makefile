@@ -18,6 +18,7 @@ CFLAGS += -I/usr/arm-none-eabi/include
 
 #defined in project-conf.h
 MAKE_MAC = MAKE_MAC_NULLMAC
+MAKE_RDC = MAKE_RDC_NULLRDC_NOFRAMER
 MAKE_NET = MAKE_NET_NULLNET
 
 

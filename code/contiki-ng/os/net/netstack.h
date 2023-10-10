@@ -77,23 +77,54 @@
 #define NETSTACK_MAC NETSTACK_CONF_MAC
 #else /* NETSTACK_CONF_MAC */
 #if MAC_CONF_WITH_NULLMAC
-#define NETSTACK_MAC     nullmac_driver
+#define NETSTACK_MAC nullmac_driver
 #elif MAC_CONF_WITH_CSMA
-#define NETSTACK_MAC     csma_driver
+#define NETSTACK_MAC csma_driver
 #elif MAC_CONF_WITH_TSCH
-#define NETSTACK_MAC     tschmac_driver
+#define NETSTACK_MAC tschmac_driver
 #elif MAC_CONF_WITH_BLE
-#define NETSTACK_MAC   ble_l2cap_driver
+#define NETSTACK_MAC ble_l2cap_driver
 #else
 #error Unknown MAC configuration
 #endif
 #endif /* NETSTACK_CONF_MAC */
 
+// #region
+/* RDC layer configuration. The RDC layer is configured through the Makefile,
+   via the flag MAKE_RDC */
+#ifdef NETSTACK_CONF_RDC
+#define NETSTACK_RDC NETSTACK_CONF_RDC
+#else
+#if RDC_CONF_WITH_NORDC
+#define NETSTACK_RDC nordc_driver
+#elif RDC_CONF_WITH_NULLRDC
+#define NETSTACK_RDC nullrdc_driver
+#elif RDC_CONF_WITH_NULLRDC_NOFRAMER
+#define NETSTACK_RDC nullrdc_noframer_driver
+#else
+#error Unknown RDC configuration
+#endif
+#endif
+
+#ifndef NETSTACK_RDC_CHANNEL_CHECK_RATE
+#ifdef NETSTACK_CONF_RDC_CHANNEL_CHECK_RATE
+#define NETSTACK_RDC_CHANNEL_CHECK_RATE NETSTACK_CONF_RDC_CHANNEL_CHECK_RATE
+#else /* NETSTACK_CONF_RDC_CHANNEL_CHECK_RATE */
+#define NETSTACK_RDC_CHANNEL_CHECK_RATE 8
+#endif /* NETSTACK_CONF_RDC_CHANNEL_CHECK_RATE */
+#endif /* NETSTACK_RDC_CHANNEL_CHECK_RATE */
+
+#if (NETSTACK_RDC_CHANNEL_CHECK_RATE & (NETSTACK_RDC_CHANNEL_CHECK_RATE - 1)) != 0
+#error NETSTACK_RDC_CONF_CHANNEL_CHECK_RATE must be a power of two (i.e., 1, 2, 4, 8, 16, 32, 64, ...).
+#error Change NETSTACK_RDC_CONF_CHANNEL_CHECK_RATE in contiki-conf.h, project-conf.h or in your Makefile.
+#endif
+// #endregion
+
 /* Radio driver configuration. Most often set by the platform. */
 #ifdef NETSTACK_CONF_RADIO
 #define NETSTACK_RADIO NETSTACK_CONF_RADIO
 #else /* NETSTACK_CONF_RADIO */
-#define NETSTACK_RADIO   nullradio_driver
+#define NETSTACK_RADIO nullradio_driver
 #endif /* NETSTACK_CONF_RADIO */
 
 /* Framer selection. The framer is used by the MAC implementation
@@ -101,18 +132,20 @@
 #ifdef NETSTACK_CONF_FRAMER
 #define NETSTACK_FRAMER NETSTACK_CONF_FRAMER
 #else /* NETSTACK_CONF_FRAMER */
-#define NETSTACK_FRAMER   framer_802154
+#define NETSTACK_FRAMER framer_802154
 #endif /* NETSTACK_CONF_FRAMER */
 
 #include "net/mac/mac.h"
 #include "net/mac/framer/framer.h"
 #include "dev/radio.h"
 #include "net/linkaddr.h"
+#include "net/mac/rdc/rdc.h"
 
 /**
  * The structure of a network driver in Contiki.
  */
-struct network_driver {
+struct network_driver
+{
   char *name;
 
   /** Initialize the network driver */
@@ -128,6 +161,7 @@ struct network_driver {
 extern const struct routing_driver NETSTACK_ROUTING;
 extern const struct network_driver NETSTACK_NETWORK;
 extern const struct mac_driver NETSTACK_MAC;
+extern const struct rdc_driver NETSTACK_RDC;
 extern const struct radio_driver NETSTACK_RADIO;
 extern const struct framer NETSTACK_FRAMER;
 
@@ -135,6 +169,7 @@ static inline void
 netstack_init(void)
 {
   NETSTACK_RADIO.init();
+  NETSTACK_RDC.init();
   NETSTACK_MAC.init();
   NETSTACK_NETWORK.init();
 }
@@ -142,20 +177,23 @@ netstack_init(void)
 /* Netstack ip_packet_processor - for implementing packet filters, firewalls,
    debuggin info, etc */
 
-enum netstack_ip_action {
+enum netstack_ip_action
+{
   NETSTACK_IP_PROCESS = 0, /* Default behaviour - nothing else */
-  NETSTACK_IP_DROP = 1, /* Drop this packet before processing/sending anymore */
+  NETSTACK_IP_DROP = 1,    /* Drop this packet before processing/sending anymore */
 };
 
-enum netstack_ip_callback_type {
+enum netstack_ip_callback_type
+{
   NETSTACK_IP_INPUT = 0,
   NETSTACK_IP_OUTPUT = 1,
 };
 
-struct netstack_ip_packet_processor {
+struct netstack_ip_packet_processor
+{
   struct netstack_ip_packet_processor *next;
   enum netstack_ip_action (*process_input)(void);
-  enum netstack_ip_action (*process_output)(const linkaddr_t * localdest);
+  enum netstack_ip_action (*process_output)(const linkaddr_t *localdest);
 };
 
 /* This function is intended for the IP stack to call whenever input/output
@@ -167,14 +205,15 @@ void netstack_ip_packet_processor_remove(struct netstack_ip_packet_processor *p)
 
 /* Netstack sniffer - this will soon be deprecated... */
 
-struct netstack_sniffer {
+struct netstack_sniffer
+{
   struct netstack_sniffer *next;
   void (*input_callback)(void);
   void (*output_callback)(int mac_status);
 };
 
 #define NETSTACK_SNIFFER(name, input_callback, output_callback) \
-  static struct netstack_sniffer name = { NULL, input_callback, output_callback }
+  static struct netstack_sniffer name = {NULL, input_callback, output_callback}
 
 void netstack_sniffer_add(struct netstack_sniffer *s);
 void netstack_sniffer_remove(struct netstack_sniffer *s);

@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "linkaddr.h": "c",
+        "contiki.h": "c"
+    }
+}
