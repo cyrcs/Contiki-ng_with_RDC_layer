@@ -133,6 +133,10 @@
 #define LOG_CONF_LEVEL_MAC                         LOG_LEVEL_NONE
 #endif /* LOG_CONF_LEVEL_MAC */
 
+#ifndef LOG_CONF_LEVEL_RDC
+#define LOG_CONF_LEVEL_RDC                         LOG_LEVEL_NONE
+#endif /* LOG_CONF_LEVEL_RDC */
+
 #ifndef LOG_CONF_LEVEL_FRAMER
 #define LOG_CONF_LEVEL_FRAMER                      LOG_LEVEL_NONE
 #endif /* LOG_CONF_LEVEL_FRAMER */

@@ -126,6 +126,21 @@ extern const struct rdc_driver NETSTACK_RDC;
 - makefile.dir-variables Line 16:
   - CONTIKI_NG_RDC_DIR = $(CONTIKI_NG_NET_DIR)/mac/rdc
   
+- Allow Logs for RDC layer:
+  - log.c Line 62:
+    - int curr_log_level_rdc = LOG_CONF_LEVEL_RDC;
+  - log.c Line 77:
+    - {"rdc", &curr_log_level_rdc, LOG_CONF_LEVEL_RDC},
+  - log.h line 115:
+    - extern int curr_log_level_rdc;
+  - log.h line 131:
+    - #define LOG_LEVEL_RDC MIN((LOG_CONF_LEVEL_RDC), curr_log_level_rdc)
+  - log-conf.h line 136:
+    - #ifndef LOG_CONF_LEVEL_RDC\
+      #define LOG_CONF_LEVEL_RDC                         LOG_LEVEL_NONE\
+      #endif /* LOG_CONF_LEVEL_RDC */
+  
+
 - created files:
   - rdc.h: contains general structure for a RDC driver
   - nordc.c: implementation of **nordc**

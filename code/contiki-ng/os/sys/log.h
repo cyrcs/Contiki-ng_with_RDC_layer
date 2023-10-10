@@ -112,6 +112,7 @@ extern int curr_log_level_ipv6;
 extern int curr_log_level_6lowpan;
 extern int curr_log_level_nullnet;
 extern int curr_log_level_mac;
+extern int curr_log_level_rdc;
 extern int curr_log_level_framer;
 extern int curr_log_level_6top;
 extern int curr_log_level_coap;
@@ -127,6 +128,7 @@ extern struct log_module all_modules[];
 #define LOG_LEVEL_6LOWPAN                     MIN((LOG_CONF_LEVEL_6LOWPAN), curr_log_level_6lowpan)
 #define LOG_LEVEL_NULLNET                     MIN((LOG_CONF_LEVEL_NULLNET), curr_log_level_nullnet)
 #define LOG_LEVEL_MAC                         MIN((LOG_CONF_LEVEL_MAC), curr_log_level_mac)
+#define LOG_LEVEL_RDC                         MIN((LOG_CONF_LEVEL_RDC), curr_log_level_rdc)
 #define LOG_LEVEL_FRAMER                      MIN((LOG_CONF_LEVEL_FRAMER), curr_log_level_framer)
 #define LOG_LEVEL_6TOP                        MIN((LOG_CONF_LEVEL_6TOP), curr_log_level_6top)
 #define LOG_LEVEL_COAP                        MIN((LOG_CONF_LEVEL_COAP), curr_log_level_coap)

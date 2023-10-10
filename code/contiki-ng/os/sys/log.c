@@ -59,6 +59,7 @@ int curr_log_level_ipv6 = LOG_CONF_LEVEL_IPV6;
 int curr_log_level_6lowpan = LOG_CONF_LEVEL_6LOWPAN;
 int curr_log_level_nullnet = LOG_CONF_LEVEL_NULLNET;
 int curr_log_level_mac = LOG_CONF_LEVEL_MAC;
+int curr_log_level_rdc = LOG_CONF_LEVEL_RDC;
 int curr_log_level_framer = LOG_CONF_LEVEL_FRAMER;
 int curr_log_level_6top = LOG_CONF_LEVEL_6TOP;
 int curr_log_level_coap = LOG_CONF_LEVEL_COAP;
@@ -73,6 +74,7 @@ struct log_module all_modules[] = {
   {"6lowpan", &curr_log_level_6lowpan, LOG_CONF_LEVEL_6LOWPAN},
   {"nullnet", &curr_log_level_nullnet, LOG_CONF_LEVEL_NULLNET},
   {"mac", &curr_log_level_mac, LOG_CONF_LEVEL_MAC},
+  {"rdc", &curr_log_level_rdc, LOG_CONF_LEVEL_RDC},
   {"framer", &curr_log_level_framer, LOG_CONF_LEVEL_FRAMER},
   {"6top", &curr_log_level_6top, LOG_CONF_LEVEL_6TOP},
   {"coap", &curr_log_level_coap, LOG_CONF_LEVEL_COAP},
