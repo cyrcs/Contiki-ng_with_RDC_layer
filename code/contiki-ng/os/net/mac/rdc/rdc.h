@@ -79,8 +79,12 @@ struct rdc_driver {
   /** Turn the MAC layer off. */
   int (* off)(int keep_radio_on);
 
+  // THIS PART IS NOT USED IN CONTIKI-NG
   /** Returns the channel check interval, expressed in clock_time_t ticks. */
   unsigned short (* channel_check_interval)(void);
+
+  /** Read out estimated max payload size based on payload in packetbuf */
+  int (* max_payload)(void);
 };
 
 #endif /* RDC_H_ */

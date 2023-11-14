@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"name": "contiki-ng",
+			"path": "../code/contiki-ng"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"linkaddr.h": "c",
+			"contiki.h": "c",
+			"string.h": "c",
+			"simple-udp.h": "c"
+		}
+	}
+}

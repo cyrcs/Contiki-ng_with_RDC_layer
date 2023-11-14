@@ -1,0 +1,136 @@
+\chapterOrPart{Useful commands}\label{ch:usefulcommands}
+This chapter contains an alphabetic list of some useful commands. All the commands that are mentioned here are included in the style file \verb|myCommands.sty|.
+
+\section{Basic commands in \LaTeX}
+There are several good sources to learn about commands in \LaTeX. See for instance the list below
+\begin{itemize}
+    \item \href{https://www.ntg.nl/doc/biemesderfer/ltxcrib.pdf}{\LaTeX\ command summary}
+    \item \href{https://wch.github.io/latexsheet/}{\LaTeX\ cheat sheet}
+    \item \href{https://en.wikibooks.org/wiki/LaTeX/Command_Glossary}{Wikibook: \LaTeX\ command glossary} 
+\end{itemize}
+
+Below we will mention some commands that might be of interest for you.
+
+\section{definecolor}
+You can define your own colours. For instance:
+
+\verb|\definecolor{VUBorange}{cmyk}{0.00, .78, 1.00, 0.00}|
+
+will define the colour VUBorange. This colour can now be used in your document, as is done on the title page. For instance, the command 
+
+\verb|\textcolor{VUBorange}{This text is in VUB orange}|
+
+will produce: \textcolor{VUBorange}{This text is in VUB orange}.
+
+\section{ensuremath}
+The command \verb|\ensuremath| switches to math-mode, if necessary. It is typically used inside \verb|\newcommand|. For instance, the command \verb|$\psat$| will produce $\psat$ but the command without the dollar-signs \verb|\psat| will produce exactly the same result. This is because the command \verb|\ensuremath| is used inside the definition of \verb|\psat| (you can verify this in the style file \verb|myCommnands.sty|) and that will force a switch to math-mode, if not yet in math-mode. This is very convenient because you are no longer obliged to explicitly activate math-mode with the \$-signs, every time you use such a command when writing.
+
+\section{includeonly}
+This command is used to reduce the compilation time of your Overleaf project. There are actually two ways to reduce compilation time:
+\begin{enumerate}
+    \item Reduce the amount of content in the document part. This can be achieved by disabling \verb|\include{path/filename}| commands. Just put a \% sign at the start of the line. For instance: \%\verb|\include{appendices/usefulPackages.tex}|, will no longer compile the \verb|usefulPackages| file. As a result:
+        \begin{itemize}
+            \item The content of \verb|usefulPackages| will no longer be known to \LaTeX, and thus will no longer show up in the output pdf
+            \item The content of \verb|usefulPackages| will no longer show up in the table of contents
+            \item Labels in \verb|usefulPackages| will no longer be known to \LaTeX, so cross-references to such labels, from anywhere in your document, will result in broken links, indicated by a double question mark: ??
+        \end{itemize}
+    \item Use the command \verb|\includeonly{path/filename}| in the preamble. But beware, you have to do proceed as follows:
+    \begin{enumerate}
+        \item First comment out \%\verb|\includeonly{path/filename}| in the preamble and compile your entire project. This will allow \LaTeX\ to detect the document structure (chapters, sections, labels, \dots) in all the included files.
+        \item After successful compilation, you add the file you want to work in today. Let's assume it is the \verb|usefulPackages| file. In that case, you add \\ \verb|\includeonly{appendices/usefulPackages.tex}| to your preamble, not to the document part!
+        \item Then you-recompile your project. As a result:
+    \end{enumerate}
+      \begin{itemize}
+            \item Only the content of \verb|usefulPackages| will be recompiled by \LaTeX. The other included files are not recompiled. This will speed up compilation! The content of all the other compiled files is however still known to \LaTeX\ from the previous full compile. 
+            \item Only the content of \verb|usefulPackages| will show up in the output pdf.
+            \item The content of all included files will show up in the table of contents, because \LaTeX\ remembers the document structure from the first entire compile.
+            \item All the labels in all compiled files are known to \LaTeX, so cross-references to such labels, from anywhere in your document, will work.
+        \end{itemize}
+\end{enumerate}
+
+\section{intertext}
+The command \verb|\intertext| is useful to write lines of text between equations. It is applied in the \verb|align| environment. You can then use one single \verb|align| environment, instead of a series of separate \verb|equation| environments. Inspect the source code in the example below. This approach is also very well suited for writing equations on slides.
+\begin{frame}{With the \texttt{intertext}-command, text can easily be placed between aligned equations}
+    \begin{align}
+        \intertext{For an adiabatic CV, the entropy balance is} 
+        &\dod{S_\CV}{t}=\sum_\up{in}\mdot_i\cdot s_i-\sum_\up{out}\mdot_j\cdot s_j+\dot{S}_\up{gen}\\
+        \intertext{for a closed CV with $k$ heat flows, it takes the following form}
+        &\dod{S_\CV}{t}=\sum\frac{\qdot_k}{T_k}+\dot{S}_\up{gen}\\
+        \intertext{and for an isolated CV it reduces to}
+        &\dod{S_\CV}{t}=\dot{S}_\up{gen}\geq 0\qquad\text{and thus $S$ reaches a maximum at equilibrium.}
+    \end{align} 
+\end{frame}
+
+\section{newcommand}
+With the command \verb|\newcommand| you can define your own commands. That can be useful to simplify repetitive and/or complex formatting. See the \href{https://www.overleaf.com/learn/latex/Commands#Defining_a_new_command}{Overleaf documentation on newcommand} for more info and the examples below.
+
+\begin{frame}[fragile]{Some examples of self-defined commands}\small % size for report
+    \begin{center}\scriptsizebeamer % reduce size to fit on slide
+        \begin{tabular}{l}
+        \toprule
+        \verb|\newcommand{\vel}[0]{\ensuremath{V}}|\\
+        example: \verb|\vel= \SI{2}{m/s}|\\
+        result: \vel= \SI{2}{m/s} \\[+1ex]
+        
+        \verb|\newcommand{\psat}[0]{\ensuremath{\pres_\up{sat}}}|\\
+        example: \verb|\psat = \SI{3.2}{\kilo\pascal}|\\
+        result: \psat = \SI{3.2}{\kilo\pascal}\\[+1ex]
+    
+        % shorter version of \mathrm
+        % \verb|\newcommand\up[1]{\mathrm{#1}}|\\ 
+        % example: \verb|$T_\up{air} = \SI{25}{\celsius}$|\\
+        % result: $T_\up{air} = \SI{25}{\celsius}$\\[+1ex]
+       
+        % to put units behind an equation 
+        \verb|\newcommand{\units}[1]{\ensuremath{\quad\up{\left[#1\right]}}}|\\ 
+        example: \verb|$T \ud s = \delta q + \delta d \units{J/kg}$|\\
+        result: $T \ud s = \delta q + \delta d \units{J/kg}$\\[+1ex]
+        
+        % to put units behind an equation
+        \verb|\newcommand{\trans}[1]{[{\footnotesize Dutch:} {#1}]}|\\
+        example: \verb|The flow is steady \trans{stationair}.|\\
+        result: The flow is steady \dutch{stationair}.\\[+1ex] 
+        
+        % specific heat capacity of water
+        \verb|\newcommand{\cvwatervalue}[0]{\SI{4.18}{\kilo\joule\per\kilogram\per\kelvin}}|\\
+        example: \verb|\cvwatervalue|\\
+        result: \cvwatervalue\\[+1ex] 
+        \bottomrule
+        \end{tabular}
+    \end{center}
+\end{frame}
+
+\section{newtoggle}
+
+You can define your own boolean variables called \verb|toggles|. These toggles can be used to make certain decisions.
+
+For instance, the command \verb|\newtoggle{showResults}| defines the toggle \verb|showResults|.
+
+You can set this toggle to TRUE with the command \verb|\toggletrue{showResults}| and to FALSE with \verb|\togglefalse{showResults}|.
+
+We can now use this toggle to hide or show some text, e.g.
+
+the command
+
+\verb|$1+1=3$ \iftoggle{showResults}{for very large values of 1.}{when ?}|
+
+will produce:
+
+\togglefalse{showResults}
+$1+1 = 3$ \iftoggle{showResults}{for very large values of 1.}{when ?} (when \verb|showResults| is set to FALSE)
+
+\toggletrue{showResults}
+$1+1 = 3$ \iftoggle{showResults}{for very large values of 1.}{when ?} (when \verb|showResults| is set to TRUE)
+
+\section{textcolor}
+With this command you can colour text. For instance the command
+
+\verb|\textcolor{blue}{This text is coloured}|
+
+will produce: \textcolor{blue}{This text is coloured}.
+
+
+\mode<all> 
+% Required because of the \mode* command at the beginning of this file.
+
+% See beameruserfile.pdf section 21.3 for more info

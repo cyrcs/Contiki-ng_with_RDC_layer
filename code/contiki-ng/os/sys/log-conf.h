@@ -157,6 +157,15 @@
 #define LOG_CONF_LEVEL_LWM2M                       LOG_LEVEL_NONE
 #endif /* LOG_CONF_LEVEL_LWM2M */
 
+
+#ifndef LOG_CONF_LEVEL_SX128X
+#define LOG_CONF_LEVEL_SX128X                       LOG_LEVEL_NONE
+#endif /* LOG_CONF_LEVEL_SX128X */
+
+#ifndef LOG_CONF_LEVEL_SX128X_GETSET
+#define LOG_CONF_LEVEL_SX128X_GETSET                LOG_LEVEL_NONE
+#endif /* LOG_CONF_LEVEL_SX128X_GETSET */
+
 #ifndef LOG_CONF_LEVEL_MAIN
 #define LOG_CONF_LEVEL_MAIN                        LOG_LEVEL_INFO
 #endif /* LOG_CONF_LEVEL_MAIN */

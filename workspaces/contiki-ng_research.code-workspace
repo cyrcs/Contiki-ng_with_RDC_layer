@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "../code/contiki-ng"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"linkaddr.h": "c",
+			"contiki.h": "c",
+			"string.h": "c",
+			"sx128x.h": "c",
+			"sx128x_internal.h": "c",
+			"sx128x_registers.h": "c"
+		}
+	}
+}

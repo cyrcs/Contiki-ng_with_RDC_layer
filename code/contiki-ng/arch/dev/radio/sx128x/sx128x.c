@@ -13,14 +13,11 @@
 #include "sx128x_internal.h"
 #include "sx128x_registers.h"
 #include "sys/_stdint.h"
-#include "sys/log.h"
 #include "watchdog.h"
 #include <stdint.h>
 
+#include "sys/log.h"
 #define LOG_MODULE "SX128X"
-#ifndef LOG_CONF_LEVEL_SX128X
-#define LOG_CONF_LEVEL_SX128X LOG_LEVEL_DBG
-#endif
 #define LOG_LEVEL LOG_CONF_LEVEL_SX128X
 
 #define BUFFER_SIZE 256

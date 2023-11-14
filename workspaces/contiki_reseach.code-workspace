@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../code/contiki"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"radio.h": "c"
+		}
+	}
+}

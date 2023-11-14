@@ -1,0 +1,71 @@
+% ULB house style
+
+%% COLOURS
+\definecolor{ULBblue}  {cmyk}{1.00, .75, 0.02, 0.18}
+
+%% ULB font
+\newcommand*{\ulbtitlepagefont}{\fontfamily{qag}\selectfont} % vub title page font: TeX Gyre Adventor
+
+%% logos for ULB title page and title slide   
+\newcommand\putULBlogoonULBpage{
+    \node[xshift=2cm,yshift=-1.85cm,below right] at (current page.north west) 
+    {\includegraphics[height=1.7cm]{figs/logoULB}}
+    }
+\newcommand\putBRUFACElogoonULBpage{
+    \node[xshift=4mm,yshift=-2.1cm,below,align=center] at (current page.north) 
+    {\includegraphics[height=3cm]{figs/logoBRUFACE}}
+    }
+\newcommand\putVUBlogoonULBpage{
+    \node[xshift=14cm,yshift=-1.9cm,below right] at (current page.north west) 
+    {\includegraphics[height=1.65cm]{figs/logoVUB}}
+    }
+\newcommand\putBRUFACElogoonULBslide{
+	\node[yshift=-0.5cm,below,align=center] at (current page.north) {\includegraphics[width=5cm]{figs/logoBRUFACE}}
+}
+
+%% BRUFACE title page
+\mode<article>{% this only makes sense for the report, not for the slides
+    \newcommand\maketitleBRUFACE{
+        \begin{titlingpage}
+            \ulbtitlepagefont % change font to title page font vub
+            \begin{tikzpicture}[remember picture,overlay] % text width=15cm
+                %\putULBlogoonULBpage; % ULB logo
+                \putBRUFACElogoonULBpage; % BRUFACE logo
+                %\putVUBlogoonULBpage; VUB logo
+                \tikzstyle{every node}=[font=\Large,below right];
+                    \node[xshift=4cm,yshift=-12cm] at (current page.north west) (T) [ULBblue, text width=14cm,font=\LARGE] {\thetitle};
+                    \node[yshift=1cm] at (T.north west) [above right,text width=14cm] {\ulbpretitle};
+                    \node[yshift=-0.2cm] at (T.south west) (S) [ULBblue,text width=14cm] {\ulbsubtitle}; 
+                    \draw[ULBblue,thick] (T.north west) ++(-0.5,1) -- +(0,-8); % vertical line
+                    \draw[ULBblue,thick] (S.south west) ++(-0.5,-0.5) -- +(14,0); % horizontal line
+                    \node [yshift=-2cm] at (S.south west) (A) {\bfseries\theauthor}; 
+                    \node[xshift=4cm,yshift=4cm] at (current page.south west) (Y)[ULBblue] {\large Academic year};
+                    \node at (Y.south west) {\thedate}; 
+                    \node[xshift=-2cm,yshift=6cm] at (current page.south east) (P)[ULBblue,left] {\large\ulbtypeofwork};
+                    \node at (P.south west) {\ulbsupervisors}; 
+                    \node [yshift=-2cm] at (P.west) (D) [ULBblue]{\large\ulbdegree};
+                    \node at (D.south west) [align=left]{\ulbprogram}; 
+            \end{tikzpicture}
+        \end{titlingpage}
+    }
+}
+
+%% BRUFACE title page
+\mode<presentation>{% this only makes sense for the report, not for the slides
+    \newcommand\maketitleBRUFACE{
+        \begin{frame}[noframenumbering,plain]
+            \ulbtitlepagefont % change font to title page font vub
+            \def\leftindent{2cm}
+            \begin{tikzpicture}[remember picture,overlay,text width=9.5cm]
+    				\putBRUFACElogoonULBslide; % put BRUFACE logo in top left corner
+    				\tikzstyle{every node}=[below right,font=\scriptsize] % left margin
+    				\node[xshift=\leftindent, yshift= -3.5cm,text width=10cm] at (current page.north west) (title) [ULBblue,font=\large] {\inserttitle};
+    				%\node[yshift=   0cm,above right] at (title.north west) {\ulbpretitle}; 
+    				\node[yshift=  -0.0cm] at (title.south west) [ULBblue] {\ulbsubtitle}; 
+    				\node[yshift=  -1.5cm] at (title.south west) [font=\normalsize] {\insertauthor};
+    				\node[yshift=  -3.0cm] at (title.south west) (Y)[ULBblue] {Academic year};
+                    \node at (Y.south west) {\insertdate};
+    			\end{tikzpicture}
+        \end{frame}
+    }
+}

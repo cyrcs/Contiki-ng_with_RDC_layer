@@ -279,7 +279,7 @@ packet_input(void)
     PRINTF("nullrdc: ignored ack\n"); 
   } else
 #endif /* NULLRDC_802154_AUTOACK */
-  if(NETSTACK_FRAMER.parse() < 0) {
+  if(<NETSTACK_FRAMER>.parse() < 0) {
     PRINTF("nullrdc: failed to parse %u\n", packetbuf_datalen());
 #if NULLRDC_ADDRESS_FILTER
   } else if(!linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),

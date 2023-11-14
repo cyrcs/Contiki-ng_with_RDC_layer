@@ -1,0 +1,4 @@
+# List of changes
+contiki-ng: nullrdc
+-   rdc_buf_list is now named packet_queue
+-   

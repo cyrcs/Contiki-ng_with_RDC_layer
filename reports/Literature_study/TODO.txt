@@ -1,0 +1,36 @@
+Figures:
+- must be referenced, preferably before they are shown
+- caption must be speicific enough to be able to stand alone
+- if not your figure => source: ... at the end of the caption OR adepted from: ...
+
+Tables:
+- must be referenced in text
+- clear caption, capitalized
+- do not clutter with grid lines
+- reference if not yours
+- Text left alligned
+- numbers right alligned or at the decimal seperator
+- column with symbols can be center alligned but prefferably left alligned
+
+Symbols:
+- 1 letter symbols are written in italic
+- in math mode they are automatically written in italic => force them back upright
+- same goes for symbols in subscripts
+- symbols for quantities are upright
+
+thounsands seperator:
+- \num{} to keep the number together
+
+only write significant numbers
+
+Equations:
+- should be part of the sentence => use punctuation
+- multiplication use \cdot or \times
+
+citation:
+- \cite
+- \parencite
+- \textcite
+- \citeauthor
+
+Example of math symbols can be found in the template 	

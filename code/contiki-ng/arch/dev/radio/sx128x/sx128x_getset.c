@@ -31,7 +31,6 @@
 #include <inttypes.h>
 
 #include "sys/_stdint.h"
-#include "sys/log.h"
 #include "lora24.h"
 
 #include "sx128x.h"
@@ -39,10 +38,9 @@
 #include "sx128x_internal.h"
 // #endregion ------------------------------------------------------------------
 // #region Defines -------------------------------------------------------------
+#include "sys/log.h"
 #define LOG_MODULE "SX128X-GETSET"
-#ifndef LOG_CONF_LEVEL_SX128X_GETSET
-#define LOG_CONF_LEVEL_SX128X_GETSET LOG_LEVEL_INFO
-#endif
+
 #define LOG_LEVEL LOG_CONF_LEVEL_SX128X_GETSET
 // #endregion ------------------------------------------------------------------
 

@@ -83,13 +83,12 @@ PROCESS_THREAD(node_process, ev, data) {
   PROCESS_BEGIN();
 
   /* Delay*/
-  etimer_set(&et, CLOCK_SECOND / 2);
+  etimer_set(&et, CLOCK_SECOND * 2);
 
   while (1) {
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
     /* Reset the etimer to trig again in 1 second */
     etimer_reset(&et);
-    LOG_DBG("////////////////////////////////////////////////////////\n");
     LOG_DBG("trying to send\n");
     value++;
     if (value > 999) {
@@ -105,6 +104,7 @@ PROCESS_THREAD(node_process, ev, data) {
 
     // transmit string
     NETSTACK_RADIO.send(result, strlen(result));
+
   }
 
   PROCESS_END();

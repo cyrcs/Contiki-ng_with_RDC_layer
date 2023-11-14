@@ -41,11 +41,23 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <stdlib.h>
+#include "dev/serial-line.h"
+#include "dev/uart.h"
+#include "dev/spi.h"
+#include "netstack.h"
+#include "process.h"
+#include "rtimer-arch.h"
+#include "shell.h"
+#include "shell-commands.h"
+#include "sys/_stdint.h"
+#include "sys/log.h"
+#include "sx128x.h"
+#include "antenna-sw.h"
+
 #define UDP_PORT 1234
 #define SERVICE_ID 190
 
-#define SEND_INTERVAL		(10 * CLOCK_SECOND)
-#define SEND_TIME		(random_rand() % (SEND_INTERVAL))
 
 static struct simple_udp_connection unicast_connection;
 
@@ -62,6 +74,7 @@ receiver(struct simple_udp_connection *c,
          const uint8_t *data,
          uint16_t datalen)
 {
+
   printf("Data received from ");
   uip_debug_ipaddr_print(sender_addr);
   printf(" on port %d from port %d with length %d: '%s'\n",
@@ -76,6 +89,7 @@ PROCESS_THREAD(unicast_receiver_process, ev, data)
 
   simple_udp_register(&unicast_connection, UDP_PORT,
                       NULL, UDP_PORT, receiver);
+
 
   while(1) {
     PROCESS_WAIT_EVENT();
