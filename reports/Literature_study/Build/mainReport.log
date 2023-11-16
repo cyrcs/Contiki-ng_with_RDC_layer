@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.5.31)  13 NOV 2023 15:53
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.5.31)  16 NOV 2023 12:59
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1619,74 +1619,136 @@ File: t1cmss.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 LaTeX Font Warning: Font shape `T1/cmss/bx/sc' undefined
 (Font)              using `T1/cmss/bx/n' instead on input line 1.
 
-Package hyperref Info: bookmark level for unknown todo defaults to 0 on input line 4.
+<figs/LoRa_use_case.png, id=132, 570.13pt x 290.08376pt>
+File: figs/LoRa_use_case.png Graphic file (type png)
+<use figs/LoRa_use_case.png>
+Package pdftex.def Info: figs/LoRa_use_case.png  used on input line 17.
+(pdftex.def)             Requested size: 342.08064pt x 174.05159pt.
 [1
 
 
 
 
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Package cleveref Info: loaded `english' language definitions on input line 49.
- [2]
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./figs/LoRa_use_case.png>]
+<figs/LoRaWAN_network_structure.png, id=154, 777.90625pt x 415.5525pt>
+File: figs/LoRaWAN_network_structure.png Graphic file (type png)
+<use figs/LoRaWAN_network_structure.png>
+Package pdftex.def Info: figs/LoRaWAN_network_structure.png  used on input line 32.
+(pdftex.def)             Requested size: 388.95216pt x 207.77574pt.
+Package cleveref Info: loaded `english' language definitions on input line 44.
+ [2 <./figs/LoRaWAN_network_structure.png>]
 Package cleveref Info: loaded `english' language definitions on input line 74.
- [3])
-Package cleveref Info: loaded `english' language definitions on input line 24.
- [4]
-LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 39.
- (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
-File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
-)
-LaTeX Font Info:    Trying to load font information for U+msa on input line 39.
+ [3]
+<figs/lpp_unicast.png, id=170, 1913.1475pt x 578.16pt>
+File: figs/lpp_unicast.png Graphic file (type png)
+<use figs/lpp_unicast.png>
+Package pdftex.def Info: figs/lpp_unicast.png  used on input line 97.
+(pdftex.def)             Requested size: 382.62273pt x 115.62994pt.
+<figs/lpp_broadcast.png, id=172, 1913.1475pt x 854.19125pt>
+File: figs/lpp_broadcast.png Graphic file (type png)
+<use figs/lpp_broadcast.png>
+Package pdftex.def Info: figs/lpp_broadcast.png  used on input line 107.
+(pdftex.def)             Requested size: 382.62273pt x 170.83522pt.
+Package cleveref Info: loaded `english' language definitions on input line 111.
+ [4 <./figs/lpp_unicast.png>]
+<figs/X-MAC unicast.png, id=181, 1913.1475pt x 499.8675pt>
+File: figs/X-MAC unicast.png Graphic file (type png)
+<use figs/X-MAC unicast.png>
+Package pdftex.def Info: figs/X-MAC unicast.png  used on input line 120.
+(pdftex.def)             Requested size: 382.62273pt x 99.97173pt.
+<figs/X-MAC broadcast.png, id=183, 1913.1475pt x 585.18625pt>
+File: figs/X-MAC broadcast.png Graphic file (type png)
+<use figs/X-MAC broadcast.png>
+Package pdftex.def Info: figs/X-MAC broadcast.png  used on input line 130.
+(pdftex.def)             Requested size: 382.62273pt x 117.03517pt.
+Package cleveref Info: loaded `english' language definitions on input line 134.
+ [5 <./figs/lpp_broadcast.png> <./figs/X-MAC unicast.png>]
+<figs/contiki-MAC unicast.png, id=194, 1913.1475pt x 585.18625pt>
+File: figs/contiki-MAC unicast.png Graphic file (type png)
+<use figs/contiki-MAC unicast.png>
+Package pdftex.def Info: figs/contiki-MAC unicast.png  used on input line 143.
+(pdftex.def)             Requested size: 382.62273pt x 117.03517pt.
+<figs/contiki-MAC broadcast.png, id=197, 1913.1475pt x 585.18625pt>
+File: figs/contiki-MAC broadcast.png Graphic file (type png)
+<use figs/contiki-MAC broadcast.png>
+Package pdftex.def Info: figs/contiki-MAC broadcast.png  used on input line 155.
+(pdftex.def)             Requested size: 382.62273pt x 117.03517pt.
+Package cleveref Info: loaded `english' language definitions on input line 159.
+ [6 <./figs/X-MAC broadcast.png> <./figs/contiki-MAC unicast.png>]
+<figs/failed double CCA.png, id=207, 1913.1475pt x 585.18625pt>
+File: figs/failed double CCA.png Graphic file (type png)
+<use figs/failed double CCA.png>
+Package pdftex.def Info: figs/failed double CCA.png  used on input line 166.
+(pdftex.def)             Requested size: 382.62273pt x 117.03517pt.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 174.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 39.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 174.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+Package cleveref Info: loaded `english' language definitions on input line 186.
+ [7 <./figs/contiki-MAC broadcast.png> <./figs/failed double CCA.png>]
+Package cleveref Info: loaded `english' language definitions on input line 218.
+ [8]
+Package cleveref Info: loaded `english' language definitions on input line 248.
+ [9]
+<figs/contiki-ng_file_structure.png, id=231, 538.01pt x 231.86626pt>
+File: figs/contiki-ng_file_structure.png Graphic file (type png)
+<use figs/contiki-ng_file_structure.png>
+Package pdftex.def Info: figs/contiki-ng_file_structure.png  used on input line 261.
+(pdftex.def)             Requested size: 349.70235pt x 150.71127pt.
+Package cleveref Info: loaded `english' language definitions on input line 277.
+ [10 <./figs/contiki-ng_file_structure.png>]
+<figs/contiki-ng_network_stack.png, id=241, 346.29375pt x 380.42125pt>
+File: figs/contiki-ng_network_stack.png Graphic file (type png)
+<use figs/contiki-ng_network_stack.png>
+Package pdftex.def Info: figs/contiki-ng_network_stack.png  used on input line 280.
+(pdftex.def)             Requested size: 277.03537pt x 304.3374pt.
+Package cleveref Info: loaded `english' language definitions on input line 288.
+ [11 <./figs/contiki-ng_network_stack.png>])
+Package cleveref Info: loaded `english' language definitions on input line 24.
+ [12]
+LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 39.
+ (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
+File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
 Overfull \hbox (31.66072pt too wide) in paragraph at lines 39--39
 [][]\T1/cmr/m/it/10 What Are LoRa and Lo-RaWAN? \T1/cmr/m/n/10 (2023). The Things Net-work. \T1/cmr/m/sc/10 url\T1/cmr/m/n/10 : [][]$\T1/cmtt/m/n/10 https : / / www . thethingsnetwork .
  []
 
-[5
+[13
 
 
 
 
 ] (Build/mainReport.aux (Build/chapters/literature.aux)
-Package cleveref Info: loaded `english' language definitions on input line 25.
+Package cleveref Info: loaded `english' language definitions on input line 29.
 )
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-
-LaTeX Warning: There were undefined references.
-
 Package rerunfilecheck Info: File `mainReport.out' has not changed.
-(rerunfilecheck)             Checksum: 318F557AB6049CC92864322C28D192BA;1514.
-
-Package biblatex Warning: Please (re)run Biber on the file:
-(biblatex)                mainReport
-(biblatex)                and rerun LaTeX afterwards.
-
+(rerunfilecheck)             Checksum: FA2F8C52F39CE5254D88FD73EC759164;4399.
 Package logreq Info: Writing requests to 'mainReport.run.xml'.
 \openout1 = `mainReport.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 57777 strings out of 478287
- 1321201 string characters out of 5849289
- 2291161 words of memory out of 5000000
- 74999 multiletter control sequences out of 15000+600000
- 479245 words of font info for 49 fonts, out of 8000000 for 9000
+ 57858 strings out of 478287
+ 1323496 string characters out of 5849289
+ 2290811 words of memory out of 5000000
+ 75025 multiletter control sequences out of 15000+600000
+ 482240 words of font info for 53 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 135i,11n,135p,1292b,2060s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/texmf/fonts/type1/public/cm-super/sfcc1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfcc1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0600.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsl1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt1000.pfb>
-Output written on Build/mainReport.pdf (5 pages, 183121 bytes).
+ 135i,12n,135p,1292b,2060s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfcc1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfcc1095.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsl1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfsx1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt1000.pfb>
+Output written on Build/mainReport.pdf (13 pages, 677123 bytes).
 PDF statistics:
- 145 PDF objects out of 1000 (max. 8388607)
- 120 compressed objects within 2 object streams
- 26 named destinations out of 1000 (max. 500000)
- 109 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 351 PDF objects out of 1000 (max. 8388607)
+ 280 compressed objects within 3 object streams
+ 64 named destinations out of 1000 (max. 500000)
+ 316 words of extra memory for PDF output out of 10000 (max. 10000000)
 

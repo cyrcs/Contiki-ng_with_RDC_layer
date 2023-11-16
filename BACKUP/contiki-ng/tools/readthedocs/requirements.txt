@@ -1,3 +1,0 @@
-# Requirements for building Sphinx documentation on readthedocs and inside docker
-# Shared by tools/docker/Dockerfile and .readthedocs.yaml
--r ../docker/files/rtd_requirements.txt

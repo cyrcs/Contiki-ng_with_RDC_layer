@@ -1,15 +1,15 @@
 [0] Config.pm:307> INFO - This is Biber 2.17
 [0] Config.pm:310> INFO - Logfile is 'Build/mainReport.blg'
-[78] biber:340> INFO - === ma nov 13, 2023, 15:47:40
-[93] Biber.pm:418> INFO - Reading 'Build/mainReport.bcf'
-[150] Biber.pm:969> INFO - Using all citekeys in bib section 0
-[161] Biber.pm:4383> INFO - Processing section 0
-[171] Biber.pm:4574> INFO - Looking for bibtex file 'bib/myBibliography.bib' for section 0
-[172] bibtex.pm:1713> INFO - LaTeX decoding ...
-[177] bibtex.pm:1518> INFO - Found BibTeX data source 'bib/myBibliography.bib'
-[233] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[233] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[233] Biber.pm:4203> INFO - Sorting list 'nyt/global//global/global' of type 'entry' with template 'nyt' and locale 'en-US'
-[233] Biber.pm:4209> INFO - No sort tailoring available for locale 'en-US'
-[240] bbl.pm:654> INFO - Writing 'Build/mainReport.bbl' with encoding 'UTF-8'
-[243] bbl.pm:757> INFO - Output to Build/mainReport.bbl
+[143] biber:340> INFO - === do nov 16, 2023, 12:58:54
+[170] Biber.pm:418> INFO - Reading 'Build/mainReport.bcf'
+[259] Biber.pm:969> INFO - Using all citekeys in bib section 0
+[273] Biber.pm:4383> INFO - Processing section 0
+[293] Biber.pm:4574> INFO - Looking for bibtex file 'bib/myBibliography.bib' for section 0
+[296] bibtex.pm:1713> INFO - LaTeX decoding ...
+[318] bibtex.pm:1518> INFO - Found BibTeX data source 'bib/myBibliography.bib'
+[400] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[401] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[401] Biber.pm:4203> INFO - Sorting list 'nyt/global//global/global' of type 'entry' with template 'nyt' and locale 'en-US'
+[401] Biber.pm:4209> INFO - No sort tailoring available for locale 'en-US'
+[412] bbl.pm:654> INFO - Writing 'Build/mainReport.bbl' with encoding 'UTF-8'
+[417] bbl.pm:757> INFO - Output to Build/mainReport.bbl

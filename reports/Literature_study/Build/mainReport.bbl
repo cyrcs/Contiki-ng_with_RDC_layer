@@ -19,6 +19,70 @@
 
 \refsection{0}
   \datalist[entry]{nyt/global//global/global}
+    \entry{allianceLoRaWANWhatIt2015}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=b0b5ff78204d075f39a14d23601a9470}{%
+           family={Alliance},
+           familyi={A\bibinitperiod},
+           given={LoRaWAN},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b0b5ff78204d075f39a14d23601a9470}
+      \strng{fullhash}{b0b5ff78204d075f39a14d23601a9470}
+      \strng{bibnamehash}{b0b5ff78204d075f39a14d23601a9470}
+      \strng{authorbibnamehash}{b0b5ff78204d075f39a14d23601a9470}
+      \strng{authornamehash}{b0b5ff78204d075f39a14d23601a9470}
+      \strng{authorfullhash}{b0b5ff78204d075f39a14d23601a9470}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{11}
+      \field{title}{{{LoRaWAN}} What Is It}
+      \field{urlday}{15}
+      \field{urlmonth}{11}
+      \field{urlyear}{2023}
+      \field{year}{2015}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \field{pages}{20}
+      \range{pages}{1}
+      \verb{file}
+      \verb /home/louka/Zotero/storage/33WCW92S/what-is-lorawan.pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://lora-alliance.org/wp-content/uploads/2020/11/what-is-lorawan.pdf
+      \endverb
+      \verb{url}
+      \verb https://lora-alliance.org/wp-content/uploads/2020/11/what-is-lorawan.pdf
+      \endverb
+    \endentry
+    \entry{BenefitsLoRaSemtech}{online}{}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{url}
+      \field{labeltitlesource}{title}
+      \field{abstract}{LoRa has revolutionized IoT by enabling data communication over a long range while using very little power.}
+      \field{langid}{english}
+      \field{title}{Benefits of {{LoRa}} | {{Semtech}}}
+      \field{urlday}{15}
+      \field{urlmonth}{11}
+      \field{urlyear}{2023}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb /home/louka/Zotero/storage/IRBGMAN3/why-lora.html
+      \endverb
+      \verb{urlraw}
+      \verb https://www.semtech.com/lora/why-lora
+      \endverb
+      \verb{url}
+      \verb https://www.semtech.com/lora/why-lora
+      \endverb
+    \endentry
     \entry{dunkelsContikiMACRadioDuty2011}{article}{}
       \name{author}{1}{}{%
         {{un=0,uniquepart=base,hash=298b842d17be52c979ec078531d1cfbe}{%
@@ -130,6 +194,39 @@
       \endverb
       \verb{url}
       \verb https://linkinghub.elsevier.com/retrieve/pii/S2352711022000620
+      \endverb
+    \endentry
+    \entry{peetersRADIODUTYCYCLING2022}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=dbab06e3b728c784d921e71f97667ea1}{%
+           family={Peeters},
+           familyi={P\bibinitperiod},
+           given={Jutter},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{dbab06e3b728c784d921e71f97667ea1}
+      \strng{fullhash}{dbab06e3b728c784d921e71f97667ea1}
+      \strng{bibnamehash}{dbab06e3b728c784d921e71f97667ea1}
+      \strng{authorbibnamehash}{dbab06e3b728c784d921e71f97667ea1}
+      \strng{authornamehash}{dbab06e3b728c784d921e71f97667ea1}
+      \strng{authorfullhash}{dbab06e3b728c784d921e71f97667ea1}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{endyear}{2023}
+      \field{langid}{english}
+      \field{title}{{{RADIO DUTY CYCLING FOR MULTI-HOP}} 2.4 {{GHZ LORA}}}
+      \field{year}{2022}
+      \field{enddateera}{ce}
+      \field{dateera}{ce}
+      \field{pages}{56}
+      \range{pages}{1}
+      \verb{file}
+      \verb /home/louka/documents/school/vub/1MAIW/Masterproef/Literature/MA_IW_ELO_Peeters_Jutter_S3_2223.pdf
       \endverb
     \endentry
     \entry{thebaudeauRadioDutyCycling2019}{misc}{}

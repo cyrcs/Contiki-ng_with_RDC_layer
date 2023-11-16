@@ -1,5 +1,0 @@
-from pyradioconfig.calculator_model_framework.interfaces.iprofile import ModelOutput, ModelOutputType
-from pyradioconfig.parts.ocelot.profiles.sw_profile_outputs_common import sw_profile_outputs_common_ocelot
-
-class sw_profile_outputs_common_bobcat(sw_profile_outputs_common_ocelot):
-    pass

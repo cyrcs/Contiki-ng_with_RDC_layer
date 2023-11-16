@@ -28,12 +28,11 @@
  */
 #define TCPIP_CONF_ANNOTATE_TRANSMISSIONS 1
 
-// #include <stddef.h>
+#include <stddef.h>
 
 #define NETSTACK_CONF_RADIO                        sx128x_radio_driver
 
-// extern int tsch_packet_duration(size_t len); 
-// #define TSCH_PACKET_DURATION(len) tsch_packet_duration(len) 
-
+extern int tsch_packet_duration(size_t len); 
+#define TSCH_PACKET_DURATION(len) tsch_packet_duration(len) 
 
 #define LOG_CONF_LEVEL_RPL LOG_LEVEL_INFO
