@@ -55,7 +55,7 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "CSMA"
+#define LOG_MODULE "CSMA output"
 #define LOG_LEVEL LOG_LEVEL_MAC
 
 /* Constants of the IEEE 802.15.4 standard */
@@ -121,13 +121,6 @@ struct neighbor_queue {
 
 #define MAX_QUEUED_PACKETS QUEUEBUF_NUM
 
-/* Neighbor packet queue */
-struct packet_queue {
-  struct packet_queue *next;
-  struct queuebuf *buf;
-  void *ptr;
-};
-
 MEMB(neighbor_memb, struct neighbor_queue, CSMA_MAX_NEIGHBOR_QUEUES);
 MEMB(packet_memb, struct packet_queue, MAX_QUEUED_PACKETS);
 MEMB(metadata_memb, struct qbuf_metadata, MAX_QUEUED_PACKETS);
@@ -142,6 +135,7 @@ static void transmit_from_queue(void *ptr);
 static struct neighbor_queue *
 neighbor_queue_from_addr(const linkaddr_t *addr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct neighbor_queue *n = list_head(neighbor_list);
   while(n != NULL) {
     if(linkaddr_cmp(&n->addr, addr)) {
@@ -155,6 +149,7 @@ neighbor_queue_from_addr(const linkaddr_t *addr)
 static clock_time_t
 backoff_period(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
 #if CONTIKI_TARGET_COOJA
   /* Increase normal value by 20 to compensate for the coarse-grained
   radio medium with Cooja motes */
@@ -257,6 +252,7 @@ send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
 static void
 transmit_from_queue(void *ptr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct neighbor_queue *n = ptr;
   if(n) {
     struct packet_queue *q = list_head(n->packet_queue);
@@ -276,6 +272,7 @@ transmit_from_queue(void *ptr)
 static void
 schedule_transmission(struct neighbor_queue *n)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   clock_time_t delay;
   int backoff_exponent; /* BE in IEEE 802.15.4 */
 
@@ -296,6 +293,7 @@ schedule_transmission(struct neighbor_queue *n)
 static void
 free_packet(struct neighbor_queue *n, struct packet_queue *p, int status)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   if(p != NULL) {
     /* Remove packet from queue and deallocate */
     list_remove(n->packet_queue, p);
@@ -323,6 +321,7 @@ free_packet(struct neighbor_queue *n, struct packet_queue *p, int status)
 static void
 tx_done(int status, struct packet_queue *q, struct neighbor_queue *n)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   mac_callback_t sent;
   struct qbuf_metadata *metadata;
   void *cptr;
@@ -346,6 +345,7 @@ tx_done(int status, struct packet_queue *q, struct neighbor_queue *n)
 static void
 rexmit(struct packet_queue *q, struct neighbor_queue *n)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   schedule_transmission(n);
   /* This is needed to correctly attribute energy that we spent
      transmitting this packet. */
@@ -356,6 +356,7 @@ static void
 collision(struct packet_queue *q, struct neighbor_queue *n,
           int num_transmissions)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct qbuf_metadata *metadata;
 
   metadata = (struct qbuf_metadata *)q->ptr;
@@ -378,6 +379,7 @@ collision(struct packet_queue *q, struct neighbor_queue *n,
 static void
 noack(struct packet_queue *q, struct neighbor_queue *n, int num_transmissions)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct qbuf_metadata *metadata;
 
   metadata = (struct qbuf_metadata *)q->ptr;
@@ -395,6 +397,7 @@ noack(struct packet_queue *q, struct neighbor_queue *n, int num_transmissions)
 static void
 tx_ok(struct packet_queue *q, struct neighbor_queue *n, int num_transmissions)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   n->collisions = 0;
   n->transmissions += num_transmissions;
   tx_done(MAC_TX_OK, q, n);
@@ -406,6 +409,7 @@ packet_sent(struct neighbor_queue *n,
     int status,
     int num_transmissions)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   assert(n != NULL);
   assert(q != NULL);
 
@@ -441,6 +445,7 @@ packet_sent(struct neighbor_queue *n,
 void
 csma_output_packet(mac_callback_t sent, void *ptr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct packet_queue *q;
   struct neighbor_queue *n;
   const linkaddr_t *addr = packetbuf_addr(PACKETBUF_ADDR_RECEIVER);
@@ -521,6 +526,7 @@ csma_output_packet(mac_callback_t sent, void *ptr)
 void
 csma_output_init(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   memb_init(&packet_memb);
   memb_init(&metadata_memb);
   memb_init(&neighbor_memb);

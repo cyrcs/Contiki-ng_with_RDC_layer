@@ -39,8 +39,8 @@
  *         Simon Duquennoy <simon.duquennoy@inria.fr>
  */
 
-#include "net/mac/csma/csma.h"
-#include "net/mac/csma/csma-security.h"
+#include "net/mac/csma_with_rdc/csma.h"
+#include "net/mac/csma_with_rdc/csma-security.h"
 #include "net/mac/mac-sequence.h"
 #include "net/packetbuf.h"
 #include "net/queuebuf.h"
@@ -55,7 +55,7 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "CSMA"
+#define LOG_MODULE "CSMA output (RDC)"
 #define LOG_LEVEL LOG_LEVEL_MAC
 
 /* Constants of the IEEE 802.15.4 standard */
@@ -121,20 +121,12 @@ struct neighbor_queue {
 
 #define MAX_QUEUED_PACKETS QUEUEBUF_NUM
 
-/* Neighbor packet queue */
-struct packet_queue {
-  struct packet_queue *next;
-  struct queuebuf *buf;
-  void *ptr;
-};
-
 MEMB(neighbor_memb, struct neighbor_queue, CSMA_MAX_NEIGHBOR_QUEUES);
 MEMB(packet_memb, struct packet_queue, MAX_QUEUED_PACKETS);
 MEMB(metadata_memb, struct qbuf_metadata, MAX_QUEUED_PACKETS);
 LIST(neighbor_list);
 
-static void packet_sent(struct neighbor_queue *n,
-    struct packet_queue *q,
+static void packet_sent(void *ptr,
     int status,
     int num_transmissions);
 static void transmit_from_queue(void *ptr);
@@ -142,6 +134,7 @@ static void transmit_from_queue(void *ptr);
 static struct neighbor_queue *
 neighbor_queue_from_addr(const linkaddr_t *addr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct neighbor_queue *n = list_head(neighbor_list);
   while(n != NULL) {
     if(linkaddr_cmp(&n->addr, addr)) {
@@ -155,6 +148,7 @@ neighbor_queue_from_addr(const linkaddr_t *addr)
 static clock_time_t
 backoff_period(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
 #if CONTIKI_TARGET_COOJA
   /* Increase normal value by 20 to compensate for the coarse-grained
   radio medium with Cooja motes */
@@ -176,96 +170,96 @@ backoff_period(void)
 #endif /* CONTIKI_TARGET_COOJA */
 }
 /*---------------------------------------------------------------------------*/
-static int
-send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
-{
-  // create 2 required variables
-  int ret;
-  int last_sent_ok = 0;
+// static int
+// send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
+// {
+//   // create 2 required variables
+//   int ret;
+//   int last_sent_ok = 0;
 
-  // Create packet header
-  // first add node addr
-  packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &linkaddr_node_addr);
-  packetbuf_set_attr(PACKETBUF_ATTR_MAC_ACK, 1);
+//   // Create packet header
+//   // first add node addr
+//   packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &linkaddr_node_addr);
+//   packetbuf_set_attr(PACKETBUF_ATTR_MAC_ACK, 1);
 
-#if LLSEC802154_ENABLED
-#if LLSEC802154_USES_EXPLICIT_KEYS
-  /* This should possibly be taken from upper layers in the future */
-  packetbuf_set_attr(PACKETBUF_ATTR_KEY_ID_MODE, CSMA_LLSEC_KEY_ID_MODE);
-#endif /* LLSEC802154_USES_EXPLICIT_KEYS */
-#endif /* LLSEC802154_ENABLED */
+// #if LLSEC802154_ENABLED
+// #if LLSEC802154_USES_EXPLICIT_KEYS
+//   /* This should possibly be taken from upper layers in the future */
+//   packetbuf_set_attr(PACKETBUF_ATTR_KEY_ID_MODE, CSMA_LLSEC_KEY_ID_MODE);
+// #endif /* LLSEC802154_USES_EXPLICIT_KEYS */
+// #endif /* LLSEC802154_ENABLED */
 
-  if(csma_security_create_frame() < 0) {
-    /* Failed to allocate space for headers */
-    LOG_ERR("failed to create packet, seqno: %d\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
-    ret = MAC_TX_ERR_FATAL;
-  } else {
-    int is_broadcast;
-    uint8_t dsn;
-    dsn = ((uint8_t *)packetbuf_hdrptr())[2] & 0xff;
+//   if(csma_security_create_frame() < 0) {
+//     /* Failed to allocate space for headers */
+//     LOG_ERR("failed to create packet, seqno: %d\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
+//     ret = MAC_TX_ERR_FATAL;
+//   } else {
+//     int is_broadcast;
+//     uint8_t dsn;
+//     dsn = ((uint8_t *)packetbuf_hdrptr())[2] & 0xff;
 
-    NETSTACK_RADIO.prepare(packetbuf_hdrptr(), packetbuf_totlen());
+//     NETSTACK_RADIO.prepare(packetbuf_hdrptr(), packetbuf_totlen());
 
-    is_broadcast = packetbuf_holds_broadcast();
+//     is_broadcast = packetbuf_holds_broadcast();
 
-    if(NETSTACK_RADIO.receiving_packet() ||
-       (!is_broadcast && NETSTACK_RADIO.pending_packet())) {
+//     if(NETSTACK_RADIO.receiving_packet() ||
+//        (!is_broadcast && NETSTACK_RADIO.pending_packet())) {
 
-      /* Currently receiving a packet over air or the radio has
-         already received a packet that needs to be read before
-         sending with auto ack. */
-      ret = MAC_TX_COLLISION;
-    } else {
+//       /* Currently receiving a packet over air or the radio has
+//          already received a packet that needs to be read before
+//          sending with auto ack. */
+//       ret = MAC_TX_COLLISION;
+//     } else {
 
-      switch(NETSTACK_RADIO.transmit(packetbuf_totlen())) {
-      case RADIO_TX_OK:
-        if(is_broadcast) {
-          ret = MAC_TX_OK;
-        } else {
-          /* Check for ack */
+//       switch(NETSTACK_RADIO.transmit(packetbuf_totlen())) {
+//       case RADIO_TX_OK:
+//         if(is_broadcast) {
+//           ret = MAC_TX_OK;
+//         } else {
+//           /* Check for ack */
 
-          /* Wait for max CSMA_ACK_WAIT_TIME */
-          RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_ACK_WAIT_TIME);
+//           /* Wait for max CSMA_ACK_WAIT_TIME */
+//           RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_ACK_WAIT_TIME);
 
-          ret = MAC_TX_NOACK;
-          if(NETSTACK_RADIO.receiving_packet() ||
-             NETSTACK_RADIO.pending_packet() ||
-             NETSTACK_RADIO.channel_clear() == 0) {
-            int len;
-            uint8_t ackbuf[CSMA_ACK_LEN];
+//           ret = MAC_TX_NOACK;
+//           if(NETSTACK_RADIO.receiving_packet() ||
+//              NETSTACK_RADIO.pending_packet() ||
+//              NETSTACK_RADIO.channel_clear() == 0) {
+//             int len;
+//             uint8_t ackbuf[CSMA_ACK_LEN];
 
-            /* Wait an additional CSMA_AFTER_ACK_DETECTED_WAIT_TIME to complete reception */
-            RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_AFTER_ACK_DETECTED_WAIT_TIME);
+//             /* Wait an additional CSMA_AFTER_ACK_DETECTED_WAIT_TIME to complete reception */
+//             RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_AFTER_ACK_DETECTED_WAIT_TIME);
 
-            if(NETSTACK_RADIO.pending_packet()) {
-              len = NETSTACK_RADIO.read(ackbuf, CSMA_ACK_LEN);
-              if(len == CSMA_ACK_LEN && ackbuf[2] == dsn) {
-                /* Ack received */
-                ret = MAC_TX_OK;
-              } else {
-                /* Not an ack or ack not for us: collision */
-                ret = MAC_TX_COLLISION;
-              }
-            }
-          }
-        }
-        break;
-      case RADIO_TX_COLLISION:
-        ret = MAC_TX_COLLISION;
-        break;
-      default:
-        ret = MAC_TX_ERR;
-        break;
-      }
-    }
-  }
-  if(ret == MAC_TX_OK) {
-    last_sent_ok = 1;
-  }
+//             if(NETSTACK_RADIO.pending_packet()) {
+//               len = NETSTACK_RADIO.read(ackbuf, CSMA_ACK_LEN);
+//               if(len == CSMA_ACK_LEN && ackbuf[2] == dsn) {
+//                 /* Ack received */
+//                 ret = MAC_TX_OK;
+//               } else {
+//                 /* Not an ack or ack not for us: collision */
+//                 ret = MAC_TX_COLLISION;
+//               }
+//             }
+//           }
+//         }
+//         break;
+//       case RADIO_TX_COLLISION:
+//         ret = MAC_TX_COLLISION;
+//         break;
+//       default:
+//         ret = MAC_TX_ERR;
+//         break;
+//       }
+//     }
+//   }
+//   if(ret == MAC_TX_OK) {
+//     last_sent_ok = 1;
+//   }
 
-  packet_sent(n, q, ret, 1);
-  return last_sent_ok;
-}
+//   packet_sent(n, q, ret, 1);
+//   return last_sent_ok;
+// }
 /*---------------------------------------------------------------------------*/
 // static void
 // transmit_from_queue(void *ptr)
@@ -289,6 +283,7 @@ send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
 static void
 transmit_from_queue(void *ptr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct neighbor_queue *n = ptr;
   if(n) {
     struct packet_queue *q = list_head(n->packet_queue);
@@ -298,8 +293,15 @@ transmit_from_queue(void *ptr)
       LOG_INFO_(", seqno %u, tx %u, queue %d\n",
       queuebuf_attr(q->buf, PACKETBUF_ATTR_MAC_SEQNO),
       n->transmissions, list_length(n->packet_queue));
+
+      // method contiki-os
       /* Send packets in the neighbor's list */
-      NETSTACK_RDC.send_list(packet_sent, n, q);
+      // NETSTACK_RDC.send_list(packet_sent, n, q);
+
+
+      // method contiki-ng modified
+      queuebuf_to_packetbuf(q->buf);
+      NETSTACK_RDC.send_list(packet_sent, n,q);
     }
   }
 }
@@ -307,6 +309,7 @@ transmit_from_queue(void *ptr)
 static void
 schedule_transmission(struct neighbor_queue *n)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   clock_time_t delay;
   int backoff_exponent; /* BE in IEEE 802.15.4 */
 
@@ -327,6 +330,7 @@ schedule_transmission(struct neighbor_queue *n)
 static void
 free_packet(struct neighbor_queue *n, struct packet_queue *p, int status)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   if(p != NULL) {
     /* Remove packet from queue and deallocate */
     list_remove(n->packet_queue, p);
@@ -354,6 +358,7 @@ free_packet(struct neighbor_queue *n, struct packet_queue *p, int status)
 static void
 tx_done(int status, struct packet_queue *q, struct neighbor_queue *n)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   mac_callback_t sent;
   struct qbuf_metadata *metadata;
   void *cptr;
@@ -377,6 +382,7 @@ tx_done(int status, struct packet_queue *q, struct neighbor_queue *n)
 static void
 rexmit(struct packet_queue *q, struct neighbor_queue *n)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   schedule_transmission(n);
   /* This is needed to correctly attribute energy that we spent
      transmitting this packet. */
@@ -387,6 +393,7 @@ static void
 collision(struct packet_queue *q, struct neighbor_queue *n,
           int num_transmissions)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct qbuf_metadata *metadata;
 
   metadata = (struct qbuf_metadata *)q->ptr;
@@ -409,6 +416,7 @@ collision(struct packet_queue *q, struct neighbor_queue *n,
 static void
 noack(struct packet_queue *q, struct neighbor_queue *n, int num_transmissions)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct qbuf_metadata *metadata;
 
   metadata = (struct qbuf_metadata *)q->ptr;
@@ -426,30 +434,43 @@ noack(struct packet_queue *q, struct neighbor_queue *n, int num_transmissions)
 static void
 tx_ok(struct packet_queue *q, struct neighbor_queue *n, int num_transmissions)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   n->collisions = 0;
   n->transmissions += num_transmissions;
   tx_done(MAC_TX_OK, q, n);
 }
 /*---------------------------------------------------------------------------*/
 static void
-packet_sent(struct neighbor_queue *n,
-    struct packet_queue *q,
+packet_sent(void *ptr,
     int status,
     int num_transmissions)
 {
-  assert(n != NULL);
-  assert(q != NULL);
+  LOG_DBG("Function call: %s\n", __func__);
+  struct neighbor_queue *n;
+  struct packet_queue *q;
 
-  if(q->ptr == NULL) {
-    LOG_WARN("packet sent: no metadata\n");
+  n = ptr;
+  if(n == NULL) {
     return;
   }
 
-  LOG_INFO("tx to ");
-  LOG_INFO_LLADDR(&n->addr);
-  LOG_INFO_(", seqno %u, status %u, tx %u, coll %u\n",
-            packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO),
-            status, n->transmissions, n->collisions);
+  /* Find out what packet this callback refers to */
+  for(q = list_head(n->packet_queue);
+      q != NULL; q = list_item_next(q)) {
+    if(queuebuf_attr(q->buf, PACKETBUF_ATTR_MAC_SEQNO) ==
+       packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO)) {
+      break;
+    }
+  }
+
+  if(q == NULL) {
+    LOG_INFO("csma: seqno %d not found\n",
+           packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
+    return;
+  } else if(q->ptr == NULL) {
+    LOG_WARN("csma: no metadata\n");
+    return;
+  }
 
   switch(status) {
   case MAC_TX_OK:
@@ -472,6 +493,7 @@ packet_sent(struct neighbor_queue *n,
 void
 csma_output_packet(mac_callback_t sent, void *ptr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct packet_queue *q;
   struct neighbor_queue *n;
   const linkaddr_t *addr = packetbuf_addr(PACKETBUF_ADDR_RECEIVER);
@@ -552,6 +574,7 @@ csma_output_packet(mac_callback_t sent, void *ptr)
 void
 csma_output_init(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   memb_init(&packet_memb);
   memb_init(&metadata_memb);
   memb_init(&neighbor_memb);

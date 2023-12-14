@@ -73,7 +73,7 @@
 /* Log configuration */
 #include "sys/log.h"
 #define LOG_MODULE "cc2538-rf"
-#define LOG_LEVEL LOG_LEVEL_NONE
+#define LOG_LEVEL LOG_LEVEL_RADIO
 /*---------------------------------------------------------------------------*/
 /* Local RF Flags */
 #define RX_ACTIVE     0x80
@@ -165,6 +165,7 @@ PROCESS(cc2538_rf_process, "cc2538 RF driver");
 static uint8_t
 get_channel()
 {
+  LOG_DBG("Function call: %s\n", __func__);
   return rf_channel;
 }
 /*---------------------------------------------------------------------------*/
@@ -175,6 +176,7 @@ get_channel()
 static void
 set_channel(uint8_t channel)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   uint8_t was_on = 0;
 
   LOG_INFO("Set Channel\n");
@@ -200,12 +202,14 @@ set_channel(uint8_t channel)
 static radio_value_t
 get_pan_id(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   return (radio_value_t)(REG(RFCORE_FFSM_PAN_ID1) << 8 | REG(RFCORE_FFSM_PAN_ID0));
 }
 /*---------------------------------------------------------------------------*/
 static void
 set_pan_id(uint16_t pan)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   REG(RFCORE_FFSM_PAN_ID0) = pan & 0xFF;
   REG(RFCORE_FFSM_PAN_ID1) = pan >> 8;
 }
@@ -213,12 +217,14 @@ set_pan_id(uint16_t pan)
 static radio_value_t
 get_short_addr(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   return (radio_value_t)(REG(RFCORE_FFSM_SHORT_ADDR1) << 8 | REG(RFCORE_FFSM_SHORT_ADDR0));
 }
 /*---------------------------------------------------------------------------*/
 static void
 set_short_addr(uint16_t addr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   REG(RFCORE_FFSM_SHORT_ADDR0) = addr & 0xFF;
   REG(RFCORE_FFSM_SHORT_ADDR1) = addr >> 8;
 }
@@ -233,6 +239,7 @@ set_short_addr(uint16_t addr)
 static radio_value_t
 get_rssi(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int8_t rssi;
   uint8_t was_off = 0;
 
@@ -268,6 +275,7 @@ get_rssi(void)
 static void
 get_iq_lsbs(radio_value_t *value)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   uint8_t was_off = 0;
 
   /* If we are off, turn on first */
@@ -296,6 +304,7 @@ get_iq_lsbs(radio_value_t *value)
 static radio_value_t
 get_cca_threshold(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   return (int8_t)(REG(RFCORE_XREG_CCACTRL0) & RFCORE_XREG_CCACTRL0_CCA_THR) - RSSI_OFFSET;
 }
 /*---------------------------------------------------------------------------*/
@@ -303,6 +312,7 @@ get_cca_threshold(void)
 static void
 set_cca_threshold(radio_value_t value)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   REG(RFCORE_XREG_CCACTRL0) = (value & 0xFF) + RSSI_OFFSET;
 }
 /*---------------------------------------------------------------------------*/
@@ -310,6 +320,7 @@ set_cca_threshold(radio_value_t value)
 static radio_value_t
 get_tx_power(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int i;
   uint8_t reg_val = REG(RFCORE_XREG_TXPOWER) & 0xFF;
 
@@ -336,6 +347,7 @@ get_tx_power(void)
 static void
 set_tx_power(radio_value_t power)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int i;
 
   for(i = OUTPUT_CONFIG_COUNT - 1; i >= 0; --i) {
@@ -349,6 +361,7 @@ set_tx_power(radio_value_t power)
 static void
 set_frame_filtering(uint8_t enable)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   if(enable) {
     REG(RFCORE_XREG_FRMFILT0) |= RFCORE_XREG_FRMFILT0_FRAME_FILTER_EN;
   } else {
@@ -359,6 +372,7 @@ set_frame_filtering(uint8_t enable)
 static void
 set_shr_search(int enable)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   if(enable) {
     REG(RFCORE_XREG_FRMCTRL0) &= ~RFCORE_XREG_FRMCTRL0_RX_MODE;
   } else {
@@ -369,6 +383,7 @@ set_shr_search(int enable)
 static void
 mac_timer_init(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   CLOCK_STABLE();
   REG(RFCORE_SFR_MTCTRL) |= RFCORE_SFR_MTCTRL_SYNC;
   REG(RFCORE_SFR_MTCTRL) |= RFCORE_SFR_MTCTRL_RUN;
@@ -383,6 +398,7 @@ mac_timer_init(void)
 static void
 set_poll_mode(uint8_t enable)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   poll_mode = enable;
 
   if(enable) {
@@ -399,12 +415,14 @@ set_poll_mode(uint8_t enable)
 static void
 set_send_on_cca(uint8_t enable)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   send_on_cca = enable;
 }
 /*---------------------------------------------------------------------------*/
 static void
 set_auto_ack(uint8_t enable)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   if(enable) {
     REG(RFCORE_XREG_FRMCTRL0) |= RFCORE_XREG_FRMCTRL0_AUTOACK;
   } else {
@@ -415,6 +433,7 @@ set_auto_ack(uint8_t enable)
 static uint32_t
 get_sfd_timestamp(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   uint64_t sfd, timer_val, buffer;
 
   REG(RFCORE_SFR_MTMSEL) = (REG(RFCORE_SFR_MTMSEL) & ~RFCORE_SFR_MTMSEL_MTMSEL) | 0x00000000;
@@ -449,6 +468,7 @@ static uint8_t was_on;
 static void
 set_test_mode(uint8_t enable, uint8_t modulated)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   radio_value_t mode;
   get_value(RADIO_PARAM_POWER_MODE, &mode);
 
@@ -487,6 +507,7 @@ set_test_mode(uint8_t enable, uint8_t modulated)
 static int
 channel_clear(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int cca;
   uint8_t was_off = 0;
 
@@ -518,6 +539,7 @@ channel_clear(void)
 static int
 on(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   LOG_INFO("On\n");
 
   if(!(rf_flags & RX_ACTIVE)) {
@@ -534,6 +556,7 @@ on(void)
 static int
 off(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   LOG_INFO("Off\n");
 
   /* Wait for ongoing TX to complete (e.g. this could be an outgoing ACK) */
@@ -557,6 +580,7 @@ off(void)
 static int
 init(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   LOG_INFO("Init\n");
 
   if(rf_flags & RF_ON) {
@@ -646,6 +670,7 @@ init(void)
 static int
 prepare(const void *payload, unsigned short payload_len)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   uint8_t i;
 
   if(payload_len > MAX_PAYLOAD_LEN) {
@@ -706,6 +731,7 @@ prepare(const void *payload, unsigned short payload_len)
 static int
 transmit(unsigned short transmit_len)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   uint8_t counter;
   int ret = RADIO_TX_ERR;
   rtimer_clock_t t0;
@@ -770,6 +796,7 @@ transmit(unsigned short transmit_len)
 static int
 send(const void *payload, unsigned short payload_len)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   prepare(payload, payload_len);
   return transmit(payload_len);
 }
@@ -777,6 +804,7 @@ send(const void *payload, unsigned short payload_len)
 static int
 read(void *buf, unsigned short bufsize)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   uint8_t i;
   uint8_t len;
 
@@ -876,6 +904,7 @@ read(void *buf, unsigned short bufsize)
 static int
 receiving_packet(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   LOG_INFO("Receiving\n");
 
   /*
@@ -892,6 +921,7 @@ receiving_packet(void)
 static int
 pending_packet(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   LOG_INFO("Pending\n");
 
   return REG(RFCORE_XREG_FSMSTAT1) & RFCORE_XREG_FSMSTAT1_FIFOP;
@@ -900,6 +930,7 @@ pending_packet(void)
 static radio_result_t
 get_value(radio_param_t param, radio_value_t *value)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   if(!value) {
     return RADIO_RESULT_INVALID_VALUE;
   }
@@ -996,6 +1027,7 @@ get_value(radio_param_t param, radio_value_t *value)
 static radio_result_t
 set_value(radio_param_t param, radio_value_t value)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   switch(param) {
   case RADIO_PARAM_POWER_MODE:
     if(value == RADIO_POWER_MODE_ON) {
@@ -1067,6 +1099,7 @@ set_value(radio_param_t param, radio_value_t value)
 static radio_result_t
 get_object(radio_param_t param, void *dest, size_t size)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   uint8_t *target;
   int i;
 
@@ -1108,6 +1141,7 @@ get_object(radio_param_t param, void *dest, size_t size)
 static radio_result_t
 set_object(radio_param_t param, const void *src, size_t size)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int i;
 
   if(param == RADIO_PARAM_64BIT_ADDR) {
@@ -1153,20 +1187,19 @@ const struct radio_driver cc2538_rf_driver = {
  */
 PROCESS_THREAD(cc2538_rf_process, ev, data)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int len;
   PROCESS_BEGIN();
 
   while(1) {
-    PROCESS_YIELD_UNTIL(ev == PROCESS_EVENT_POLL);
 
+    PROCESS_YIELD_UNTIL(ev == PROCESS_EVENT_POLL);
     if(!poll_mode) {
       packetbuf_clear();
       len = read(packetbuf_dataptr(), PACKETBUF_SIZE);
-
       if(len > 0) {
         packetbuf_set_datalen(len);
-
-        NETSTACK_MAC.input();
+        NETSTACK_RDC.input();
       }
     }
 
@@ -1203,6 +1236,7 @@ PROCESS_THREAD(cc2538_rf_process, ev, data)
 void
 cc2538_rf_rx_tx_isr(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   if(!poll_mode) {
     process_poll(&cc2538_rf_process);
   }
@@ -1230,6 +1264,7 @@ cc2538_rf_rx_tx_isr(void)
 void
 cc2538_rf_err_isr(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   LOG_ERR("Error 0x%08lx occurred\n", REG(RFCORE_SFR_RFERRF));
 
   /* If the error is not an RX FIFO overflow, set a flag */

@@ -49,11 +49,12 @@
 #include "net/queuebuf.h"
 
 /* List of packets to be sent by RDC layer */
-struct rdc_buf_list {
-  struct rdc_buf_list *next;
+struct packet_queue {
+  struct packet_queue *next;
   struct queuebuf *buf;
   void *ptr;
 };
+
 
 /**
  * The structure of a RDC (radio duty cycling) driver in Contiki.
@@ -68,7 +69,7 @@ struct rdc_driver {
   void (* send)(mac_callback_t sent_callback, void *ptr);
 
   /** Send a packet list */
-  void (* send_list)(mac_callback_t sent_callback, void *ptr, struct rdc_buf_list *list);
+  void (* send_list)(mac_callback_t sent_callback, void *ptr, struct packet_queue *list);
 
   /** Callback for getting notified of incoming packet. */
   void (* input)(void);
@@ -77,14 +78,12 @@ struct rdc_driver {
   int (* on)(void);
 
   /** Turn the MAC layer off. */
-  int (* off)(int keep_radio_on);
+  int (* off)(void);
 
   // THIS PART IS NOT USED IN CONTIKI-NG
   /** Returns the channel check interval, expressed in clock_time_t ticks. */
   unsigned short (* channel_check_interval)(void);
 
-  /** Read out estimated max payload size based on payload in packetbuf */
-  int (* max_payload)(void);
 };
 
 #endif /* RDC_H_ */

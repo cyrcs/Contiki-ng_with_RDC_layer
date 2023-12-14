@@ -1,4 +1,3 @@
-// #region License -------------------------------------------------------------
 /*
  * Copyright (C) 2016 Unwired Devices <info@unwds.com>
  *               2017 Inria Chile
@@ -8,8 +7,7 @@
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
  */
-// #endregion ------------------------------------------------------------------
-// #region File Description ----------------------------------------------------
+
 /**
  * @ingroup     drivers_sx128x
  * @{
@@ -21,8 +19,7 @@
  * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
  * @}
  */
-// #endregion ------------------------------------------------------------------
-// #region Libraries -----------------------------------------------------------
+
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -31,29 +28,25 @@
 #include <inttypes.h>
 
 #include "sys/_stdint.h"
+#include "sys/log.h"
 #include "lora24.h"
 
 #include "sx128x.h"
 #include "sx128x_registers.h"
 #include "sx128x_internal.h"
-// #endregion ------------------------------------------------------------------
-// #region Defines -------------------------------------------------------------
-#include "sys/log.h"
-#define LOG_MODULE "SX128X-GETSET"
 
-#define LOG_LEVEL LOG_CONF_LEVEL_SX128X_GETSET
-// #endregion ------------------------------------------------------------------
+#include "sys/log.h"
+#define LOG_MODULE "SX128X"
+#define LOG_LEVEL LOG_CONF_LEVEL_RADIO
 
 
 static inline void _set_flag(sx128x_t *dev, uint8_t flag, bool value)
 {
     (void)(dev);
-    if (value)
-    {
+    if (value) {
         dev->settings.lora.flags |= flag;
     }
-    else
-    {
+    else {
         dev->settings.lora.flags &= ~flag;
     }
 }
@@ -68,6 +61,8 @@ uint16_t sx128x_get_firmware_version(const sx128x_t *dev)
 {
     return (sx128x_reg_read(dev, REG_LR_FIRMWARE_VERSION_MSB) << 8) | sx128x_reg_read(dev, REG_LR_FIRMWARE_VERSION_MSB + 1);
 }
+
+
 
 uint8_t sx128x_cmd_get_status(const sx128x_t *dev)
 {
@@ -88,33 +83,29 @@ size_t sx128x_cmd_read_buffer(const sx128x_t *dev, uint8_t *buf, size_t len)
     return 0;
 }
 
-void sx128x_cmd_set_sleep(const sx128x_t *dev, uint8_t config)
-{
+void sx128x_cmd_set_sleep(const sx128x_t *dev, uint8_t config) {
     // TODO Check we are on STDBY mode
     LOG_DBG("[sx128x] Cmd set sleep with config %#02x\n", config);
     (void)(dev);
     /* sx128x_cmd_burst(dev, SX128X_CMD_SET_SLEEP, &config, 1, NULL, 0); */
 }
 
-void sx128x_cmd_set_standby(const sx128x_t *dev, uint8_t config)
-{
+void sx128x_cmd_set_standby(const sx128x_t *dev, uint8_t config) {
     LOG_DBG("[sx128x] Cmd set standby with config %#02x\n", config);
     sx128x_cmd_burst(dev, SX128X_CMD_SET_STANDBY, &config, 1, NULL, 0);
 }
 
-// sx128x_set_op_mode
-void sx128x_cmd_set_tx(const sx128x_t *dev, uint8_t period_base, uint16_t period_base_count)
-{
+//sx128x_set_op_mode
+void sx128x_cmd_set_tx(const sx128x_t *dev, uint8_t period_base, uint16_t period_base_count) {
     LOG_DBG("[sx128x] Cmd set tx with period base %#02x and count %#02x\n", period_base, period_base_count);
-    uint8_t params[3] = {period_base, (period_base_count >> 8) & 0xFF, (period_base_count & 0xFF)};
+    uint8_t params[3] = { period_base, (period_base_count >> 8) & 0xFF, (period_base_count & 0xFF) };
     sx128x_cmd_burst(dev, SX128X_CMD_SET_TX, params, 3, NULL, 0);
 }
 
-void sx128x_cmd_set_rx(const sx128x_t *dev, uint8_t period_base, uint16_t period_base_count)
-{
+void sx128x_cmd_set_rx(const sx128x_t *dev, uint8_t period_base, uint16_t period_base_count) {
     LOG_DBG("[sx128x] Set rx\n");
-    uint8_t params[3] = {period_base, (period_base_count >> 8) & 0xFF, (period_base_count & 0xFF)};
-    LOG_INFO("parameters set: %d,%d,%d\n", params[0], params[1], params[2]);
+    uint8_t params[3] = { period_base, (period_base_count >> 8) & 0xFF, (period_base_count & 0xFF) };
+    LOG_INFO("parameters set: %d,%d,%d\n",params[0],params[1],params[2]);
     sx128x_cmd_burst(dev, SX128X_CMD_SET_RX, params, 3, NULL, 0);
 }
 
@@ -123,237 +114,210 @@ void sx128x_cmd_set_cad_params(const sx128x_t *dev, uint8_t symbol_num)
     sx128x_cmd_burst(dev, SX128X_CMD_SET_CAD_PARAMS, &symbol_num, 1, NULL, 0);
 }
 
-void sx128x_cmd_set_cad(const sx128x_t *dev)
-{
+void sx128x_cmd_set_cad(const sx128x_t *dev) {
     sx128x_cmd_burst(dev, SX128X_CMD_SET_CAD, NULL, 0, NULL, 0);
 }
 
-void sx128x_cmd_set_packet_type(sx128x_t *dev, uint8_t packet_type)
-{
+void sx128x_cmd_set_packet_type(sx128x_t *dev, uint8_t packet_type) {
     LOG_DBG("[sx128x] Set packet type: %d\n", packet_type);
-    if (packet_type != SX128X_PACKET_TYPE_LORA)
-    {
+    if (packet_type != SX128X_PACKET_TYPE_LORA) {
         LOG_DBG("[sx128x] LoRa packet type supported only");
     }
     sx128x_cmd_burst(dev, SX128X_CMD_SET_PACKET_TYPE, &packet_type, 1, NULL, 0);
     dev->settings.modem = packet_type;
 }
 
-uint8_t sx128x_cmd_get_packet_type(const sx128x_t *dev)
-{
+uint8_t sx128x_cmd_get_packet_type(const sx128x_t *dev) {
     uint8_t ret;
     uint8_t nop = 0;
     sx128x_cmd_burst(dev, SX128X_CMD_GET_PACKET_TYPE, &nop, 1, &ret, 1);
     return ret;
 }
 
-void sx128x_cmd_set_regulator_mode(sx128x_t *dev, uint8_t mode)
-{
+void sx128x_cmd_set_regulator_mode(sx128x_t *dev, uint8_t mode) {
     sx128x_cmd_burst(dev, SX128X_CMD_SET_REGULATOR_MODE, &mode, 1, NULL, 0);
 }
 
-uint32_t sx128x_cmd_get_frequency(const sx128x_t *dev)
-{
+uint32_t sx128x_cmd_get_frequency(const sx128x_t *dev) {
     return dev->settings.lora.frequency;
 }
 
-void sx128x_cmd_set_frequency(sx128x_t *dev, uint32_t freq)
-{
+void sx128x_cmd_set_frequency(sx128x_t *dev, uint32_t freq) {
     // Freq in range (2400..2500)
     dev->settings.lora.frequency = freq;
     uint32_t step = (freq * (1 << SX128X_DIV_EXPONANT)) / SX128X_CRYSTAL_FREQ;
-    uint8_t data[3] = {(uint8_t)((step >> 16) & 0xFF), (uint8_t)((step >> 8) & 0xFF), (uint8_t)(step & 0xFF)};
+    uint8_t data[3] = {(uint8_t)((step >> 16) & 0xFF), (uint8_t)((step >> 8) & 0xFF), (uint8_t)(step & 0xFF) };
     sx128x_cmd_burst(dev, SX128X_CMD_SET_RF_FREQUENCY, data, 3, NULL, 0);
 }
 
-void sx128x_cmd_set_tx_params(const sx128x_t *dev, int8_t power, uint8_t ramp_time)
-{
-    if (power < -18 || power > 13)
-    {
+void sx128x_cmd_set_tx_params(const sx128x_t *dev, int8_t power, uint8_t ramp_time) {
+    if (power < -18 || power > 13) {
         LOG_DBG("[sx128x] Out of range power range");
         return;
     }
-    uint8_t params[2] = {(uint8_t)(power + 18), ramp_time};
-    LOG_INFO("TX_params: %d,%d\n", params[0], params[1]);
+    uint8_t params[2] = {(uint8_t) (power + 18), ramp_time};
+    LOG_INFO("TX_params: %d,%d\n",params[0],params[1]);
     sx128x_cmd_burst(dev, SX128X_CMD_SET_TX_PARAMS, params, 2, NULL, 0);
 }
 
 void sx128x_cmd_set_buffer_base_address(const sx128x_t *dev, uint8_t tx_address, uint8_t rx_address)
 {
     uint8_t args[2] = {tx_address, rx_address};
-
+    
     sx128x_cmd_burst(dev, SX128X_CMD_SET_BUFFER_BASE_ADDRESS, args, 2, NULL, 0);
 }
 
-void sx128x_cmd_set_modulation_params(sx128x_t *dev, uint8_t param1, uint8_t param2, uint8_t param3)
-{
+void sx128x_cmd_set_modulation_params(sx128x_t *dev, uint8_t param1, uint8_t param2, uint8_t param3) {
     uint8_t params[3];
     uint8_t sf_reg = 0;
-
-    switch (dev->settings.modem)
-    {
-    case SX128X_PACKET_TYPE_LORA:
-        dev->settings.lora.datarate = param1;
-        switch (param1)
-        {
-        case LORA24_SF5:
-            params[0] = SX128X_LORA_SF_5;
-            sf_reg = 0x1E;
-            break;
-        case LORA24_SF6:
-            params[0] = SX128X_LORA_SF_6;
-            sf_reg = 0x1E;
-            break;
-        case LORA24_SF7:
-            params[0] = SX128X_LORA_SF_7;
-            sf_reg = 0x37;
-            break;
-        case LORA24_SF8:
-            params[0] = SX128X_LORA_SF_8;
-            sf_reg = 0x37;
-            break;
-        case LORA24_SF9:
-            params[0] = SX128X_LORA_SF_9;
-            sf_reg = 0x32;
-            break;
-        case LORA24_SF10:
-            params[0] = SX128X_LORA_SF_10;
-            sf_reg = 0x32;
-            break;
-        case LORA24_SF11:
-            params[0] = SX128X_LORA_SF_11;
-            sf_reg = 0x32;
-            break;
-        case LORA24_SF12:
-            params[0] = SX128X_LORA_SF_12;
-            sf_reg = 0x32;
-            break;
+    
+    switch (dev->settings.modem) {
+        case SX128X_PACKET_TYPE_LORA:
+            dev->settings.lora.datarate = param1;
+            switch (param1) {
+                case LORA24_SF5:
+                    params[0] = SX128X_LORA_SF_5;
+                    sf_reg = 0x1E;
+                    break;
+                case LORA24_SF6:
+                    params[0] = SX128X_LORA_SF_6;
+                    sf_reg = 0x1E;
+                    break;
+                case LORA24_SF7:
+                    params[0] = SX128X_LORA_SF_7;
+                    sf_reg = 0x37;
+                    break;
+                case LORA24_SF8:
+                    params[0] = SX128X_LORA_SF_8;
+                    sf_reg = 0x37;
+                    break;
+                case LORA24_SF9:
+                    params[0] = SX128X_LORA_SF_9;
+                    sf_reg = 0x32;
+                    break;
+                case LORA24_SF10:
+                    params[0] = SX128X_LORA_SF_10;
+                    sf_reg = 0x32;
+                    break;
+                case LORA24_SF11:
+                    params[0] = SX128X_LORA_SF_11;
+                    sf_reg = 0x32;
+                    break;
+                case LORA24_SF12:
+                    params[0] = SX128X_LORA_SF_12;
+                    sf_reg = 0x32;
+                    break;
+                default:
+                    params[0] = SX128X_LORA_SF_7;
+                    sf_reg = 0x37;
+                    break;
+            }
+            dev->settings.lora.bandwidth = param2;
+            //LOG_INFO("!!!! bandwidth set to: %d , 1600: %d \n\n",param2,LORA24_BW_1600_KHZ);                     
+            switch (param2) {
+                
+                case LORA24_BW_200_KHZ:
+                    //LOG_INFO("!!bandwidth set to 200khz!!: %d \n\n",SX128X_LORA_BW_200); 
+                    params[1] = SX128X_LORA_BW_200;
+                    break;
+                case LORA24_BW_400_KHZ:
+                    params[1] = SX128X_LORA_BW_400;
+                    break;
+                case LORA24_BW_800_KHZ:
+                    params[1] = SX128X_LORA_BW_800;
+                    break;
+                case LORA24_BW_1600_KHZ:    
+                    //LOG_INFO("!!bandwidth set to 1600khz!!: %d \n\n",SX128X_LORA_BW_1600);                
+                    params[1] = SX128X_LORA_BW_1600;
+                    break;
+                default:
+                    params[1] = SX128X_LORA_BW_200;
+                    break;
+            }
+            dev->settings.lora.coderate = param3;
+            switch (param3) {
+                case LORA24_CR_4_5:
+                    params[2] = SX128X_LORA_CR_4_5;
+                    break;
+                case LORA24_CR_4_6:
+                    params[2] = SX128X_LORA_CR_4_6;
+                    break;
+                case LORA24_CR_4_7:
+                    params[2] = SX128X_LORA_CR_4_7;
+                    break;
+                case LORA24_CR_4_8:
+                    params[2] = SX128X_LORA_CR_4_8;
+                    break;
+                default:
+                    params[2] = SX128X_LORA_CR_4_5;
+                    break;
+            }
+            sx128x_cmd_burst(dev, SX128X_CMD_SET_MODULATION_PARAMS, params, 3, NULL, 0);
+            LOG_INFO("%d,%d,%d,\n\n",params[0],params[1],params[2]);
+            if (sf_reg) {
+                sx128x_reg_write_burst(dev, 0x925, &sf_reg, 1);
+            }
+            return;
         default:
-            params[0] = SX128X_LORA_SF_7;
-            sf_reg = 0x37;
-            break;
-        }
-        dev->settings.lora.bandwidth = param2;
-        // LOG_INFO("!!!! bandwidth set to: %d , 1600: %d \n\n",param2,LORA24_BW_1600_KHZ);
-        switch (param2)
-        {
-
-        case LORA24_BW_200_KHZ:
-            // LOG_INFO("!!bandwidth set to 200khz!!: %d \n\n",SX128X_LORA_BW_200);
-            params[1] = SX128X_LORA_BW_200;
-            break;
-        case LORA24_BW_400_KHZ:
-            params[1] = SX128X_LORA_BW_400;
-            break;
-        case LORA24_BW_800_KHZ:
-            params[1] = SX128X_LORA_BW_800;
-            break;
-        case LORA24_BW_1600_KHZ:
-            // LOG_INFO("!!bandwidth set to 1600khz!!: %d \n\n",SX128X_LORA_BW_1600);
-            params[1] = SX128X_LORA_BW_1600;
-            break;
-        default:
-            params[1] = SX128X_LORA_BW_200;
-            break;
-        }
-        dev->settings.lora.coderate = param3;
-        switch (param3)
-        {
-        case LORA24_CR_4_5:
-            params[2] = SX128X_LORA_CR_4_5;
-            break;
-        case LORA24_CR_4_6:
-            params[2] = SX128X_LORA_CR_4_6;
-            break;
-        case LORA24_CR_4_7:
-            params[2] = SX128X_LORA_CR_4_7;
-            break;
-        case LORA24_CR_4_8:
-            params[2] = SX128X_LORA_CR_4_8;
-            break;
-        default:
-            params[2] = SX128X_LORA_CR_4_5;
-            break;
-        }
-        sx128x_cmd_burst(dev, SX128X_CMD_SET_MODULATION_PARAMS, params, 3, NULL, 0);
-        LOG_INFO("%d,%d,%d,\n\n", params[0], params[1], params[2]);
-        if (sf_reg)
-        {
-            sx128x_reg_write_burst(dev, 0x925, &sf_reg, 1);
-        }
-        return;
-    default:
-        LOG_DBG("[sx128x] Unsupported packet type\n");
-        return;
+            LOG_DBG("[sx128x] Unsupported packet type\n");
+            return;
     }
 }
 
-void sx128x_cmd_set_packet_params(sx128x_t *dev, uint8_t param1, uint8_t param2, uint8_t param3, uint8_t param4, uint8_t param5, uint8_t param6, uint8_t param7)
-{
-    (void)param6;
-    (void)param7;
+void sx128x_cmd_set_packet_params(sx128x_t *dev, uint8_t param1, uint8_t param2, uint8_t param3, uint8_t param4, uint8_t param5, uint8_t param6, uint8_t param7) {
+    (void) param6;
+    (void) param7;
     uint8_t params[7];
-
-    switch (dev->settings.modem)
-    {
-    case SX128X_PACKET_TYPE_LORA:
-        dev->settings.lora.preamble_len = param1;
-        // TODO bit 7:4 represent the exponant in [0:3] * 2^[7:4]
-        params[0] = param1;
-        _set_flag(dev, SX128X_ENABLE_FIXED_HEADER_LENGTH_FLAG, (bool)param2);
-        if (param2)
-        {
-            params[1] = SX128X_LORA_IMPLICIT_HEADER;
-        }
-        else
-        {
-            params[1] = SX128X_LORA_EXPLICIT_HEADER;
-        }
-        params[2] = param3; // payload length
-        _set_flag(dev, SX128X_ENABLE_CRC_FLAG, (bool)param4);
-        if (param4)
-        {
-            params[3] = SX128X_LORA_CRC_ENABLE;
-        }
-        else
-        {
-            params[3] = SX128X_LORA_CRC_DISABLE;
-        }
-        _set_flag(dev, SX128X_IQ_INVERTED_FLAG, (bool)param5);
-        if (param5)
-        {
-            params[4] = SX128X_LORA_IQ_INVERTED;
-        }
-        else
-        {
-            params[4] = SX128X_LORA_IQ_STD;
-        }
-        params[5] = 0;
-        params[6] = 0;
-        LOG_INFO("packet params: %d, %d, %d, %d, %d\n", params[0], params[1], params[2], params[3], params[4]);
-        return sx128x_cmd_burst(dev, SX128X_CMD_SET_PACKET_PARAMS, params, 7, NULL, 0);
-
-    default:
-        LOG_DBG("[sx128x] Not supported packet type\n");
-        return;
+    
+    switch (dev->settings.modem) {
+        case SX128X_PACKET_TYPE_LORA:
+            dev->settings.lora.preamble_len = param1;
+            // TODO bit 7:4 represent the exponant in [0:3] * 2^[7:4]
+            params[0] = param1;
+            _set_flag(dev, SX128X_ENABLE_FIXED_HEADER_LENGTH_FLAG, (bool) param2);
+            if (param2) {
+                params[1] = SX128X_LORA_IMPLICIT_HEADER;
+            } else {
+                params[1] = SX128X_LORA_EXPLICIT_HEADER;
+            }
+            params[2] = param3; // payload length
+            _set_flag(dev, SX128X_ENABLE_CRC_FLAG, (bool) param4);
+            if (param4) {
+                params[3] = SX128X_LORA_CRC_ENABLE;
+            } else {
+                params[3] = SX128X_LORA_CRC_DISABLE;
+            }
+            _set_flag(dev, SX128X_IQ_INVERTED_FLAG, (bool) param5);
+            if (param5) {
+                params[4] = SX128X_LORA_IQ_INVERTED;
+            } else {
+                params[4] = SX128X_LORA_IQ_STD;
+            }
+            params[5] = 0;
+            params[6] = 0;
+            LOG_INFO("packet params: %d, %d, %d, %d, %d\n",params[0],params[1],params[2],params[3],params[4]);
+            return sx128x_cmd_burst(dev, SX128X_CMD_SET_PACKET_PARAMS, params, 7, NULL, 0);
+            
+        default:
+            LOG_DBG("[sx128x] Not supported packet type\n");
+            return;
     }
 }
 
 uint8_t sx128x_cmd_get_rx_buffer_status(sx128x_t *dev)
 {
-    (void)dev;
+    (void) dev;
     uint8_t nop = 0;
     uint8_t status[2];
     sx128x_cmd_burst(dev, SX128X_CMD_GET_RX_BUFFER_STATUS, &nop, 1, status, 2);
 
-    switch (dev->settings.modem)
-    {
-    case SX128X_PACKET_TYPE_LORA:
-        dev->_internal.rx_length = status[0];
-        break;
-    default:
-        LOG_DBG("[sx128x] Not supported packet type\n");
-        break;
+    switch (dev->settings.modem) {
+        case SX128X_PACKET_TYPE_LORA:
+            dev->_internal.rx_length = status[0];
+            break;
+        default:
+            LOG_DBG("[sx128x] Not supported packet type\n");
+            break;
     }
 
     return dev->_internal.rx_length;
@@ -365,42 +329,35 @@ void sx128x_cmd_get_packet_status(sx128x_t *dev)
     uint8_t status[5];
     sx128x_cmd_burst(dev, SX128X_CMD_GET_PACKET_STATUS, &nop, 1, status, 5);
 
-    switch (dev->settings.modem)
-    {
-    case SX128X_PACKET_TYPE_LORA:
-        dev->_internal.rx_rssi = -status[0] / 2;
-        dev->_internal.rx_snr = status[1] / 4;
-        break;
-    default:
-        LOG_DBG("[sx128x] Not supported packet type\n");
-        break;
+    switch (dev->settings.modem) {
+        case SX128X_PACKET_TYPE_LORA:
+            dev->_internal.rx_rssi = -status[0] / 2;
+            dev->_internal.rx_snr = status[1] / 4;
+            break;
+        default:
+            LOG_DBG("[sx128x] Not supported packet type\n");
+            break;
     }
 }
 
-void sx128x_cmd_set_dio_irq_params(const sx128x_t *dev, uint16_t dio1_mask, uint16_t dio2_mask, uint16_t dio3_mask)
-{
-    // LOG_INFO("irq set\n");
-    switch (dev->settings.modem)
-    {
-    case SX128X_PACKET_TYPE_LORA:
-        LOG_DBG("[sx128x] Set irq params\n");
-        uint16_t mask = (dio1_mask | dio2_mask | dio3_mask) & SX128X_IRQ_REG_LORA_MASK;
-        uint8_t params[8] = {
-            (mask & 0xFF00) >> 8,
-            (mask & 0xFF),
-            (dio1_mask & 0xFF00) >> 8,
-            (dio1_mask & 0xFF),
-            (dio2_mask & 0xFF00) >> 8,
-            (dio2_mask & 0xFF),
-            (dio3_mask & 0xFF00) >> 8,
-            (dio3_mask & 0xFF),
-        };
-        sx128x_cmd_burst(dev, SX128X_CMD_SET_DIO_IRQ_PARAMS, (uint8_t *)params, 8, NULL, 0);
-
-        break;
-    default:
-        LOG_DBG("[sx128x] Not supported packet type\n");
-        break;
+void sx128x_cmd_set_dio_irq_params(const sx128x_t *dev, uint16_t dio1_mask, uint16_t dio2_mask, uint16_t dio3_mask) {
+    //LOG_INFO("irq set\n");
+    switch (dev->settings.modem) {
+        case SX128X_PACKET_TYPE_LORA:
+            LOG_DBG("[sx128x] Set irq params\n");
+            uint16_t mask = (dio1_mask | dio2_mask | dio3_mask) & SX128X_IRQ_REG_LORA_MASK;
+            uint8_t params[8] = {
+                (mask & 0xFF00) >> 8, (mask & 0xFF),
+                (dio1_mask & 0xFF00) >> 8, (dio1_mask & 0xFF),
+                (dio2_mask & 0xFF00) >> 8, (dio2_mask & 0xFF),
+                (dio3_mask & 0xFF00) >> 8, (dio3_mask & 0xFF),
+            };
+            sx128x_cmd_burst(dev, SX128X_CMD_SET_DIO_IRQ_PARAMS, (uint8_t*) params, 8, NULL, 0);
+            
+            break;
+        default:
+            LOG_DBG("[sx128x] Not supported packet type\n");
+            break;
     }
 }
 
@@ -416,7 +373,7 @@ uint16_t sx128x_cmd_get_irq_status(const sx128x_t *dev)
 
 void sx128x_cmd_clear_irq_status(const sx128x_t *dev, uint16_t irq_mask)
 {
-    // LOG_INFO("irq status cleared\n");
+    //LOG_INFO("irq status cleared\n");
     uint8_t out[2] = {(irq_mask & 0xFF00) >> 8, irq_mask & 0xFF};
     sx128x_cmd_burst(dev, SX128X_CMD_CLR_IRQ_STATUS, out, 2, NULL, 0);
 }
@@ -424,8 +381,7 @@ void sx128x_cmd_clear_irq_status(const sx128x_t *dev, uint16_t irq_mask)
 void sx128x_set_state(sx128x_t *dev, uint8_t state)
 {
     (void)(dev);
-    switch (state)
-    {
+    switch (state) {
     case SX128X_RF_IDLE:
         LOG_DBG("[sx128x] Change state: IDLE\n");
         break;
@@ -474,6 +430,7 @@ void sx128x_set_channel(sx128x_t *dev, uint32_t channel)
 {
     (void)(dev);
     LOG_DBG("[sx128x] Set channel: %" PRIu32 "\n", channel);
+
 }
 
 uint32_t sx128x_get_time_on_air(const sx128x_t *dev, uint8_t pkt_len)
@@ -484,13 +441,13 @@ uint32_t sx128x_get_time_on_air(const sx128x_t *dev, uint8_t pkt_len)
 
     return air_time;
     return LORA_T_PACKET_USEC(
-        sx128x_get_spreading_factor(dev),
-        sx128x_get_bandwidth(dev),
-        sx128x_get_crc(dev),
-        !sx128x_get_fixed_header_len_mode(dev),
-        sx128x_get_coding_rate(dev),
-        sx128x_get_preamble_length(dev),
-        pkt_len);
+            sx128x_get_spreading_factor(dev), 
+            sx128x_get_bandwidth(dev),
+            sx128x_get_crc(dev),
+            !sx128x_get_fixed_header_len_mode(dev),
+            sx128x_get_coding_rate(dev), 
+            sx128x_get_preamble_length(dev), 
+            pkt_len);
 }
 
 void sx128x_set_sleep(sx128x_t *dev)
@@ -504,7 +461,7 @@ void sx128x_set_sleep(sx128x_t *dev)
 
     /* Put chip into sleep */
     sx128x_set_op_mode(dev, SX128X_RF_OPMODE_SLEEP);
-    sx128x_set_state(dev, SX128X_RF_IDLE);
+    sx128x_set_state(dev,  SX128X_RF_IDLE);
 }
 
 void sx128x_set_standby(sx128x_t *dev)
@@ -517,7 +474,7 @@ void sx128x_set_standby(sx128x_t *dev)
     /* ztimer_remove(ZTIMER_MSEC, &dev->_internal.rx_timeout_timer); */
 
     sx128x_set_op_mode(dev, SX128X_RF_OPMODE_STANDBY);
-    sx128x_set_state(dev, SX128X_RF_IDLE);
+    sx128x_set_state(dev,  SX128X_RF_IDLE);
 }
 
 void sx128x_set_tx(sx128x_t *dev)
@@ -530,23 +487,21 @@ void sx128x_set_tx(sx128x_t *dev)
 #endif
 
     sx128x_cmd_clear_irq_status(dev, SX128X_IRQ_REG_ALL);
-    switch (dev->settings.modem)
-    {
-    case SX128X_PACKET_TYPE_LORA:
-    {
-        sx128x_cmd_set_dio_irq_params(dev, SX128X_IRQ_REG_TX_DONE, SX128X_IRQ_REG_RX_TX_TIMEOUT, 0);
-        break;
-    }
-    default:
-        LOG_DBG("[sx128x] Unsupported packet type\n");
-        break;
+    switch (dev->settings.modem) {
+        case SX128X_PACKET_TYPE_LORA:
+        {
+            sx128x_cmd_set_dio_irq_params(dev, SX128X_IRQ_REG_TX_DONE, SX128X_IRQ_REG_RX_TX_TIMEOUT, 0);
+            break;
+        }
+        default:
+            LOG_DBG("[sx128x] Unsupported packet type\n");
+            break;
     }
 
     sx128x_set_state(dev, SX128X_RF_TX_RUNNING);
 
     /* Start TX timeout timer */
-    if (dev->settings.lora.tx_timeout != 0)
-    {
+    if (dev->settings.lora.tx_timeout != 0) {
         /* ztimer_set(ZTIMER_MSEC, &(dev->_internal.tx_timeout_timer), dev->settings.lora.tx_timeout); */
     }
 
@@ -565,32 +520,28 @@ void sx128x_set_rx(sx128x_t *dev)
 
     sx128x_cmd_set_buffer_base_address(dev, 0, 0);
     sx128x_cmd_clear_irq_status(dev, SX128X_IRQ_REG_ALL);
-    switch (dev->settings.modem)
-    {
-    case SX128X_PACKET_TYPE_LORA:
-    {
-        sx128x_cmd_set_dio_irq_params(dev, SX128X_IRQ_REG_RX_DONE, SX128X_IRQ_REG_SYNC_WORD_ERROR, SX128X_IRQ_REG_CRC_ERROR);
-        break;
-    }
-    default:
-        LOG_DBG("[sx128x] Unsupported packet type\n");
-        break;
+    switch (dev->settings.modem) {
+        case SX128X_PACKET_TYPE_LORA:
+        {
+            sx128x_cmd_set_dio_irq_params(dev, SX128X_IRQ_REG_RX_DONE, SX128X_IRQ_REG_SYNC_WORD_ERROR, SX128X_IRQ_REG_CRC_ERROR);
+            break;
+        }
+        default:
+            LOG_DBG("[sx128x] Unsupported packet type\n");
+            break;
     }
 
     sx128x_set_state(dev, SX128X_RF_RX_RUNNING);
 
     /* Start RX timeout timer */
-    if (dev->settings.lora.rx_timeout != 0)
-    {
+    if (dev->settings.lora.rx_timeout != 0) {
         /* ztimer_set(ZTIMER_MSEC, &(dev->_internal.rx_timeout_timer), dev->settings.lora.rx_timeout); */
     }
 
-    if (dev->settings.lora.flags & SX128X_RX_CONTINUOUS_FLAG)
-    {
+    if (dev->settings.lora.flags & SX128X_RX_CONTINUOUS_FLAG) {
         sx128x_set_op_mode(dev, SX128X_RF_LORA_OPMODE_RECEIVER);
     }
-    else
-    {
+    else {
         sx128x_set_op_mode(dev, SX128X_RF_LORA_OPMODE_RECEIVER_SINGLE);
     }
 }
@@ -598,29 +549,29 @@ void sx128x_set_rx(sx128x_t *dev)
 void sx128x_set_cad(sx128x_t *dev, uint8_t cad_symbols)
 {
     sx128x_cmd_clear_irq_status(dev, SX128X_IRQ_REG_ALL);
-    switch (dev->settings.modem)
-    {
-    case SX128X_PACKET_TYPE_LORA:
-    {
-        sx128x_cmd_set_dio_irq_params(dev, SX128X_IRQ_REG_CAD_DONE | SX128X_IRQ_REG_CAD_DETECTED, 0, 0);
-        break;
-    }
-    default:
-        LOG_DBG("[sx128x] Unsupported packet type\n");
-        return;
+    switch (dev->settings.modem) {
+        case SX128X_PACKET_TYPE_LORA:
+        {
+            sx128x_cmd_set_dio_irq_params(dev, SX128X_IRQ_REG_CAD_DONE | SX128X_IRQ_REG_CAD_DETECTED, 0, 0);
+            break;
+        }
+        default:
+            LOG_DBG("[sx128x] Unsupported packet type\n");
+            return;
     }
 
     sx128x_set_state(dev, SX128X_RF_CAD);
 
     /* Start RX timeout timer */
-    if (dev->settings.lora.rx_timeout != 0)
-    {
+    if (dev->settings.lora.rx_timeout != 0) {
         /* ztimer_set(ZTIMER_MSEC, &(dev->_internal.rx_timeout_timer), dev->settings.lora.rx_timeout); */
     }
 
     sx128x_cmd_set_cad_params(dev, cad_symbols);
     sx128x_set_op_mode(dev, SX128X_RF_LORA_OPMODE_CAD);
 }
+
+
 
 uint8_t sx128x_get_max_payload_len(const sx128x_t *dev)
 {
@@ -632,6 +583,7 @@ void sx128x_set_max_payload_len(const sx128x_t *dev, uint8_t maxlen)
 {
     (void)(dev);
     LOG_DBG("[sx128x] Set max payload len: %d\n", maxlen);
+
 }
 
 uint8_t sx128x_get_op_mode(const sx128x_t *dev)
@@ -642,8 +594,7 @@ uint8_t sx128x_get_op_mode(const sx128x_t *dev)
 void sx128x_set_op_mode(sx128x_t *dev, uint8_t op_mode)
 {
     dev->settings.opmode = op_mode;
-    switch (op_mode)
-    {
+    switch(op_mode) {
     case SX128X_RF_OPMODE_SLEEP:
         LOG_DBG("[sx128x] Set op mode: SLEEP\n");
         sx128x_cmd_set_sleep(dev, 0);
@@ -658,7 +609,7 @@ void sx128x_set_op_mode(sx128x_t *dev, uint8_t op_mode)
         break;
     case SX128X_RF_OPMODE_RECEIVER:
         LOG_DBG("[sx128x] Set op mode: RECEIVER\n");
-        // changed to 0x03, 0x00, 0xFA
+        //changed to 0x03, 0x00, 0xFA
         sx128x_cmd_set_rx(dev, 3, 250);
         break;
     case SX128X_RF_OPMODE_TRANSMITTER:
@@ -739,8 +690,8 @@ void sx128x_set_crc(sx128x_t *dev, bool crc)
     LOG_DBG("[sx128x] Set CRC: %d\n", crc);
     _set_flag(dev, SX128X_ENABLE_CRC_FLAG, crc);
     sx128x_cmd_set_packet_params(dev, sx128x_get_preamble_length(dev),
-                                 sx128x_get_fixed_header_len_mode(dev), 0,
-                                 crc, sx128x_get_iq_invert(dev), 0, 0);
+            sx128x_get_fixed_header_len_mode(dev), 0, 
+            crc, sx128x_get_iq_invert(dev), 0, 0);
 }
 
 uint8_t sx128x_get_hop_period(const sx128x_t *dev)
@@ -771,7 +722,7 @@ void sx128x_set_fixed_header_len_mode(sx128x_t *dev, bool fixed_len)
 
     _set_flag(dev, SX128X_ENABLE_FIXED_HEADER_LENGTH_FLAG, fixed_len);
     sx128x_cmd_set_packet_params(dev, sx128x_get_preamble_length(dev), fixed_len,
-                                 0, sx128x_get_crc(dev), sx128x_get_iq_invert(dev), 0, 0);
+            0, sx128x_get_crc(dev), sx128x_get_iq_invert(dev), 0, 0);
 }
 
 uint8_t sx128x_get_payload_length(const sx128x_t *dev)
@@ -786,8 +737,8 @@ void sx128x_set_payload_length(sx128x_t *dev, uint8_t len)
     LOG_DBG("[sx128x] Set payload len: %d\n", len);
 
     sx128x_cmd_set_packet_params(dev, sx128x_get_preamble_length(dev),
-                                 sx128x_get_fixed_header_len_mode(dev), len,
-                                 sx128x_get_crc(dev), sx128x_get_iq_invert(dev), 0, 0);
+            sx128x_get_fixed_header_len_mode(dev), len, 
+            sx128x_get_crc(dev), sx128x_get_iq_invert(dev), 0, 0);
 }
 
 static inline uint8_t sx128x_get_pa_select(const sx128x_t *dev)
@@ -809,8 +760,8 @@ void sx128x_set_tx_power(sx128x_t *dev, int8_t power)
 
     dev->settings.lora.power = power;
     sx128x_cmd_set_tx_params(dev, power, 0x40); // TODO ramp time
-    // default ramptime 20us: 0xE0, now 6us: 0x40
-}
+    //default ramptime 20us: 0xE0, now 6us: 0x40
+}   
 
 uint16_t sx128x_get_preamble_length(const sx128x_t *dev)
 {
@@ -825,8 +776,8 @@ void sx128x_set_preamble_length(sx128x_t *dev, uint16_t preamble)
 
     dev->settings.lora.preamble_len = preamble;
     sx128x_cmd_set_packet_params(dev, preamble,
-                                 sx128x_get_fixed_header_len_mode(dev), 0,
-                                 sx128x_get_crc(dev), sx128x_get_iq_invert(dev), 0, 0);
+            sx128x_get_fixed_header_len_mode(dev), 0, 
+            sx128x_get_crc(dev), sx128x_get_iq_invert(dev), 0, 0);
 }
 
 void sx128x_set_rx_timeout(sx128x_t *dev, uint32_t timeout)
@@ -864,8 +815,8 @@ void sx128x_set_iq_invert(sx128x_t *dev, bool iq_invert)
 
     _set_flag(dev, SX128X_IQ_INVERTED_FLAG, iq_invert);
     sx128x_cmd_set_packet_params(dev, sx128x_get_preamble_length(dev),
-                                 sx128x_get_fixed_header_len_mode(dev), 0,
-                                 sx128x_get_crc(dev), iq_invert, 0, 0);
+            sx128x_get_fixed_header_len_mode(dev), 0, 
+            sx128x_get_crc(dev), iq_invert, 0, 0);
 }
 
 void sx128x_set_freq_hop(sx128x_t *dev, bool freq_hop_on)

@@ -53,6 +53,7 @@
 static void
 init_sec(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
 #if LLSEC802154_USES_AUX_HEADER
   if(packetbuf_attr(PACKETBUF_ATTR_SECURITY_LEVEL) ==
      PACKETBUF_ATTR_SECURITY_LEVEL_DEFAULT) {
@@ -65,6 +66,7 @@ init_sec(void)
 static void
 send_packet(mac_callback_t sent, void *ptr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
 
   init_sec();
 
@@ -74,6 +76,8 @@ send_packet(mac_callback_t sent, void *ptr)
 static void
 input_packet(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
+
 #if CSMA_SEND_SOFT_ACK
   uint8_t ackdata[CSMA_ACK_LEN];
 #endif
@@ -123,18 +127,21 @@ input_packet(void)
 static int
 on(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   return NETSTACK_RADIO.on();
 }
 /*---------------------------------------------------------------------------*/
 static int
 off(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   return NETSTACK_RADIO.off();
 }
 /*---------------------------------------------------------------------------*/
 static void
 init(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   radio_value_t radio_max_payload_len;
 
   /* Check that the radio can correctly report its max supported payload */
@@ -173,6 +180,7 @@ init(void)
 static int
 max_payload(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int framer_hdrlen;
   radio_value_t max_radio_payload_len;
   radio_result_t res;

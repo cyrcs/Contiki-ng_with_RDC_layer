@@ -277,6 +277,7 @@ static struct sicslowpan_frag_buf frag_buf[SICSLOWPAN_FRAGMENT_BUFFERS];
 static int
 clear_fragments(uint8_t frag_info_index)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int i, clear_count;
   clear_count = 0;
   frag_info[frag_info_index].len = 0;
@@ -293,6 +294,7 @@ clear_fragments(uint8_t frag_info_index)
 static int
 timeout_fragments(int not_context)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int i;
   int count = 0;
   for(i = 0; i < SICSLOWPAN_REASS_CONTEXTS; i++) {
@@ -308,6 +310,7 @@ timeout_fragments(int not_context)
 static int
 store_fragment(uint8_t index, uint8_t offset)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int i;
   int len;
 
@@ -338,6 +341,7 @@ store_fragment(uint8_t index, uint8_t offset)
 static int8_t
 add_fragment(uint16_t tag, uint16_t frag_size, uint8_t offset)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int i;
   int len;
   int8_t found = -1;
@@ -411,6 +415,7 @@ add_fragment(uint16_t tag, uint16_t frag_size, uint8_t offset)
 static bool
 copy_frags2uip(int context)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int i;
 
   /* Check length fields before proceeding. */
@@ -458,18 +463,21 @@ static struct netstack_sniffer *callback = NULL;
 void
 netstack_sniffer_add(struct netstack_sniffer *s)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   callback = s;
 }
 
 void
 netstack_sniffer_remove(struct netstack_sniffer *s)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   callback = NULL;
 }
 
 static void
 set_packet_attrs(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int c = 0;
   /* set protocol in NETWORK_ID */
   packetbuf_set_attr(PACKETBUF_ATTR_NETWORK_ID, UIP_IP_BUF->proto);
@@ -554,6 +562,7 @@ static const uint8_t ttl_values[] = {0, 1, 64, 255};
 static struct sicslowpan_addr_context*
 addr_context_lookup_by_prefix(uip_ipaddr_t *ipaddr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
 /* Remove code to avoid warnings and save flash if no context is used */
 #if SICSLOWPAN_CONF_MAX_ADDR_CONTEXTS > 0
   int i;
@@ -571,6 +580,7 @@ addr_context_lookup_by_prefix(uip_ipaddr_t *ipaddr)
 static struct sicslowpan_addr_context*
 addr_context_lookup_by_number(uint8_t number)
 {
+  LOG_DBG("Function call: %s\n", __func__);
 /* Remove code to avoid warnings and save flash if no context is used */
 #if SICSLOWPAN_CONF_MAX_ADDR_CONTEXTS > 0
   int i;
@@ -588,6 +598,7 @@ static uint8_t
 compress_addr_64(uint8_t bitpos, uip_ipaddr_t *ipaddr,
     const uip_lladdr_t *lladdr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   if(uip_is_addr_mac_addr_based(ipaddr, lladdr)) {
     return 3 << bitpos; /* 0-bits */
   } else if(sicslowpan_is_iid_16_bit_compressable(ipaddr)) {
@@ -614,6 +625,7 @@ static bool
 uncompress_addr(uip_ipaddr_t *ipaddr, uint8_t const prefix[],
                 uint8_t pref_post_count, uip_lladdr_t *lladdr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   uint8_t prefcount = pref_post_count >> 4;
   uint8_t postcount = pref_post_count & 0x0f;
   /* full nibble 15 => 16 */
@@ -688,6 +700,7 @@ uncompress_addr(uip_ipaddr_t *ipaddr, uint8_t const prefix[],
 static int
 compress_hdr_iphc(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   uint8_t tmp, iphc0, iphc1, *next_hdr, *next_nhc;
   int ext_hdr_len;
   struct uip_udp_hdr *udp_buf;
@@ -1077,6 +1090,7 @@ compress_hdr_iphc(void)
 static bool
 uncompress_hdr_iphc(uint8_t *buf, uint16_t buf_size, uint16_t ip_len)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   uint8_t tmp, iphc0, iphc1, nhc;
   struct uip_ext_hdr *exthdr;
   uint8_t* last_nextheader;
@@ -1451,6 +1465,7 @@ uncompress_hdr_iphc(uint8_t *buf, uint16_t buf_size, uint16_t ip_len)
 static void
 add_paging_dispatch(uint8_t page)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   /* Add paging dispatch to Page 1 */
   PACKETBUF_6LO_PTR[PACKETBUF_6LO_DISPATCH] = SICSLOWPAN_DISPATCH_PAGING | (page & 0x0f);
   packetbuf_hdr_len++;
@@ -1462,6 +1477,7 @@ add_paging_dispatch(uint8_t page)
 static void
 add_6lorh_hdr(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   /* 6LoRH is not implemented yet */
 }
 #endif /* SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_6LORH */
@@ -1473,6 +1489,7 @@ add_6lorh_hdr(void)
 static void
 digest_paging_dispatch(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   /* Is this a paging dispatch? */
   if((PACKETBUF_6LO_PTR[PACKETBUF_6LO_DISPATCH] & SICSLOWPAN_DISPATCH_PAGING_MASK) == SICSLOWPAN_DISPATCH_PAGING) {
     /* Parse page number */
@@ -1487,6 +1504,7 @@ digest_paging_dispatch(void)
 static void
 digest_6lorh_hdr(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   /* 6LoRH is not implemented yet */
 }
 /*--------------------------------------------------------------------*/
@@ -1509,6 +1527,7 @@ digest_6lorh_hdr(void)
 static void
 compress_hdr_ipv6(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   *packetbuf_ptr = SICSLOWPAN_DISPATCH_IPV6;
   packetbuf_hdr_len += SICSLOWPAN_IPV6_HDR_LEN;
   memcpy(packetbuf_ptr + packetbuf_hdr_len, UIP_IP_BUF, UIP_IPH_LEN);
@@ -1529,6 +1548,7 @@ compress_hdr_ipv6(void)
 static void
 packet_sent(void *ptr, int status, int transmissions)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   const linkaddr_t *dest;
 
   if(callback != NULL) {
@@ -1559,6 +1579,7 @@ packet_sent(void *ptr, int status, int transmissions)
 static void
 send_packet(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   /* Provide a callback function to receive the result of
      a packet transmission. */
   NETSTACK_MAC.send(&packet_sent, NULL);
@@ -1579,6 +1600,7 @@ send_packet(void)
 static int
 fragment_copy_payload_and_send(uint16_t uip_offset)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   struct queuebuf *q;
 
   /* Now copy fragment payload from uip_buf */
@@ -1622,6 +1644,7 @@ fragment_copy_payload_and_send(uint16_t uip_offset)
 static uint8_t
 output(const linkaddr_t *localdest)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   int frag_needed;
 
   /* init */
@@ -1642,7 +1665,7 @@ output(const linkaddr_t *localdest)
 
   /* copy over the retransmission count from uipbuf attributes */
   packetbuf_set_attr(PACKETBUF_ATTR_MAX_MAC_TRANSMISSIONS,
-                     uipbuf_get_attr(UIPBUF_ATTR_MAX_MAC_TRANSMISSIONS));
+                     uipbuf_get_attr(UIPBUF_ATTR_MAX_MAC_TRANSMISSIONS));  
 
   /* Copy destination address to packetbuf */
   packetbuf_set_addr(PACKETBUF_ADDR_RECEIVER,
@@ -1849,6 +1872,7 @@ output(const linkaddr_t *localdest)
 static void
 input(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   /* size of the IP packet (read from fragment) */
   uint16_t frag_size = 0;
   /* offset of the fragment in the IP packet */
@@ -2127,6 +2151,7 @@ void
 sicslowpan_init(void)
 {
 
+  LOG_DBG("Function call: %s\n", __func__);
 #if SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_IPHC
 /* Preinitialize any address contexts for better header compression
  * (Saves up to 13 bytes per 6lowpan packet)

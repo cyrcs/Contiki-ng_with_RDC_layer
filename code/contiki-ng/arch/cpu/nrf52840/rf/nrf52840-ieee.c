@@ -986,7 +986,7 @@ PROCESS_THREAD(nrf52840_ieee_rf_process, ev, data)
       len = read_frame(packetbuf_dataptr(), PACKETBUF_SIZE);
       if(len > 0) {
         packetbuf_set_datalen(len);
-        NETSTACK_MAC.input();
+        NETSTACK_RDC.input();
         LOG_DBG("last frame (%u bytes) timestamps:\n", timestamps.phr);
         LOG_DBG("      SFD=%lu (Derived)\n", (unsigned long)timestamps.sfd);
         LOG_DBG("      PHY=%lu (PPI)\n", (unsigned long)timestamps.framestart);

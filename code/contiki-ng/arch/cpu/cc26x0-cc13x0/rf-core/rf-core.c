@@ -719,7 +719,7 @@ PROCESS_THREAD(rf_core_process, ev, data)
       if(len > 0) {
         packetbuf_set_datalen(len);
 
-        NETSTACK_MAC.input();
+        NETSTACK_RDC.input();
       }
     } while(len > 0);
   }

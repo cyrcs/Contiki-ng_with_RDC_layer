@@ -903,7 +903,7 @@ PROCESS_THREAD(cc2420_process, ev, data)
 
     packetbuf_set_datalen(len);
 
-    NETSTACK_MAC.input();
+    NETSTACK_RDC.input();
   }
 
   PROCESS_END();

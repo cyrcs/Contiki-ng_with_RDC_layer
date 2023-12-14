@@ -8,18 +8,24 @@
  *          Louka Grignard <louka.michael.grignard@vub.be>
  */
 
-#include "nullrdc-noframer.h"
-#include "net/netstack.h"
+#include "net/mac/rdc/nullrdc-noframer/nullrdc-noframer.h"
 #include "net/packetbuf.h"
 #include "net/queuebuf.h"
 #include "net/netstack.h"
 #include <string.h>
+
+/* Log configuration */
+#include "sys/log.h"
+#define LOG_MODULE "NULLRDC NOFRAMER"
+#define LOG_LEVEL LOG_LEVEL_RDC
 
 
 /*---------------------------------------------------------------------------*/
 static void
 send_packet(mac_callback_t sent, void *ptr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
+
   int ret;
   if(NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen()) == RADIO_TX_OK) {
     ret = MAC_TX_OK;
@@ -30,10 +36,11 @@ send_packet(mac_callback_t sent, void *ptr)
 }
 /*---------------------------------------------------------------------------*/
 static void
-send_list(mac_callback_t sent, void *ptr, struct rdc_buf_list *buf_list)
+send_list(mac_callback_t sent, void *ptr, struct packet_queue *q)
 {
-  if(buf_list != NULL) {
-    queuebuf_to_packetbuf(buf_list->buf);
+  LOG_DBG("Function call: %s\n", __func__);
+  if(q != NULL) {
+    queuebuf_to_packetbuf(q->buf);
     send_packet(sent, ptr);
   }
 }
@@ -41,34 +48,42 @@ send_list(mac_callback_t sent, void *ptr, struct rdc_buf_list *buf_list)
 static void
 packet_input(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   NETSTACK_MAC.input();
 }
 /*---------------------------------------------------------------------------*/
 static int
 on(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
+
+  // work around to print the returned integer value
+  // int val;
+  // val = NETSTACK_RADIO.on();
+  // LOG_INFO("VAL: %d\n", val);
+  // return val;
+
   return NETSTACK_RADIO.on();
 }
 /*---------------------------------------------------------------------------*/
 static int
-off(int keep_radio_on)
-{
-  if(keep_radio_on) {
-    return NETSTACK_RADIO.on();
-  } else {
-    return NETSTACK_RADIO.off();
-  }
+off(void)
+{   
+  LOG_DBG("Function call: %s\n", __func__);
+  return NETSTACK_RADIO.off();
 }
 /*---------------------------------------------------------------------------*/
 static unsigned short
 channel_check_interval(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   return 0;
 }
 /*---------------------------------------------------------------------------*/
 static void
 init(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   on();
 }
 /*---------------------------------------------------------------------------*/

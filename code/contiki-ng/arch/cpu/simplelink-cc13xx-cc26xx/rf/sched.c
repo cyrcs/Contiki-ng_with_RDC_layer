@@ -875,7 +875,7 @@ PROCESS_THREAD(rf_sched_process, ev, data)
         if(len > 0) {
           packetbuf_set_datalen(len);
 
-          NETSTACK_MAC.input();
+          NETSTACK_RDC.input();
         }
         /* Only break when no more packets pending */
       } while(NETSTACK_RADIO.pending_packet());

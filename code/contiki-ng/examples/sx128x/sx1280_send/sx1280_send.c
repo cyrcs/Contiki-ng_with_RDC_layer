@@ -47,24 +47,24 @@
  */
 // #endregion ------------------------------------------------------------------
 // #region Libraries------------------------------------------------------------
-#include <stdio.h>
-#include <stdlib.h>
-#include "contiki.h"
-#include "dev/serial-line.h"
-#include "dev/uart.h"
-#include "dev/spi.h"
-#include "netstack.h"
-#include "process.h"
-#include "rtimer-arch.h"
-#include "shell.h"
-#include "shell-commands.h"
-#include "sys/_stdint.h"
-#include "sys/log.h"
-#include "sx128x.h"
-#include "antenna-sw.h"
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include "contiki.h"
+  #include "dev/serial-line.h"
+  #include "dev/uart.h"
+  #include "dev/spi.h"
+  #include "netstack.h"
+  #include "process.h"
+  #include "rtimer-arch.h"
+  #include "shell.h"
+  #include "shell-commands.h"
+  #include "sys/_stdint.h"
+  #include "sys/log.h"
+  #include "sx128x.h"
+  #include "antenna-sw.h"
 
-#include "string.h"
-#include "sys/etimer.h"
+  #include "string.h"
+  #include "sys/etimer.h"
 // #endregion ------------------------------------------------------------------
 // #region Defines--------------------------------------------------------------
 #define LOG_MODULE "MAIN"

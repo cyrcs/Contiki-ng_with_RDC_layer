@@ -41,10 +41,9 @@
 #include <stdio.h>
 #include <string.h>
 
-
 #define UDP_PORT 1234
 
-#define SEND_INTERVAL		(5 * CLOCK_SECOND)
+#define SEND_INTERVAL		(60 * CLOCK_SECOND)
 #define SEND_TIME		(random_rand() % (SEND_INTERVAL))
 
 static struct simple_udp_connection unicast_connection;
@@ -115,11 +114,10 @@ PROCESS_THREAD(sender_node_process, ev, data)
     default_prefix = uip_ds6_default_prefix();
     uip_ip6addr_copy(&addr, default_prefix);
 
-    addr.u16[0] = UIP_HTONS(0Xfe80);
-    addr.u16[4] = UIP_HTONS(0x0212);
-    addr.u16[5] = UIP_HTONS(0x4B00);
-    addr.u16[6] = UIP_HTONS(0x14b5);
-    addr.u16[7] = UIP_HTONS(0xd960);
+    addr.u16[4] = UIP_HTONS(0x0201);
+    addr.u16[5] = UIP_HTONS(0x0001);
+    addr.u16[6] = UIP_HTONS(0x0001);
+    addr.u16[7] = UIP_HTONS(0x0001);
 
     {
       static unsigned int message_number;

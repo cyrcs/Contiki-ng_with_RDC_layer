@@ -1,13 +1,13 @@
 # Fdb version 3
-["biber Build/mainReport"] 1700135933 "Build/mainReport.bcf" "Build/mainReport.bbl" "Build/mainReport" 1700135956
-  "Build/mainReport.bcf" 1700135955 108082 b57dc623d6e75882c29c8dffa9f5f1de "pdflatex"
+["biber Build/mainReport"] 1700135933 "Build/mainReport.bcf" "Build/mainReport.bbl" "Build/mainReport" 1702545911
+  "Build/mainReport.bcf" 1702545910 108082 b57dc623d6e75882c29c8dffa9f5f1de "pdflatex"
   "bib/myBibliography.bib" 1700128730 3804 94250ddb78f2e9f7f8ba4d0ae50463d8 ""
   (generated)
   "Build/mainReport.bbl"
   "Build/mainReport.blg"
-["pdflatex"] 1700135951 "/home/louka/documents/school/vub/1MAIW/Masterproef/reports/Literature_study/mainReport.tex" "Build/mainReport.pdf" "mainReport" 1700135956
+["pdflatex"] 1702545907 "/home/louka/documents/school/vub/1MAIW/Masterproef/reports/Literature_study/mainReport.tex" "Build/mainReport.pdf" "mainReport" 1702545911
   "/etc/texmf/web2c/texmf.cnf" 1683570370 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/louka/documents/school/vub/1MAIW/Masterproef/reports/Literature_study/mainReport.tex" 1700062798 1805 77ba6900fde74ff194919853361a4a73 ""
+  "/home/louka/documents/school/vub/1MAIW/Masterproef/reports/Literature_study/mainReport.tex" 1702545900 1805 77ba6900fde74ff194919853361a4a73 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecbx0900.tfm" 1136768653 3584 1a7de6c99457381c64abc1a7c545505f ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecbx1000.tfm" 1136768653 3584 2d666ecf6d466d8b007246bc2f94d9da ""
@@ -346,11 +346,11 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1644012257 39432 7155514e09a3d69036fac785183a21c2 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1685184117 4379155 98693266ff65f58d9f98aff394de12d2 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1685518842 2799544 357670887dd2393b619994b3196e23f0 ""
-  "Build/chapters/literature.aux" 1700135955 14099 d132711daff2699c2266a91924329167 "pdflatex"
-  "Build/mainReport.aux" 1700135955 3118 906917959e946a537e62d7b10d0090b8 "pdflatex"
+  "Build/chapters/literature.aux" 1702545910 14099 d132711daff2699c2266a91924329167 "pdflatex"
+  "Build/mainReport.aux" 1702545910 3118 906917959e946a537e62d7b10d0090b8 "pdflatex"
   "Build/mainReport.bbl" 1700135934 12144 3f882223e76285adf3a5b7cd675f9a9e "biber Build/mainReport"
-  "Build/mainReport.out" 1700135955 4399 fa2f8c52f39ce5254d88fd73ec759164 "pdflatex"
-  "Build/mainReport.run.xml" 1700135955 2395 07e59c35db1c9423d57e4d57d2701122 "pdflatex"
+  "Build/mainReport.out" 1702545910 4399 fa2f8c52f39ce5254d88fd73ec759164 "pdflatex"
+  "Build/mainReport.run.xml" 1702545910 2395 07e59c35db1c9423d57e4d57d2701122 "pdflatex"
   "chapters/literature.tex" 1700135951 26118 87af5707917fd60e90b697894f1663f8 ""
   "figs/LoRaWAN_network_structure.png" 1700062017 104126 5c261d38d3bf9427c066c17c230191db ""
   "figs/LoRa_use_case.png" 1700060947 60879 3b670e4ce2f79d98169db7d81009ffe9 ""
@@ -363,7 +363,7 @@
   "figs/failed double CCA.png" 1700052249 35414 6be02e09de9ef13c42aef554fa31748e ""
   "figs/lpp_broadcast.png" 1700045819 74300 8f6a52393112e78972f0a5e30d9659bd ""
   "figs/lpp_unicast.png" 1700045737 54123 90c82758fe2625988f8b41857c4f54b7 ""
-  "mainReport.tex" 1700062798 1805 77ba6900fde74ff194919853361a4a73 ""
+  "mainReport.tex" 1702545900 1805 77ba6900fde74ff194919853361a4a73 ""
   "styles/myCommands.sty" 1686566494 7637 8a020b09f5ddf02ca80968b0081c9722 ""
   "styles/myDrawingStuff.sty" 1686566494 2840 5b3da990808d3df9293dcf99d998b1bf ""
   "styles/myListings.sty" 1686566494 1078 7548b3e2aa13e8da23b16f942a1cc893 ""

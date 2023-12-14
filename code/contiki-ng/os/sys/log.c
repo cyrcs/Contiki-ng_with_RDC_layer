@@ -65,8 +65,7 @@ int curr_log_level_6top = LOG_CONF_LEVEL_6TOP;
 int curr_log_level_coap = LOG_CONF_LEVEL_COAP;
 int curr_log_level_snmp = LOG_CONF_LEVEL_SNMP;
 int curr_log_level_lwm2m = LOG_CONF_LEVEL_LWM2M;
-int curr_log_level_SX128X = LOG_CONF_LEVEL_SX128X;
-int curr_log_level_SX128X_GETSET = LOG_CONF_LEVEL_SX128X_GETSET;
+int curr_log_level_radio = LOG_CONF_LEVEL_RADIO;
 int curr_log_level_main = LOG_CONF_LEVEL_MAIN;
 
 struct log_module all_modules[] = {
@@ -82,8 +81,7 @@ struct log_module all_modules[] = {
   {"coap", &curr_log_level_coap, LOG_CONF_LEVEL_COAP},
   {"snmp", &curr_log_level_snmp, LOG_CONF_LEVEL_SNMP},
   {"lwm2m", &curr_log_level_lwm2m, LOG_CONF_LEVEL_LWM2M},
-  {"SX128X", &curr_log_level_SX128X, LOG_CONF_LEVEL_SX128X},
-  {"SX128X", &curr_log_level_SX128X_GETSET, LOG_CONF_LEVEL_SX128X_GETSET},
+  {"radio", &curr_log_level_radio, LOG_CONF_LEVEL_RADIO},
   {"main", &curr_log_level_main, LOG_CONF_LEVEL_MAIN},
   {NULL, NULL, 0},
 };

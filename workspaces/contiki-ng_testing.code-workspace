@@ -1,8 +1,7 @@
 {
 	"folders": [
 		{
-			"name": "contiki-ng",
-			"path": "../code/contiki-ng"
+			"path": "../code/contiki-ng/projects"
 		}
 	],
 	"settings": {

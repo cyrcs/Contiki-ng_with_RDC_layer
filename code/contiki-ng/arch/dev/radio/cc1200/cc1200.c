@@ -560,7 +560,9 @@ PROCESS(cc1200_process, "CC1200 driver");
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(cc1200_process, ev, data)
 {
+  INFO("Function call: %s\n", __func__);
 
+  // INFO("Function call: %s\n", __func__);
   PROCESS_POLLHANDLER(pollhandler());
 
   PROCESS_BEGIN();
@@ -617,7 +619,7 @@ PROCESS_THREAD(cc1200_process, ev, data)
 static void
 pollhandler(void)
 {
-
+  INFO("Function call: %s\n", __func__);
   if((rf_flags & (RF_ON + RF_POLL_RX_INTERRUPT)) ==
      (RF_ON + RF_POLL_RX_INTERRUPT)) {
     cc1200_rx_interrupt();
@@ -643,7 +645,7 @@ pollhandler(void)
 
     if(len > 0) {
       packetbuf_set_datalen(len);
-      NETSTACK_MAC.input();
+      NETSTACK_RDC.input();
     }
 
   }
@@ -661,7 +663,7 @@ pollhandler(void)
 static int
 init(void)
 {
-
+  INFO("Function call: %s\n", __func__);
   INFO("RF: Init (%s)\n", CC1200_RF_CFG.cfg_descriptor);
 
   if(!(rf_flags & RF_INITIALIZED)) {
@@ -716,7 +718,7 @@ init(void)
 static int
 prepare(const void *payload, unsigned short payload_len)
 {
-
+  INFO("Function call: %s\n", __func__);
   INFO("RF: Prepare (%d)\n", payload_len);
 
   if((payload_len < ACK_LEN) ||
@@ -747,6 +749,7 @@ prepare(const void *payload, unsigned short payload_len)
 static int
 copy_header_to_tx_fifo(unsigned short payload_len)
 {
+  INFO("Function call: %s\n", __func__);
 #if CC1200_802154G
   /* Prepare PHR for 802.15.4g frames */
   struct {
@@ -793,7 +796,7 @@ copy_header_to_tx_fifo(unsigned short payload_len)
 static int
 transmit(unsigned short transmit_len)
 {
-
+  INFO("Function call: %s\n", __func__);
   uint8_t was_off = 0;
   int ret = RADIO_TX_OK;
   int txret;
@@ -905,7 +908,7 @@ transmit(unsigned short transmit_len)
 static int
 send(const void *payload, unsigned short payload_len)
 {
-
+  INFO("Function call: %s\n", __func__);
   int ret;
 
   INFO("RF: Send (%d)\n", payload_len);
@@ -923,7 +926,7 @@ send(const void *payload, unsigned short payload_len)
 static int
 read(void *buf, unsigned short buf_len)
 {
-
+  INFO("Function call: %s\n", __func__);
   int len = 0;
 
   if(rx_pkt_len > 0) {
@@ -966,7 +969,7 @@ read(void *buf, unsigned short buf_len)
 static int
 channel_clear(void)
 {
-
+  INFO("Function call: %s\n", __func__);
   uint8_t cca, was_off = 0;
 
   if(SPI_IS_LOCKED()) {
@@ -1042,7 +1045,7 @@ channel_clear(void)
 static int
 receiving_packet(void)
 {
-
+  INFO("Function call: %s\n", __func__);
   int ret = 0;
 
   if((rf_flags & (RF_ON | RF_TX_ACTIVE)) == RF_ON) {
@@ -1076,6 +1079,7 @@ receiving_packet(void)
 static int
 pending_packet(void)
 {
+  INFO("Function call: %s\n", __func__);
   int ret;
   ret = ((rx_pkt_len != 0) ? 1 : 0);
   if(ret == 0 && !SPI_IS_LOCKED()) {
@@ -1093,7 +1097,7 @@ pending_packet(void)
 static int
 on(void)
 {
-
+  INFO("Function call: %s\n", __func__);
   INFO("RF: On\n");
 
   /* Don't turn on if we are on already */
@@ -1142,6 +1146,7 @@ static int
 off(void)
 {
 
+  INFO("Function call: %s\n", __func__);
   INFO("RF: Off\n");
 
   /* Don't turn off if we are off already */
@@ -1201,6 +1206,7 @@ off(void)
 static int16_t
 get_rssi(void)
 {
+  INFO("Function call: %s\n", __func__);
   int16_t rssi0, rssi1;
   uint8_t was_off = 0;
 
@@ -1230,6 +1236,7 @@ static radio_result_t
 get_value(radio_param_t param, radio_value_t *value)
 {
 
+  INFO("Function call: %s\n", __func__);
   if(!value) {
     return RADIO_RESULT_INVALID_VALUE;
   }
@@ -1351,6 +1358,7 @@ static radio_result_t
 set_value(radio_param_t param, radio_value_t value)
 {
 
+  INFO("Function call: %s\n", __func__);
   switch(param) {
   case RADIO_PARAM_POWER_MODE:
 
@@ -1440,6 +1448,7 @@ set_value(radio_param_t param, radio_value_t value)
 static radio_result_t
 get_object(radio_param_t param, void *dest, size_t size)
 {
+  INFO("Function call: %s\n", __func__);
   if(param == RADIO_PARAM_LAST_PACKET_TIMESTAMP) {
     if(size != sizeof(rtimer_clock_t) || !dest) {
       return RADIO_RESULT_INVALID_VALUE;
@@ -1468,6 +1477,7 @@ static radio_result_t
 set_object(radio_param_t param, const void *src, size_t size)
 {
 
+  INFO("Function call: %s\n", __func__);
   return RADIO_RESULT_NOT_SUPPORTED;
 
 }
@@ -1484,6 +1494,7 @@ static uint8_t
 strobe(uint8_t strobe)
 {
 
+  INFO("Function call: %s\n", __func__);
   uint8_t ret;
 
   cc1200_arch_spi_select();
@@ -1499,6 +1510,7 @@ static void
 reset(void)
 {
 
+  INFO("Function call: %s\n", __func__);
   cc1200_arch_spi_select();
   cc1200_arch_spi_rw_byte(CC1200_SRES);
   /*
@@ -1515,6 +1527,7 @@ static uint8_t
 single_write(uint16_t addr, uint8_t val)
 {
 
+  INFO("Function call: %s\n", __func__);
   uint8_t ret;
 
   cc1200_arch_spi_select();
@@ -1536,6 +1549,7 @@ static uint8_t
 single_read(uint16_t addr)
 {
 
+  INFO("Function call: %s\n", __func__);
   uint8_t ret;
 
   cc1200_arch_spi_select();
@@ -1557,6 +1571,7 @@ static void
 burst_write(uint16_t addr, const uint8_t *data, uint8_t data_len)
 {
 
+  INFO("Function call: %s\n", __func__);
   cc1200_arch_spi_select();
   if(CC1200_IS_EXTENDED_ADDR(addr)) {
     cc1200_arch_spi_rw_byte(CC1200_EXTENDED_BURST_WRITE_CMD);
@@ -1574,6 +1589,7 @@ static void
 burst_read(uint16_t addr, uint8_t *data, uint8_t data_len)
 {
 
+  INFO("Function call: %s\n", __func__);
   cc1200_arch_spi_select();
   if(CC1200_IS_EXTENDED_ADDR(addr)) {
     cc1200_arch_spi_rw_byte(CC1200_EXTENDED_BURST_READ_CMD);
@@ -1592,6 +1608,7 @@ write_reg_settings(const registerSetting_t *reg_settings,
                    uint16_t sizeof_reg_settings)
 {
 
+  INFO("Function call: %s\n", __func__);
   int i = sizeof_reg_settings / sizeof(registerSetting_t);
 
   if(reg_settings != NULL) {
@@ -1609,6 +1626,7 @@ static void
 configure(void)
 {
 
+  INFO("Function call: %s\n", __func__);
   uint8_t reg;
 #if CC1200_RF_TESTMODE
   uint32_t freq;
@@ -1817,6 +1835,7 @@ static uint8_t
 state(void)
 {
 
+  INFO("Function call: %s\n", __func__);
 #if STATE_USES_MARC_STATE
   return single_read(CC1200_MARCSTATE) & 0x1f;
 #else
@@ -1831,6 +1850,7 @@ static void
 calibrate(void)
 {
 
+  INFO("Function call: %s\n", __func__);
 #ifdef RF_FORCE_CALIBRATION
   if (!(rf_flags & RF_FORCE_CALIBRATION)
       && ((clock_seconds() - cal_timer) < CC1200_CAL_TIMEOUT_SECONDS)) {
@@ -1858,6 +1878,7 @@ static void
 idle(void)
 {
 
+  INFO("Function call: %s\n", __func__);
   uint8_t s;
 
   DISABLE_GPIO_INTERRUPTS();
@@ -1890,6 +1911,7 @@ static void
 idle_calibrate_rx(void)
 {
 
+  INFO("Function call: %s\n", __func__);
   RF_ASSERT(state() == STATE_IDLE);
 
 #if !CC1200_AUTOCAL
@@ -1912,6 +1934,7 @@ static void
 rx_rx(void)
 {
 
+  INFO("Function call: %s\n", __func__);
   uint8_t s = state();
 
   if(s == STATE_IDLE) {
@@ -1944,6 +1967,7 @@ rx_rx(void)
 static int
 idle_tx_rx(const uint8_t *payload, uint16_t payload_len)
 {
+  INFO("Function call: %s\n", __func__);
 #if (CC1200_MAX_PAYLOAD_LEN > (CC1200_FIFO_SIZE - PHR_LEN))
   uint8_t to_write;
   const uint8_t *p;
@@ -2109,6 +2133,7 @@ static void
 update_txpower(int8_t txpower_dbm)
 {
 
+  INFO("Function call: %s\n", __func__);
   uint8_t reg = single_read(CC1200_PA_CFG1);
 
   reg &= ~0x3F;
@@ -2125,6 +2150,7 @@ static void
 update_cca_threshold(int8_t threshold_dbm)
 {
 
+  INFO("Function call: %s\n", __func__);
   single_write(CC1200_AGC_CS_THR, (uint8_t)threshold_dbm);
   cca_threshold = threshold_dbm;
 
@@ -2135,6 +2161,7 @@ static uint32_t
 calculate_freq(uint8_t channel)
 {
 
+  INFO("Function call: %s\n", __func__);
   uint32_t freq;
 
   freq = CC1200_RF_CFG.chan_center_freq0 + (channel * CC1200_RF_CFG.chan_spacing) / 1000 /* /1000 because chan_spacing is in Hz */;
@@ -2150,6 +2177,7 @@ static int
 set_channel(uint8_t channel)
 {
 
+  INFO("Function call: %s\n", __func__);
   uint8_t was_off = 0;
   uint32_t freq;
 
@@ -2227,6 +2255,7 @@ static int
 is_broadcast_addr(uint8_t mode, uint8_t *addr)
 {
 
+  INFO("Function call: %s\n", __func__);
   int i = mode == FRAME802154_SHORTADDRMODE ? 2 : 8;
 
   while(i-- > 0) {
@@ -2243,6 +2272,7 @@ static int
 addr_check_auto_ack(uint8_t *frame, uint16_t frame_len)
 {
 
+  INFO("Function call: %s\n", __func__);
   frame802154_t info154;
 
   if(frame802154_parse(frame, frame_len, &info154) != 0) {
@@ -2317,6 +2347,7 @@ int
 cc1200_rx_interrupt(void)
 {
 
+  INFO("Function call: %s\n", __func__);
   /* The radio's state */
   uint8_t s;
   /* The number of bytes in the RX FIFO waiting for read-out */

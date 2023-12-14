@@ -28,9 +28,6 @@
  */
 
 
-
-
-
 #include "contiki.h"
 #include "lib/random.h"
 #include "sys/ctimer.h"
@@ -44,23 +41,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <stdlib.h>
-#include "dev/serial-line.h"
-#include "dev/uart.h"
-#include "dev/spi.h"
-#include "netstack.h"
-#include "process.h"
-#include "rtimer-arch.h"
-#include "shell.h"
-#include "shell-commands.h"
-#include "sys/_stdint.h"
-#include "sys/log.h"
-#include "sx128x.h"
-#include "antenna-sw.h"
-
 #define UDP_PORT 1234
 
-#define SEND_INTERVAL		(2 * CLOCK_SECOND)
+#define SEND_INTERVAL		(60 * CLOCK_SECOND)
 #define SEND_TIME		(random_rand() % (SEND_INTERVAL))
 
 static struct simple_udp_connection unicast_connection;
@@ -131,16 +114,10 @@ PROCESS_THREAD(sender_node_process, ev, data)
     default_prefix = uip_ds6_default_prefix();
     uip_ip6addr_copy(&addr, default_prefix);
 
-    addr.u16[0] = UIP_HTONS(0Xfe80);
-    addr.u16[4] = UIP_HTONS(0x0212);
-    addr.u16[5] = UIP_HTONS(0x4B00);
-    addr.u16[6] = UIP_HTONS(0x14b5);
-    addr.u16[7] = UIP_HTONS(0xd960);
-    // addr.u16[0] = UIP_HTONS(0Xfe80);
-    // addr.u16[4] = UIP_HTONS(0x0212);
-    // addr.u16[5] = UIP_HTONS(0x4B00);
-    // addr.u16[6] = UIP_HTONS(0x18ec);
-    // addr.u16[7] = UIP_HTONS(0x2888);
+    addr.u16[4] = UIP_HTONS(0x0201);
+    addr.u16[5] = UIP_HTONS(0x0001);
+    addr.u16[6] = UIP_HTONS(0x0001);
+    addr.u16[7] = UIP_HTONS(0x0001);
 
     {
       static unsigned int message_number;
@@ -151,7 +128,6 @@ PROCESS_THREAD(sender_node_process, ev, data)
       printf("\n");
       sprintf(buf, "Message %d", message_number);
       message_number++;
-      
       simple_udp_sendto(&unicast_connection, buf, strlen(buf) + 1, &addr);
     }
   }

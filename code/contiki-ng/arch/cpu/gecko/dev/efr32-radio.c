@@ -719,7 +719,7 @@ PROCESS_THREAD(efr32_radio_process, ev, data)
 
       if(len > 0) {
         packetbuf_set_datalen(len);
-        NETSTACK_MAC.input();
+        NETSTACK_RDC.input();
         /* poll again to check if there is more to read out */
         process_poll(&efr32_radio_process);
       }

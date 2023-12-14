@@ -1032,7 +1032,7 @@ PROCESS_THREAD(nrf_ieee_rf_process, ev, data)
       len = read_frame(packetbuf_dataptr(), PACKETBUF_SIZE);
       if(len > 0) {
         packetbuf_set_datalen(len);
-        NETSTACK_MAC.input();
+        NETSTACK_RDC.input();
         LOG_DBG("last frame (%u bytes) timestamps:\n", timestamps.phr);
         LOG_DBG("      SFD=%" PRIu32 " (Derived)\n", timestamps.sfd);
         LOG_DBG("      PHY=%" PRIu32 " (PPI)\n", timestamps.framestart);

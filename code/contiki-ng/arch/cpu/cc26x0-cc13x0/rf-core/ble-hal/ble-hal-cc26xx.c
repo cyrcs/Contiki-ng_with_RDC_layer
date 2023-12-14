@@ -894,14 +894,13 @@ connection_rx(ble_conn_param_t *param)
       packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &sender_addr);
       packetbuf_set_attr(PACKETBUF_ATTR_FRAME_TYPE, FRAME_BLE_RX_EVENT);
       if((!more_data) || (len < CONN_BLE_BUFFER_SIZE)) {
-        NETSTACK_MAC.input();
-      }
+          NETSTACK_RDC.input();      }
     } else if(frame_type == BLE_DATA_PDU_LLID_DATA_FRAGMENT) {
       memcpy(((uint8_t*)packetbuf_dataptr() + packetbuf_datalen()),
              &rx_data[header_offset], len);
       packetbuf_set_datalen(packetbuf_datalen() + len);
       if((!more_data) || (len < CONN_BLE_BUFFER_SIZE)) {
-        NETSTACK_MAC.input();
+        NETSTACK_RDC.input();
       }
     }
 
@@ -1027,7 +1026,7 @@ PROCESS_THREAD(ble_hal_conn_rx_process, ev, data) {
       conn->tx_buffers_sent = output->nTxEntryDone;
       packetbuf_set_datalen(0);
       packetbuf_set_attr(PACKETBUF_ATTR_FRAME_TYPE, FRAME_BLE_TX_EVENT);
-      NETSTACK_MAC.input();
+      NETSTACK_RDC.input();
     }
 
     /* handle RX buffers */
@@ -1037,7 +1036,7 @@ PROCESS_THREAD(ble_hal_conn_rx_process, ev, data) {
     if(conn->counter == conn->conn_update_counter) {
       packetbuf_set_datalen(0);
       packetbuf_set_attr(PACKETBUF_ATTR_FRAME_TYPE, FRAME_BLE_CONNECTION_UPDATED);
-      NETSTACK_MAC.input();
+      NETSTACK_RDC.input();
     }
   }
 

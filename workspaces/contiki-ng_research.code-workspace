@@ -11,7 +11,10 @@
 			"string.h": "c",
 			"sx128x.h": "c",
 			"sx128x_internal.h": "c",
-			"sx128x_registers.h": "c"
+			"sx128x_registers.h": "c",
+			"nullrdc-noframer.h": "c",
+			"csma-output.h": "c",
+			"mac-sequence.h": "c"
 		},
 		"workbench.colorCustomizations": {
 			"activityBar.activeBackground": "#1f6fd0",

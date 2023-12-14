@@ -1,0 +1,31 @@
+# Allow Logs for RDC layer:
+- log.c Line 62:
+    int curr_log_level_rdc = LOG_CONF_LEVEL_RDC;
+- log.c Line 77:
+    {"rdc", &curr_log_level_rdc, LOG_CONF_LEVEL_RDC},
+- log.h line 115:
+    extern int curr_log_level_rdc;
+- log.h line 131:
+    #define LOG_LEVEL_RDC MIN((LOG_CONF_LEVEL_RDC), curr_log_level_rdc)
+- log-conf.h line 136:
+    #ifndef LOG_CONF_LEVEL_RDC\
+    #define LOG_CONF_LEVEL_RDC                         LOG_LEVEL_NONE\
+    #endif /* LOG_CONF_LEVEL_RDC */
+  
+
+# Logger logic
+## 1. Log levels
+- #define LOG_LEVEL_NONE         0 /* No log */
+- #define LOG_LEVEL_ERR          1 /* Errors */
+- #define LOG_LEVEL_WARN         2 /* Warnings */
+- #define LOG_LEVEL_INFO         3 /* Basic info */
+- #define LOG_LEVEL_DBG          4 /* Detailled debug */
+
+## 2. add log to a file
+- /* Log configuration */
+- #include "sys/log.h"
+- #define LOG_MODULE "NULLRDC NOFRAMER"
+- #define LOG_LEVEL LOG_LEVEL_RDC
+
+## 3. log to add to every usefull file 
+- LOG_INFO("Function call: %s", __func__);

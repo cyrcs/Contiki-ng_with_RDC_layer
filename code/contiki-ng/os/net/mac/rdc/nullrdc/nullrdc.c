@@ -38,13 +38,17 @@
  *         Niclas Finne <nfi@sics.se>
  */
 
-#include "net/mac/mac-sequence.h"
-#include "net/mac/csma/csma-security.h"
 #include "net/mac/rdc/nullrdc/nullrdc.h"
 #include "net/packetbuf.h"
 #include "net/queuebuf.h"
 #include "net/netstack.h"
 #include <string.h>
+
+// TODO find a better way to include to required functions/constants
+#include "net/mac/mac-sequence.h"
+#include "net/mac/csma_with_rdc/csma-security.h"
+#include "net/mac/csma_with_rdc/csma.h"
+
 
 #include "dev/watchdog.h"
 #include "sys/ctimer.h"
@@ -59,68 +63,29 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "nullrdc"
-#define LOG_LEVEL LOG_LEVEL_MAC
+#define LOG_MODULE "NULLRDC"
+#define LOG_LEVEL LOG_LEVEL_RDC
 
-#ifdef NULLRDC_CONF_ADDRESS_FILTER
-#define NULLRDC_ADDRESS_FILTER NULLRDC_CONF_ADDRESS_FILTER
-#else
-#define NULLRDC_ADDRESS_FILTER 1
-#endif /* NULLRDC_CONF_ADDRESS_FILTER */
-
-#ifndef NULLRDC_802154_AUTOACK
-#ifdef NULLRDC_CONF_802154_AUTOACK
-#define NULLRDC_802154_AUTOACK NULLRDC_CONF_802154_AUTOACK
-#else
-#define NULLRDC_802154_AUTOACK 0
-#endif /* NULLRDC_CONF_802154_AUTOACK */
-#endif /* NULLRDC_802154_AUTOACK */
-
-#ifndef NULLRDC_802154_AUTOACK_HW
-#ifdef NULLRDC_CONF_802154_AUTOACK_HW
-#define NULLRDC_802154_AUTOACK_HW NULLRDC_CONF_802154_AUTOACK_HW
-#else
-#define NULLRDC_802154_AUTOACK_HW 0
-#endif /* NULLRDC_CONF_802154_AUTOACK_HW */
-#endif /* NULLRDC_802154_AUTOACK_HW */
-
-#if NULLRDC_802154_AUTOACK
 #include "sys/rtimer.h"
 #include "dev/watchdog.h"
 
-#ifdef NULLRDC_CONF_ACK_WAIT_TIME
-#define ACK_WAIT_TIME NULLRDC_CONF_ACK_WAIT_TIME
-#else /* NULLRDC_CONF_ACK_WAIT_TIME */
-#define ACK_WAIT_TIME                      RTIMER_SECOND / 2500
-#endif /* NULLRDC_CONF_ACK_WAIT_TIME */
-#ifdef NULLRDC_CONF_AFTER_ACK_DETECTED_WAIT_TIME
-#define AFTER_ACK_DETECTED_WAIT_TIME NULLRDC_CONF_AFTER_ACK_DETECTED_WAIT_TIME
-#else /* NULLRDC_CONF_AFTER_ACK_DETECTED_WAIT_TIME */
-#define AFTER_ACK_DETECTED_WAIT_TIME       RTIMER_SECOND / 1500
-#endif /* NULLRDC_CONF_AFTER_ACK_DETECTED_WAIT_TIME */
-#endif /* NULLRDC_802154_AUTOACK */
-
-#ifdef NULLRDC_CONF_SEND_802154_ACK
-#define NULLRDC_SEND_802154_ACK NULLRDC_CONF_SEND_802154_ACK
-#else /* NULLRDC_CONF_SEND_802154_ACK */
-#define NULLRDC_SEND_802154_ACK 0
-#endif /* NULLRDC_CONF_SEND_802154_ACK */
-
-#if NULLRDC_SEND_802154_ACK
-#include "net/mac/frame802154.h"
-#endif /* NULLRDC_SEND_802154_ACK */
-
 #define ACK_LEN 3
+
+/*---------------------------------------------------------------------------*/
+static int on(void);
+
 /*---------------------------------------------------------------------------*/
 static void
 init(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   on();
 }
 /*---------------------------------------------------------------------------*/
 static int
 send_one_packet(mac_callback_t sent, void *ptr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   // create 2 required variables
   int ret;
   int last_sent_ok = 0;
@@ -144,7 +109,11 @@ send_one_packet(mac_callback_t sent, void *ptr)
   // TODO contiki-ng uses a csma security function to create the header
   // QUESTION: is it allowed to used MAC layer functions inside the RDC layer?
   // the ELSE statement has to be changed
-  if(csma_security_create_frame.create() < 0) {
+
+  if(csma_security_create_frame() < 0) {
+
+  // if(NETSTACK_FRAMER.create() < 0) {
+
     /* Failed to allocate space for headers */
     LOG_ERR("failed to create packet, seqno: %d\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
     ret = MAC_TX_ERR_FATAL;
@@ -220,19 +189,21 @@ send_one_packet(mac_callback_t sent, void *ptr)
 static void
 send_packet(mac_callback_t sent, void *ptr)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   send_one_packet(sent, ptr);
 }
 /*---------------------------------------------------------------------------*/
 static void
-send_list(mac_callback_t sent, void *ptr, struct packet_queue *buf_list)
+send_list(mac_callback_t sent, void *ptr, struct packet_queue *q)
 {
-  while(buf_list != NULL) {
+  LOG_DBG("Function call: %s\n", __func__);
+  while(q != NULL) {
     /* We backup the next pointer, as it may be nullified by
      * mac_call_sent_callback() */
-    struct packet_queue *next = buf_list->next;
+    struct packet_queue *next = q->next;
+    
+    queuebuf_to_packetbuf(q->buf);
     int last_sent_ok;
-
-    queuebuf_to_packetbuf(buf_list->buf);
     last_sent_ok = send_one_packet(sent, ptr);
 
     /* If packet transmission was not successful, we should back off and let
@@ -241,116 +212,37 @@ send_list(mac_callback_t sent, void *ptr, struct packet_queue *buf_list)
     if(!last_sent_ok) {
       return;
     }
-    buf_list = next;
+    q = next;
   }
 }
 /*---------------------------------------------------------------------------*/
 static void
 packet_input(void)
 {
-
-  // This part should probably be removed
-#if NULLRDC_SEND_802154_ACK
-  int original_datalen;
-  uint8_t *original_dataptr;
-
-  original_datalen = packetbuf_datalen();
-  original_dataptr = packetbuf_dataptr();
-#endif
-
-if(packetbuf_datalen() == ACK_LEN) {
-    /* Ignore ack packets */
-    LOG_DBG("ignored ack\n");
-  } else if(csma_security_parse_frame.parse() < 0) {
-    PRINTF("nullrdc: failed to parse %u\n", packetbuf_datalen());
-  } else if(!linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER), &linkaddr_node_addr) &&
-            !packetbuf_holds_broadcast()) {
-    PRINTF("nullrdc: not for us\n");
-  } else if(linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_SENDER), &linkaddr_node_addr)) {
-    LOG_WARN("nullrdc: frame from ourselves\n");
-  } 
-  else {
-    int duplicate = 0;
-
-    /* Check for duplicate packet. */
-    duplicate = mac_sequence_is_duplicate();
-    if(duplicate) {
-      /* Drop the packet. */
-      LOG_WARN("drop duplicate link layer packet from ");
-      LOG_WARN_LLADDR(packetbuf_addr(PACKETBUF_ADDR_SENDER));
-      LOG_WARN_(", seqno %u\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
-    } else {
-      mac_sequence_register_seqno();
-    }
-
-#if CSMA_SEND_SOFT_ACK
-    if(packetbuf_attr(PACKETBUF_ATTR_MAC_ACK)) {
-      ackdata[0] = FRAME802154_ACKFRAME;
-      ackdata[1] = 0;
-      ackdata[2] = ((uint8_t *)packetbuf_hdrptr())[2];
-      NETSTACK_RADIO.send(ackdata, CSMA_ACK_LEN);
-    }
-#endif /* CSMA_SEND_SOFT_ACK */
-    if(!duplicate) {
-      LOG_INFO("received packet from ");
-      LOG_INFO_LLADDR(packetbuf_addr(PACKETBUF_ADDR_SENDER));
-      LOG_INFO_(", seqno %u, len %u\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO), packetbuf_datalen());
-      NETSTACK_MAC.input();
-    }
-  }
+  LOG_DBG("Function call: %s\n", __func__);
+  NETSTACK_MAC.input();
 }
 /*---------------------------------------------------------------------------*/
 static int
 on(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   return NETSTACK_RADIO.on();
 }
 /*---------------------------------------------------------------------------*/
 static int
-off(int keep_radio_on)
+off(void)
 {
-  if(keep_radio_on) {
-    return NETSTACK_RADIO.on();
-  } else {
-    return NETSTACK_RADIO.off();
-  }
+  LOG_DBG("Function call: %s\n", __func__);
+  return NETSTACK_RADIO.off();
 }
 /*---------------------------------------------------------------------------*/
 static unsigned short
 channel_check_interval(void)
 {
+  LOG_DBG("Function call: %s\n", __func__);
   return 0;
 }
-/*---------------------------------------------------------------------------*/
-static int
-max_payload(void)
-{
-  int framer_hdrlen;
-  radio_value_t max_radio_payload_len;
-  radio_result_t res;
-
-  init_sec();
-
-  framer_hdrlen = NETSTACK_FRAMER.length();
-
-  res = NETSTACK_RADIO.get_value(RADIO_CONST_MAX_PAYLOAD_LEN,
-                                 &max_radio_payload_len);
-
-  if(res == RADIO_RESULT_NOT_SUPPORTED) {
-    LOG_ERR("Failed to retrieve max radio driver payload length\n");
-    return 0;
-  }
-
-  if(framer_hdrlen < 0) {
-    /* Framing failed, we assume the maximum header length */
-    framer_hdrlen = CSMA_MAC_MAX_HEADER;
-  }
-
-  return MIN(max_radio_payload_len, PACKETBUF_SIZE)
-    - framer_hdrlen
-    - LLSEC802154_PACKETBUF_MIC_LEN();
-}
-
 /*---------------------------------------------------------------------------*/
 const struct rdc_driver nullrdc_driver = {
   "nullrdc",
@@ -361,6 +253,5 @@ const struct rdc_driver nullrdc_driver = {
   on,
   off,
   channel_check_interval,
-  max_payload,
 };
 /*---------------------------------------------------------------------------*/

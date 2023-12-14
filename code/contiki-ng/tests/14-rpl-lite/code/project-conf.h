@@ -27,9 +27,4 @@
  * SUCH DAMAGE.
  */
 #define TCPIP_CONF_ANNOTATE_TRANSMISSIONS 1
-
-
-#define NETSTACK_CONF_RADIO                        sx128x_radio_driver
-
 #define LOG_CONF_LEVEL_RPL LOG_LEVEL_INFO
-#define LOG_CONF_LEVEL_SX128X LOG_LEVEL_NONE
