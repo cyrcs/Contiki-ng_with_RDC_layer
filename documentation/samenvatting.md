@@ -1,13 +1,23 @@
 # General overview of the project
 
-## TODO BY TODAY FOR THE PRESENTATION
-- make presentation
-- include the information that was missing from the literature study => current state of 2.4 GHz LoRa
+## notes presentation
+- chapter about CAD
+- CAD vs CCA
+- contikiMAC/RDC protocols for LoRa even possible?
+- 
+analyse timing requirements: time between 2 CCA may not be long enough to switch radios
+especially since LoRa probably takes longer
+=> research paper jaque
+
+LoRa chips for all frequencies in 1 exist, check if seperate exists
+
+CAD for LoRa 2.4 not found by student, read by student
 
 ## TODO 
 - make sure the 2.4 GHz LoRa radio works with the netstack
 - Literature study: related work chapter => search for papers over RDC for LoRa
   and include the previous work on this topic as a start for my work. Go over things like state of the art (new) advancements around LoRa 2.4 GHz, ...
+- add an explanation of the current state of research into LoRa 2.4 GHz. no research into MAC protocols, only in limits in different scenarios. Research if there are papers over MAC protocols for sub GHz LoRa.
 
 ## LIST OF WORKING TESTS
 - CSMA CC2538 -> CSMA CC2538
@@ -58,3 +68,11 @@ actually changed
 
 ## INTERESTING SOURCES
 https://lora.readthedocs.io/en/latest/
+https://wireless-solutions.de/blog/2020/07/24/im282a-high-range-with-lora-on-worldwide-2-4-ghz-band/
+https://www.semtech.com/products/wireless-rf/lora-connect
+https://www.tme.eu/Document/1042f35a88b6ee421559d19923804032/SX128x.pdf
+https://hal.science/hal-03868942/file/mobiquitous-22.pdf
+https://jwcn-eurasipjournals.springeropen.com/articles/10.1186/s13638-019-1502-5#Sec3
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7472251/
+https://blog.ttulka.com/lora-spreading-factor-explained/
+
