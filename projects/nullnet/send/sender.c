@@ -50,7 +50,7 @@
 #include "shell-commands.h"
 #include "sys/_stdint.h"
 #include "sys/log.h"
-// #include "sx128x.h"
+#include "sx128x.h"
 #include "antenna-sw.h"
 
 #include "string.h"
@@ -63,31 +63,12 @@
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 /* Configuration */
-#define SEND_INTERVAL (8 * CLOCK_SECOND)
-static linkaddr_t dest_addr = {{ 0x00, 0x12, 0x4b, 0x00, 0x14, 0xb5, 0xd9, 0x60 }};
-
-
-#if MAC_CONF_WITH_TSCH
-#include "net/mac/tsch/tsch.h"
-static linkaddr_t coordinator_addr =  {{ 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }};
-#endif /* MAC_CONF_WITH_TSCH */
+#define SEND_INTERVAL (10 * CLOCK_SECOND)
+static linkaddr_t dest_addr = {{ 0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0xa5 }};
 
 /*---------------------------------------------------------------------------*/
 PROCESS(nullnet_example_process, "NullNet unicast example");
 AUTOSTART_PROCESSES(&nullnet_example_process);
-
-/*---------------------------------------------------------------------------*/
-void input_callback(const void *data, uint16_t len,
-  const linkaddr_t *src, const linkaddr_t *dest)
-{
-  if(len == sizeof(unsigned)) {
-    unsigned count;
-    memcpy(&count, data, sizeof(count));
-    LOG_INFO("Received %u from ", count);
-    LOG_INFO_LLADDR(src);
-    LOG_INFO_("\n");
-  }
-}
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(nullnet_example_process, ev, data)
 {
@@ -96,19 +77,19 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
 
   PROCESS_BEGIN();
 
-#if MAC_CONF_WITH_TSCH
-  tsch_set_coordinator(linkaddr_cmp(&coordinator_addr, &linkaddr_node_addr));
-#endif /* MAC_CONF_WITH_TSCH */
 
   /* Initialize NullNet */
   nullnet_buf = (uint8_t *)&count;
   nullnet_len = sizeof(count);
-  nullnet_set_input_callback(input_callback);
+  // nullnet_set_input_callback(input_callback);
 
   if(!linkaddr_cmp(&dest_addr, &linkaddr_node_addr)) {
     etimer_set(&periodic_timer, SEND_INTERVAL);
     while(1) {
       PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
+
+      // NETSTACK_RADIO.on();
+
       LOG_INFO("Sending %u to ", count);
       LOG_INFO_LLADDR(&dest_addr);
       LOG_INFO_("\n");

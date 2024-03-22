@@ -360,6 +360,8 @@ typedef enum {
   sx128x_mode_receiver       = 0x05,
   sx128x_mode_receiver_single= 0x06,
   sx128x_mode_cad            = 0x07,
+  sx128x_mode_receiver_continuous=0x08,
+  sx128x_mode_receiver_ack =0x09,
 } sx128x_mode;
 
 typedef enum {

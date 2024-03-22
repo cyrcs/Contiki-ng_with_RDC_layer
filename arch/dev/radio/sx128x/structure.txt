@@ -1,0 +1,48 @@
+sx128_t
+    settings
+        channel
+        state
+        opmode
+        rx (enum)
+            off
+            listening
+            receiving
+            received
+            read
+            mode
+        modem
+        lora
+            preamble length
+            power
+            bandwidth
+            datarate
+            coderate
+            frequency
+            freq_hop_period
+            flags
+            rx_timeout
+            tx_timeout
+    params
+        spi device
+        reset pin
+        busy pin
+        dio1 pin
+        dio2 pin
+        dio3 pin
+        rx switch pin
+        tx switch pin
+    _internal
+        rx rssi
+        rx snr
+        rx length
+        rx timestamp
+        receive timestamp
+        pending
+        packet[256]
+    flags (int with following bits)
+        low datarate optimite
+        enable fixed header length
+        enable crc
+        channel hopping
+        IQ inverted
+        RX continuous

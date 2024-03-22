@@ -546,6 +546,7 @@ uint8_t sx128x_cmd_get_status(const sx128x_t *dev);
  */
 void sx128x_cmd_set_sleep(const sx128x_t *dev, uint8_t config);
 void sx128x_cmd_set_standby(const sx128x_t *dev, uint8_t config);
+void sx128x_cmd_set_auto_tx(const sx128x_t *dev, uint16_t time);
 void sx128x_cmd_set_tx(const sx128x_t *dev, uint8_t period_base, uint16_t period_base_count);
 void sx128x_cmd_set_rx(const sx128x_t *dev, uint8_t period_base, uint16_t period_base_count);
 void sx128x_cmd_set_rx_duty_cycle(const sx128x_t *dev, uint8_t period_base, uint16_t period_base_count, uint16_t sleep_period_base_count);

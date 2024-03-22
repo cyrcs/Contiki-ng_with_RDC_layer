@@ -55,7 +55,7 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "CSMA output"
+#define LOG_MODULE "CSMA output (NO RDC)"
 #define LOG_LEVEL LOG_LEVEL_MAC
 
 /* Constants of the IEEE 802.15.4 standard */
@@ -81,11 +81,11 @@
 #define CSMA_MAX_BACKOFF 5
 #endif
 
-/* macMaxFrameRetries: Maximum number of re-transmissions attampts. Range 0--7 */
+/* macMaxFrameRetries: Maximum number of re-transmissions attempts. Range 0--7 */
 #ifdef CSMA_CONF_MAX_FRAME_RETRIES
 #define CSMA_MAX_FRAME_RETRIES CSMA_CONF_MAX_FRAME_RETRIES
 #else
-#define CSMA_MAX_FRAME_RETRIES 7
+#define CSMA_MAX_FRAME_RETRIES 1
 #endif
 
 /* Packet metadata */

@@ -157,6 +157,7 @@ input_packet(void)
       ackdata[0] = FRAME802154_ACKFRAME;
       ackdata[1] = 0;
       ackdata[2] = ((uint8_t *)packetbuf_hdrptr())[2];
+      LOG_DBG("SENDING ACK\n");
       NETSTACK_RADIO.send(ackdata, CSMA_ACK_LEN);
     }
 #endif /* CSMA_SEND_SOFT_ACK */

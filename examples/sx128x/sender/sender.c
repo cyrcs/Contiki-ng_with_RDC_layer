@@ -40,7 +40,7 @@
  *
  * @{
  *
- * \file
+ * \filet
  *         A quick program for testing the SX1280 Wireless Module sensor.
  * \author
  *         Perale Thomas <tperale@vub.be>

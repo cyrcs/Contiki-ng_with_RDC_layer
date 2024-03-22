@@ -399,6 +399,8 @@ extern "C" {
 #define SX128X_RF_OPMODE_SYNTHESIZER_RX                              (0x04)
 #define SX128X_RF_OPMODE_RECEIVER                                    (0x05)
 #define SX128X_RF_OPMODE_RECEIVER_SINGLE                             (0x06)
+#define SX128X_RF_OPMODE_RECEIVER_CONTINUOUS                         (0x08)
+#define SX128X_RF_OPMODE_RECEIVER_ACK                                (0x09)
 
 /** @} */
 

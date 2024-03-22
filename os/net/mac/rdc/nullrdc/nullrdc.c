@@ -111,9 +111,6 @@ send_one_packet(mac_callback_t sent, void *ptr)
   // the ELSE statement has to be changed
 
   if(csma_security_create_frame() < 0) {
-
-  // if(NETSTACK_FRAMER.create() < 0) {
-
     /* Failed to allocate space for headers */
     LOG_ERR("failed to create packet, seqno: %d\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
     ret = MAC_TX_ERR_FATAL;
@@ -226,6 +223,7 @@ packet_input(void)
 static int
 on(void)
 {
+  LOG_DBG("\n\n\n\n");
   LOG_DBG("Function call: %s\n", __func__);
   return NETSTACK_RADIO.on();
 }
@@ -234,6 +232,7 @@ static int
 off(void)
 {
   LOG_DBG("Function call: %s\n", __func__);
+  LOG_DBG("\n\n\n\n");
   return NETSTACK_RADIO.off();
 }
 /*---------------------------------------------------------------------------*/

@@ -46,7 +46,7 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "CSMA"
+#define LOG_MODULE "CSMA (NO RDC)"
 #define LOG_LEVEL LOG_LEVEL_MAC
 
 

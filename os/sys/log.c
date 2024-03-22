@@ -218,6 +218,8 @@ log_level_to_str(int level)
       return "Info";
     case LOG_LEVEL_DBG:
       return "Debug";
+    case LOG_LEVEL_FUNC:
+      return "Function";
     default:
       return "N/A";
   }

@@ -298,7 +298,7 @@ ifeq ($(MAKE_MAC), MAKE_MAC_CSMA_WITH_RDC)
 endif
 
 
-# Configure RDC layer
+# Configure RDC layerCSMA_WITH_RDC
 MAKE_RDC_NORDC = 0
 MAKE_RDC_NULLRDC = 1
 MAKE_RDC_NULLRDC_NOFRAMER = 2

@@ -64,6 +64,7 @@
 #define LOG_LEVEL_WARN         2 /* Warnings */
 #define LOG_LEVEL_INFO         3 /* Basic info */
 #define LOG_LEVEL_DBG          4 /* Detailled debug */
+#define LOG_LEVEL_FUNC         5 /* Current Function */
 
 /* Log coloring */
 #define TC_RESET   "\033[0m"
@@ -92,6 +93,10 @@
 
 #ifndef LOG_COLOR_DBG
 #define LOG_COLOR_DBG   TC_WHITE
+#endif
+
+#ifndef LOG_COLOR_FUNC
+#define LOG_COLOR_FUNC TC_WHITE
 #endif
 
 #ifndef LOG_COLOR_PRI
@@ -201,12 +206,14 @@ extern struct log_module all_modules[];
 #define LOG_WARN(...)          LOG(1, LOG_LEVEL_WARN, "WARN", LOG_COLOR_WARN, __VA_ARGS__)
 #define LOG_INFO(...)          LOG(1, LOG_LEVEL_INFO, "INFO", LOG_COLOR_INFO, __VA_ARGS__)
 #define LOG_DBG(...)           LOG(1, LOG_LEVEL_DBG, "DBG", LOG_COLOR_DBG, __VA_ARGS__)
+#define LOG_FUNC(...)           LOG(1, LOG_LEVEL_FUNC, "FUNC", LOG_COLOR_FUNC, __VA_ARGS__)
 
 #define LOG_PRINT_(...)         LOG(0, 0, "PRI", LOG_COLOR_PRI, __VA_ARGS__)
 #define LOG_ERR_(...)           LOG(0, LOG_LEVEL_ERR, "ERR", LOG_COLOR_ERR, __VA_ARGS__)
 #define LOG_WARN_(...)          LOG(0, LOG_LEVEL_WARN, "WARN", LOG_COLOR_WARN, __VA_ARGS__)
 #define LOG_INFO_(...)          LOG(0, LOG_LEVEL_INFO, "INFO", LOG_COLOR_INFO, __VA_ARGS__)
 #define LOG_DBG_(...)           LOG(0, LOG_LEVEL_DBG, "DBG", LOG_COLOR_DBG, __VA_ARGS__)
+#define LOG_FUNC_(...)           LOG(0, LOG_LEVEL_FUNC, "FUNC", LOG_COLOR_FUNC, __VA_ARGS__)
 
 #define LOG_PRINT_LLADDR(...)  LOG_LLADDR(0, __VA_ARGS__)
 #define LOG_ERR_LLADDR(...)    LOG_LLADDR(LOG_LEVEL_ERR, __VA_ARGS__)
@@ -236,6 +243,7 @@ extern struct log_module all_modules[];
 #define LOG_WARN_ENABLED       ((LOG_LEVEL) >= LOG_LEVEL_WARN)
 #define LOG_INFO_ENABLED       ((LOG_LEVEL) >= LOG_LEVEL_INFO)
 #define LOG_DBG_ENABLED        ((LOG_LEVEL) >= LOG_LEVEL_DBG)
+#define LOG_FUNC_ENABLED        ((LOG_LEVEL) >= LOG_LEVEL_FUNC)
 
 #if NETSTACK_CONF_WITH_IPV6
 

@@ -81,7 +81,7 @@
 #define CSMA_MAX_BACKOFF 5
 #endif
 
-/* macMaxFrameRetries: Maximum number of re-transmissions attampts. Range 0--7 */
+/* macMaxFrameRetries: Maximum number of re-transmissions attempts. Range 0--7 */
 #ifdef CSMA_CONF_MAX_FRAME_RETRIES
 #define CSMA_MAX_FRAME_RETRIES CSMA_CONF_MAX_FRAME_RETRIES
 #else
@@ -170,116 +170,6 @@ backoff_period(void)
 #endif /* CONTIKI_TARGET_COOJA */
 }
 /*---------------------------------------------------------------------------*/
-// static int
-// send_one_packet(struct neighbor_queue *n, struct packet_queue *q)
-// {
-//   // create 2 required variables
-//   int ret;
-//   int last_sent_ok = 0;
-
-//   // Create packet header
-//   // first add node addr
-//   packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &linkaddr_node_addr);
-//   packetbuf_set_attr(PACKETBUF_ATTR_MAC_ACK, 1);
-
-// #if LLSEC802154_ENABLED
-// #if LLSEC802154_USES_EXPLICIT_KEYS
-//   /* This should possibly be taken from upper layers in the future */
-//   packetbuf_set_attr(PACKETBUF_ATTR_KEY_ID_MODE, CSMA_LLSEC_KEY_ID_MODE);
-// #endif /* LLSEC802154_USES_EXPLICIT_KEYS */
-// #endif /* LLSEC802154_ENABLED */
-
-//   if(csma_security_create_frame() < 0) {
-//     /* Failed to allocate space for headers */
-//     LOG_ERR("failed to create packet, seqno: %d\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
-//     ret = MAC_TX_ERR_FATAL;
-//   } else {
-//     int is_broadcast;
-//     uint8_t dsn;
-//     dsn = ((uint8_t *)packetbuf_hdrptr())[2] & 0xff;
-
-//     NETSTACK_RADIO.prepare(packetbuf_hdrptr(), packetbuf_totlen());
-
-//     is_broadcast = packetbuf_holds_broadcast();
-
-//     if(NETSTACK_RADIO.receiving_packet() ||
-//        (!is_broadcast && NETSTACK_RADIO.pending_packet())) {
-
-//       /* Currently receiving a packet over air or the radio has
-//          already received a packet that needs to be read before
-//          sending with auto ack. */
-//       ret = MAC_TX_COLLISION;
-//     } else {
-
-//       switch(NETSTACK_RADIO.transmit(packetbuf_totlen())) {
-//       case RADIO_TX_OK:
-//         if(is_broadcast) {
-//           ret = MAC_TX_OK;
-//         } else {
-//           /* Check for ack */
-
-//           /* Wait for max CSMA_ACK_WAIT_TIME */
-//           RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_ACK_WAIT_TIME);
-
-//           ret = MAC_TX_NOACK;
-//           if(NETSTACK_RADIO.receiving_packet() ||
-//              NETSTACK_RADIO.pending_packet() ||
-//              NETSTACK_RADIO.channel_clear() == 0) {
-//             int len;
-//             uint8_t ackbuf[CSMA_ACK_LEN];
-
-//             /* Wait an additional CSMA_AFTER_ACK_DETECTED_WAIT_TIME to complete reception */
-//             RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_AFTER_ACK_DETECTED_WAIT_TIME);
-
-//             if(NETSTACK_RADIO.pending_packet()) {
-//               len = NETSTACK_RADIO.read(ackbuf, CSMA_ACK_LEN);
-//               if(len == CSMA_ACK_LEN && ackbuf[2] == dsn) {
-//                 /* Ack received */
-//                 ret = MAC_TX_OK;
-//               } else {
-//                 /* Not an ack or ack not for us: collision */
-//                 ret = MAC_TX_COLLISION;
-//               }
-//             }
-//           }
-//         }
-//         break;
-//       case RADIO_TX_COLLISION:
-//         ret = MAC_TX_COLLISION;
-//         break;
-//       default:
-//         ret = MAC_TX_ERR;
-//         break;
-//       }
-//     }
-//   }
-//   if(ret == MAC_TX_OK) {
-//     last_sent_ok = 1;
-//   }
-
-//   packet_sent(n, q, ret, 1);
-//   return last_sent_ok;
-// }
-/*---------------------------------------------------------------------------*/
-// static void
-// transmit_from_queue(void *ptr)
-// {
-//   struct neighbor_queue *n = ptr;
-//   if(n) {
-//     struct packet_queue *q = list_head(n->packet_queue);
-//     if(q != NULL) {
-//       LOG_INFO("preparing packet for ");
-//       LOG_INFO_LLADDR(&n->addr);
-//       LOG_INFO_(", seqno %u, tx %u, queue %d\n",
-//         queuebuf_attr(q->buf, PACKETBUF_ATTR_MAC_SEQNO),
-//         n->transmissions, list_length(n->packet_queue));
-//       /* Send first packet in the neighbor queue */
-//       queuebuf_to_packetbuf(q->buf);
-//       send_one_packet(n, q);
-//     }
-//   }
-// }
-
 static void
 transmit_from_queue(void *ptr)
 {
@@ -293,13 +183,6 @@ transmit_from_queue(void *ptr)
       LOG_INFO_(", seqno %u, tx %u, queue %d\n",
       queuebuf_attr(q->buf, PACKETBUF_ATTR_MAC_SEQNO),
       n->transmissions, list_length(n->packet_queue));
-
-      // method contiki-os
-      /* Send packets in the neighbor's list */
-      // NETSTACK_RDC.send_list(packet_sent, n, q);
-
-
-      // method contiki-ng modified
       queuebuf_to_packetbuf(q->buf);
       NETSTACK_RDC.send_list(packet_sent, n,q);
     }
