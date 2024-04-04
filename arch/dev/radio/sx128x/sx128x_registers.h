@@ -109,15 +109,15 @@ extern "C" {
 #define SX128X_TX_PERIOD_BASE_01_MS  (0x02)
 #define SX128X_TX_PERIOD_BASE_04_MS  (0x03)
 
-/* TX params settings */
-#define SX128X_TX_RADIO_RAMP_02_US  (0x00)
-#define SX128X_TX_RADIO_RAMP_04_US  (0x20)
-#define SX128X_TX_RADIO_RAMP_06_US  (0x40)
-#define SX128X_TX_RADIO_RAMP_08_US  (0x60)
-#define SX128X_TX_RADIO_RAMP_10_US  (0x80)
-#define SX128X_TX_RADIO_RAMP_12_US  (0xA0)
-#define SX128X_TX_RADIO_RAMP_16_US  (0xC0)
-#define SX128X_TX_RADIO_RAMP_20_US  (0xE0)
+/* TX ramp time*/
+#define SX128X_TX_RADIO_RAMP_02_US (0x00)
+#define SX128X_TX_RADIO_RAMP_04_US (0x20)
+#define SX128X_TX_RADIO_RAMP_06_US (0x40)
+#define SX128X_TX_RADIO_RAMP_08_US (0x60)
+#define SX128X_TX_RADIO_RAMP_10_US (0x80)
+#define SX128X_TX_RADIO_RAMP_12_US (0xA0)
+#define SX128X_TX_RADIO_RAMP_16_US (0xC0)
+#define SX128X_TX_RADIO_RAMP_20_US (0xE0)
 
 /* CAD symbol number */
 #define SX128X_LORA_CAD_01_SYMBOL  (0x00)
@@ -203,8 +203,8 @@ extern "C" {
             | SX128X_IRQ_REG_CAD_DONE | SX128X_IRQ_REG_CAD_DETECTED | SX128X_IRQ_REG_RX_TX_TIMEOUT)
 
 /* Regulator mode */
-#define SX128X_REGULATOR_MODE_LDO (0x00)
-#define SX128X_REGULATOR_MODE_DC_DC (0x01)
+// #define SX128X_REGULATOR_MODE_LDO (0x00)
+// #define SX128X_REGULATOR_MODE_DC_DC (0x01)
 
 /*!
  * \brief Compensation delay for SetAutoTx method in microseconds
@@ -380,27 +380,11 @@ extern "C" {
 #define MASK_MANUAL_GAIN_VALUE             0xF0
 
 #define SX128X_RF_LORA_OPMODE_MASK                                   (0xF8)
-#define SX128X_RF_LORA_OPMODE_SLEEP                                  (0x00)
-#define SX128X_RF_LORA_OPMODE_STANDBY                                (0x01) /* Default */
-#define SX128X_RF_LORA_OPMODE_SYNTHESIZER_TX                         (0x02)
-#define SX128X_RF_LORA_OPMODE_TRANSMITTER                            (0x03)
-#define SX128X_RF_LORA_OPMODE_SYNTHESIZER_RX                         (0x04)
-#define SX128X_RF_LORA_OPMODE_RECEIVER                               (0x05)
 
 /* LoRa specific modes */
-#define SX128X_RF_LORA_OPMODE_RECEIVER_SINGLE                        (0x06)
-#define SX128X_RF_LORA_OPMODE_CAD                                    (0x07)
 
 #define SX128X_RF_OPMODE_MASK                                        (0xF8)
-#define SX128X_RF_OPMODE_SLEEP                                       (0x00)
-#define SX128X_RF_OPMODE_STANDBY                                     (0x01)  /* Default */
-#define SX128X_RF_OPMODE_SYNTHESIZER_TX                              (0x02)
-#define SX128X_RF_OPMODE_TRANSMITTER                                 (0x03)
-#define SX128X_RF_OPMODE_SYNTHESIZER_RX                              (0x04)
-#define SX128X_RF_OPMODE_RECEIVER                                    (0x05)
-#define SX128X_RF_OPMODE_RECEIVER_SINGLE                             (0x06)
-#define SX128X_RF_OPMODE_RECEIVER_CONTINUOUS                         (0x08)
-#define SX128X_RF_OPMODE_RECEIVER_ACK                                (0x09)
+
 
 /** @} */
 

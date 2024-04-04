@@ -1,28 +1,28 @@
 sx128_t
-    settings
-        channel (uint32_t)
-        state (uint8_t): idle, rx, tx, CAD
-        opmode (uint8_t)
+    state
         rx (enum)
             off, listening, receiving, received, read
-        modem (uint8_t)
+        opmode (uint8_t)
+        event (uint8_t): rx_done, tx_done, ...
+
+    settings
+        channel (uint32_t)
+        modem (uint8_t) => packet type enum
+        regulator_mode (enum)
+        power (int 8)
+        ramp_time (enum)
+        RX mode (period, single, continuous)
         lora
             preamble length (uint 16)
-            power (int 8)
+            spreading factor (uint 8)
             bandwidth (uint 8)
-            datarate (uint 8)
             coderate (iunt 8)
-            frequency (uint 32)
-            freq_hop_period (uint 8)
+            payload length (uint 8)
             flags (uint 8)
-                low datarate optimite
+                IQ inverted
                 enable fixed header length
                 enable crc
-                channel hopping
-                IQ inverted
-                RX continuous
-            rx_timeout (uint 32) in ms
-            tx_timeout (uint 32) in ms
+
     params
         spi device (spi device)
         reset pin (gpio hal pin)
@@ -30,9 +30,6 @@ sx128_t
         dio1 pin (gpio hal pin)
         dio2 pin (gpio hal pin)
         dio3 pin (gpio hal pin)
-        if defined use_tx_switch || use_rx_switch
-        rx switch pin (gpio hal pin)
-        tx switch pin (gpio hal pin)
         paselect (int 8) power amplifier mode (RFO or PABOOST)
     _internal
         rx rssi (int 16)
@@ -40,7 +37,6 @@ sx128_t
         rx length (uint16)
         rx timestamp (rtimer)
         receive timestamp (rtimer)
-        pending (uint8)
         packet[256] (uint8)
     flags (uint 16)
         ? interrupts 

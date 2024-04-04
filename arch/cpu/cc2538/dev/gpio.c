@@ -60,8 +60,8 @@ gpio_port_isr(uint8_t port)
   int_status = GPIO_GET_MASKED_INT_STATUS(base);
   power_up_int_status = GPIO_GET_POWER_UP_INT_STATUS(port);
 
+  // printf("\033[0;31mGPIO PORT ISR \033[0;37m\n");
   gpio_hal_event_handler((int_status | power_up_int_status) << (port << 3));
-
   GPIO_CLEAR_INTERRUPT(base, int_status);
   GPIO_CLEAR_POWER_UP_INTERRUPT(port, power_up_int_status);
 }

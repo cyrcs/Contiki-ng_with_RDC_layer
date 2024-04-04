@@ -10,8 +10,7 @@
  * @defgroup    net_lora LoRa modulation
  * @ingroup     net
  * @brief       LoRa modulation header definitions
- * @{
- *
+ * @{lora24
  * @file
  * @brief       LoRa modulation header definitions
  *
@@ -33,10 +32,6 @@ extern "C" {
  * @ingroup  config
  * @{
  */
-/** @brief Frequency resolution in Hz */
-#ifndef LORA24_FREQUENCY_RESOLUTION_DEFAULT
-#define LORA24_FREQUENCY_RESOLUTION_DEFAULT      (198.3642578)
-#endif
 
 /** @brief Preamble length, same for Tx and Rx
  *
@@ -50,37 +45,7 @@ extern "C" {
 1* can range from 8 to 65537.
 */
 #ifndef CONFIG_LORA24_PREAMBLE_LENGTH_DEFAULT
-#define CONFIG_LORA24_PREAMBLE_LENGTH_DEFAULT         (15U) //normal 8U, now 
-#endif
-
-/** @brief Symbol timeout period in symbols
- *
- * Configure symbol time out in terms of number of symbols. One symbol has a
- * length in time of (2^SF)/BW seconds.
-*/
-#ifndef CONFIG_LORA24_SYMBOL_TIMEOUT_DEFAULT
-#define CONFIG_LORA24_SYMBOL_TIMEOUT_DEFAULT          (10U)
-#endif
-
-/** @brief Set channel bandwidth
- *
- * Configure the channel bandwidth. Refer to country specific regulation on
- * channel usage to identify the correct bandwidth.
-*/
-/* #if IS_ACTIVE(CONFIG_LORA24_BW_DEFAULT_200) */
-/* #define CONFIG_LORA24_BW_DEFAULT                      (LORA24_BW_200_KHZ) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_BW_DEFAULT_400) */
-/* #define CONFIG_LORA24_BW_DEFAULT                      (LORA24_BW_400_KHZ) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_BW_DEFAULT_800) */
-/* #define CONFIG_LORA24_BW_DEFAULT                      (LORA24_BW_800_KHZ) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_BW_DEFAULT_1600) */
-/* #define CONFIG_LORA24_BW_DEFAULT                      (LORA24_BW_1600_KHZ) */
-/* #endif */
-
-#ifndef CONFIG_LORA24_BW_DEFAULT
-//#define CONFIG_LORA24_BW_DEFAULT                      (LORA24_BW_200_KHZ) //default 200khz
-//#define CONFIG_LORA24_BW_DEFAULT                      (LORA24_BW_1600_KHZ) //default 16 00khz
-#define CONFIG_LORA24_BW_DEFAULT                      (LORA24_BW_400_KHZ)
+#define CONFIG_LORA24_PREAMBLE_LENGTH_DEFAULT         (15U)
 #endif
 
 /** @brief Set Spreading Factor (SF)
@@ -93,27 +58,37 @@ extern "C" {
  * air time usage regulations before varying the SF. To calculate air time refer
  * https://www.loratools.nl/#/airtime .
 */
-/* #if IS_ACTIVE(CONFIG_LORA24_SF_DEFAULT_SF5) */
-/* #define CONFIG_LORA24_SF_DEFAULT                      (LORA24_SF6) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_SF_DEFAULT_SF6) */
-/* #define CONFIG_LORA24_SF_DEFAULT                      (LORA24_SF6) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_SF_DEFAULT_SF7) */
-/* #define CONFIG_LORA24_SF_DEFAULT                      (LORA24_SF7) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_SF_DEFAULT_SF8) */
-/* #define CONFIG_LORA24_SF_DEFAULT                      (LORA24_SF8) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_SF_DEFAULT_SF9) */
-/* #define CONFIG_LORA24_SF_DEFAULT                      (LORA24_SF9) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_SF_DEFAULT_SF10) */
-/* #define CONFIG_LORA24_SF_DEFAULT                      (LORA24_SF10) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_SF_DEFAULT_SF11) */
-/* #define CONFIG_LORA24_SF_DEFAULT                      (LORA24_SF11) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_SF_DEFAULT_SF12) */
-/* #define CONFIG_LORA24_SF_DEFAULT                      (LORA24_SF12) */
-/* #endif */
 
 #ifndef CONFIG_LORA24_SF_DEFAULT
-#define CONFIG_LORA24_SF_DEFAULT                      (LORA24_SF7)
+#define CONFIG_LORA24_SF_DEFAULT                      (LORA_SF_7)
 #endif
+typedef enum {
+    LORA_SF_5 = 5,                  /**< spreading factor 5 */
+    LORA_SF_6,                      /**< spreading factor 6 */
+    LORA_SF_7,                      /**< spreading factor 7 */
+    LORA_SF_8,                      /**< spreading factor 8 */
+    LORA_SF_9,                      /**< spreading factor 9 */
+    LORA_SF_10,                     /**< spreading factor 10 */
+    LORA_SF_11,                     /**< spreading factor 11 */
+    LORA_SF_12                      /**< spreading factor 12 */
+}LoRa_spreading_factors;
+
+
+/** @brief Set channel bandwidth
+ *
+ * Configure the channel bandwidth. Refer to country specific regulation on
+ * channel usage to identify the correct bandwidth.
+*/
+
+#ifndef CONFIG_LORA24_BW_DEFAULT
+#define CONFIG_LORA24_BW_DEFAULT                      (LORA_BW_400)
+#endif
+typedef enum {
+    LORA_BW_200 = 0,               /**< 200 kHz bandwidth */
+    LORA_BW_400,                   /**< 400 kHz bandwidth */
+    LORA_BW_800,                   /**< 800 kHz bandwidth */
+    LORA_BW_1600                   /**< 1600 kHz bandwidth */
+}LoRa_bandwidths;
 
 /** @brief Set Coding Rate (CR)
  *
@@ -127,19 +102,32 @@ extern "C" {
  * regulations before varying the CR. To calculate air time refer
  * https://www.loratools.nl/#/airtime .
 */
-/* #if IS_ACTIVE(CONFIG_LORA24_CR_DEFAULT_CR_4_5) */
-/* #define CONFIG_LORA24_CR_DEFAULT                      (LORA24_CR_4_5) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_CR_DEFAULT_CR_4_6) */
-/* #define CONFIG_LORA24_CR_DEFAULT                      (LORA24_CR_4_6) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_CR_DEFAULT_CR_4_7) */
-/* #define CONFIG_LORA24_CR_DEFAULT                      (LORA24_CR_4_7) */
-/* #elif IS_ACTIVE(CONFIG_LORA24_CR_DEFAULT_CR_4_8) */
-/* #define CONFIG_LORA24_CR_DEFAULT                      (LORA24_CR_4_8) */
-/* #endif */
-
 #ifndef CONFIG_LORA24_CR_DEFAULT
-#define CONFIG_LORA24_CR_DEFAULT                      (LORA24_CR_4_5)
+#define CONFIG_LORA24_CR_DEFAULT                      (LORA_CR_4_5)
 #endif
+typedef enum {
+    LORA_CR_4_5 = 1,                   /**< coding rate 4/5 */
+    LORA_CR_4_6,                       /**< coding rate 4/6 */
+    LORA_CR_4_7,                       /**< coding rate 4/7 */
+    LORA_CR_4_8,                       /**< coding rate 4/8 */
+    LORA_CR_LI_4_5,                    /**< coding rate 4/5 */
+    LORA_CR_LI_4_6,                    /**< coding rate 4/6 */
+    LORA_CR_LI_4_7,                    /**< coding rate 4/7 */
+
+}LoRa_coding_rates;
+
+/** @brief Configure payload length
+ *
+ * Configure the length of payload. The configuration is unused when using
+ * explicit header mode ( @ref CONFIG_LORA_FIXED_HEADER_LEN_MODE_DEFAULT ) as
+ * `PHDR` carries the length information.
+*/
+#ifndef CONFIG_LORA24_PAYLOAD_LENGTH_DEFAULT
+#define CONFIG_LORA24_PAYLOAD_LENGTH_DEFAULT          (0U)
+#endif
+/** @} */
+
+// ! LoRa flags
 
 /** @brief Set this to 1 to enable inverted I/Q mode
  *
@@ -166,24 +154,25 @@ extern "C" {
  * @deprecated Use inverse `CONFIG_LORA_PAYLOAD_CRC_OFF_DEFAULT` instead.
  * Will be removed after 2021.04 release.
 */
-#ifndef LORA24_PAYLOAD_CRC_ON_DEFAULT
-/* #if IS_ACTIVE(CONFIG_LORA24_PAYLOAD_CRC_OFF_DEFAULT) */
-/* #define LORA24_PAYLOAD_CRC_ON_DEFAULT                 (false) */
-/* #else */
-#define LORA24_PAYLOAD_CRC_ON_DEFAULT                 (true)
-/* #endif */
+#ifndef CONFIG_LORA24_PAYLOAD_CRC_ON_DEFAULT
+#define CONFIG_LORA24_PAYLOAD_CRC_ON_DEFAULT                 (true)
 #endif
 
-/** @brief Configure payload length
- *
- * Configure the length of payload. The configuration is unused when using
- * explicit header mode ( @ref CONFIG_LORA_FIXED_HEADER_LEN_MODE_DEFAULT ) as
- * `PHDR` carries the length information.
-*/
-#ifndef CONFIG_LORA24_PAYLOAD_LENGTH_DEFAULT
-#define CONFIG_LORA24_PAYLOAD_LENGTH_DEFAULT          (0U)
+// ! below are the unused settings
+
+/** @brief Frequency resolution in Hz */
+#ifndef LORA24_FREQUENCY_RESOLUTION_DEFAULT
+#define LORA24_FREQUENCY_RESOLUTION_DEFAULT      (198.3642578)
 #endif
-/** @} */
+
+/** @brief Symbol timeout period in symbols
+ *
+ * Configure symbol time out in terms of number of symbols. One symbol has a
+ * length in time of (2^SF)/BW seconds.
+*/
+#ifndef CONFIG_LORA24_SYMBOL_TIMEOUT_DEFAULT
+#define CONFIG_LORA24_SYMBOL_TIMEOUT_DEFAULT          (10U)
+#endif
 
 /**
  * @name    LoRa syncword values for network types
@@ -193,44 +182,7 @@ extern "C" {
 #define LORA24_SYNCWORD_PRIVATE          (0x12)  /**< Syncword used for private networks */
 /** @} */
 
-/**
- * @name    LoRa modulation available values
- *
- */
-/**
- * @brief   LoRa modulation bandwidth.
- */
-enum {
-    LORA24_BW_200_KHZ = 0,               /**< 200 kHz bandwidth */
-    LORA24_BW_400_KHZ,                   /**< 400 kHz bandwidth */
-    LORA24_BW_800_KHZ,                   /**< 800 kHz bandwidth */
-    LORA24_BW_1600_KHZ                   /**< 1600 kHz bandwidth */
-};
-
-/**
- * @brief   LoRa modulation spreading factor rate
- */
-enum {
-    LORA24_SF5 = 5,                      /**< spreading factor 5 */
-    LORA24_SF6,                          /**< spreading factor 6 */
-    LORA24_SF7,                          /**< spreading factor 7 */
-    LORA24_SF8,                          /**< spreading factor 8 */
-    LORA24_SF9,                          /**< spreading factor 9 */
-    LORA24_SF10,                         /**< spreading factor 10 */
-    LORA24_SF11,                         /**< spreading factor 11 */
-    LORA24_SF12                          /**< spreading factor 12 */
-};
-
-/**
- * @brief   LoRa modulation error coding rate.
- */
-enum {
-    LORA24_CR_4_5 = 1,                   /**< coding rate 4/5 */
-    LORA24_CR_4_6,                       /**< coding rate 4/6 */
-    LORA24_CR_4_7,                       /**< coding rate 4/7 */
-    LORA24_CR_4_8                        /**< coding rate 4/8 */
-};
-/** @} */
+// ! LoRa convertion functions
 
 #define LORA24_BW_TO_KHZ(x) ((1 << x) * 200)
 #define CEILING_POS(X) ((X-(int)(X)) > 0 ? (int)(X+1) : (int)(X))

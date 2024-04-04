@@ -160,6 +160,7 @@ input_packet(void)
       LOG_DBG("SENDING ACK\n");
       NETSTACK_RADIO.send(ackdata, CSMA_ACK_LEN);
     }
+    LOG_DBG ("DONE SENDING ACK\n");
 #endif /* CSMA_SEND_SOFT_ACK */
     if(!duplicate) {
       LOG_INFO("received packet from ");

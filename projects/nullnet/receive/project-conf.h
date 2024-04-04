@@ -38,8 +38,9 @@ extern int tsch_packet_duration(size_t len);
 
 
 
+
 /* Logging */
 // #define LOG_CONF_LEVEL_RPL                         LOG_LEVEL_DBG
-#define LOG_CONF_LEVEL_MAC                         LOG_LEVEL_DBG
+// #define LOG_CONF_LEVEL_MAC                         LOG_LEVEL_DBG
 // #define LOG_CONF_LEVEL_RDC                         LOG_LEVEL_DBG
-#define LOG_CONF_LEVEL_RADIO                       LOG_LEVEL_DBG
+// #define LOG_CONF_LEVEL_RADIO                       LOG_LEVEL_INFO

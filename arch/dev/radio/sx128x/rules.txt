@@ -1,0 +1,11 @@
+after an interrupt is triggered ALWAYS reset all interrupts
+
+when starting RX:
+    set state event to no event
+    set state rx to listening
+    set opmode to RX
+
+when starting TX:
+    set state event to no event
+    set state rx to off
+    set opmode to TX

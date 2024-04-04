@@ -63,8 +63,10 @@
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 /* Configuration */
-#define SEND_INTERVAL (10 * CLOCK_SECOND)
-static linkaddr_t dest_addr = {{ 0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0xa5 }};
+#define SEND_INTERVAL (2 * CLOCK_SECOND)
+// static linkaddr_t dest_addr = {{ 0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0xa5 }};
+static linkaddr_t dest_addr = {{ 0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0x88 }};
+
 
 /*---------------------------------------------------------------------------*/
 PROCESS(nullnet_example_process, "NullNet unicast example");
@@ -81,14 +83,12 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
   /* Initialize NullNet */
   nullnet_buf = (uint8_t *)&count;
   nullnet_len = sizeof(count);
-  // nullnet_set_input_callback(input_callback);
 
   if(!linkaddr_cmp(&dest_addr, &linkaddr_node_addr)) {
     etimer_set(&periodic_timer, SEND_INTERVAL);
     while(1) {
       PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
-
-      // NETSTACK_RADIO.on();
+      NETSTACK_RADIO.on();
 
       LOG_INFO("Sending %u to ", count);
       LOG_INFO_LLADDR(&dest_addr);
@@ -96,8 +96,11 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
 
       NETSTACK_NETWORK.output(&dest_addr);
       count++;
-      etimer_reset(&periodic_timer);
+      etimer_reset(&periodic_timer);  
     }
+  }
+  else{
+    LOG_ERR("WRONG DESTINATION ADDRESS\n");
   }
 
   PROCESS_END();

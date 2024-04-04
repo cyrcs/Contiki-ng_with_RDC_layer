@@ -1,28 +1,3 @@
-/*
- * Copyright (C) 2016 Unwired Devices <info@unwds.com>
- *               2017 Inria
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
-
-/**
- * @defgroup    drivers_sx128x Semtech SX1280 radios driver
- * @ingroup     drivers_netdev
- * @brief       Driver for Semtech SX1280 radios.
- *
- * This module contains the driver for radio devices of the Semtech sx128x
- * series (SX128X).
- * Only LoRa long range modem is supported at the moment.
- *
- * @{
- *
- * @file
- * @brief       Public interface for SX128X driver
- * @author      Eugene P. <ep@unwds.com>
- * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- */
 
 #ifndef SX128X_H
 #define SX128X_H
@@ -33,72 +8,17 @@
 #include "dev/spi.h"
 #include "dev/gpio-hal.h"
 #include "sys/_stdint.h"
-/* #include "sx128x-getset.h" */
 
-extern unsigned int RX_DONE_FLAG;
+#include "sx128x_pinout.h"
+#include "sx128x_registers.h"
+#include "lora24.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-//sck B2, Miso B3, Mosi B1, Cs A3,
-//or sck: c4, miso: c6, mosi: c5
 
-//shield: sck: b2, mosi: b1, miso: b3, cs: b5
-#ifdef SX128X_SPI_SCK_PORT_CONF
-#define SX128X_SPI_SCK_PORT SX128X_SPI_SCK_PORT_CONF
-#else
-#define SX128X_SPI_SCK_PORT GPIO_B_NUM
-//#define SX128X_SPI_SCK_PORT GPIO_C_NUM
-#endif
-#ifdef SX128X_SPI_MISO_PORT_CONF
-#define SX128X_SPI_MISO_PORT SX128X_SPI_MISO_PORT_CONF
-#else
-#define SX128X_SPI_MISO_PORT GPIO_B_NUM
-//#define SX128X_SPI_MISO_PORT GPIO_C_NUM
-#endif
-#ifdef SX128X_SPI_MOSI_PORT_CONF
-#define SX128X_SPI_MOSI_PORT SX128X_SPI_MOSI_PORT_CONF
-#else
-#define SX128X_SPI_MOSI_PORT GPIO_B_NUM
-//#define SX128X_SPI_MOSI_PORT GPIO_C_NUM
-#endif
-
-#ifdef SX128X_SPI_CS_PORT_CONF
-#define SX128X_SPI_CS_PORT SX128X_SPI_CS_PORT_CONF
-#else
-//#define SX128X_SPI_CS_PORT GPIO_B_NUM
-#define SX128X_SPI_CS_PORT GPIO_A_NUM
-#endif
-
-#ifdef SX128X_SPI_SCK_CONF
-#define SX128X_SPI_SCK SX128X_SPI_SCK_CONF
-#else
-#define SX128X_SPI_SCK 2
-//#define SX128X_SPI_SCK 4
-#endif
-
-#ifdef SX128X_SPI_MISO_CONF
-#define SX128X_SPI_MISO SX128X_SPI_MISO_CONF
-#else
-#define SX128X_SPI_MISO 3
-//#define SX128X_SPI_MISO 6
-#endif
-
-#ifdef SX128X_SPI_MOSI_CONF
-#define SX128X_SPI_MOSI SX128X_SPI_MOSI_CONF
-#else
-#define SX128X_SPI_MOSI 1
-//#define SX128X_SPI_MOSI 5
-#endif
-
-#ifdef SX128X_SPI_CS_CONF
-#define SX128X_SPI_CS SX128X_SPI_CS_CONF
-#else
-
-#define SX128X_SPI_CS 3
-//#define SX128X_SPI_CS 5
-#endif
-
+//  spi
+# if 1
 #ifdef SX128X_SPI_BITRATE_CONF
 #define SX128X_SPI_BITRATE SX128X_SPI_BITRATE_CONF
 #else
@@ -123,109 +43,52 @@ extern "C" {
 #else
 #define SX128X_SPI_CONTROLLER 1
 #endif
-//reset A2, int A5, busy A4
-//remote: reset A6, int C6, busy A4
-//shield: reset b4, busy b0, int d2
-#ifdef SX128X_RESET_GPIO_PORT_CONF
-#define SX128X_RESET_GPIO_PORT SX128X_RESEST_GPIO_PORT_CONF
-#else
-#define SX128X_RESET_GPIO_PORT GPIO_A_NUM
-//#define SX128X_RESET_GPIO_PORT GPIO_B_NUM
 #endif
 
-#ifdef SX128X_RESET_GPIO_CONF
-#define SX128X_RESET_GPIO SX128X_RESEST_GPIO_CONF
-#else
-//#define SX128X_RESET_GPIO 4
-#define SX128X_RESET_GPIO 2
-//#define SX128X_RESET_GPIO 6
-#endif
-
-#ifdef SX128X_DIO1_PORT_CONF
-#define SX128X_DIO1_PORT SX128X_DIO1_PORT_CONF
-#else
-//#define SX128X_DIO1_PORT GPIO_D_NUM
-#define SX128X_DIO1_PORT GPIO_A_NUM
-//#define SX128X_DIO1_PORT GPIO_C_NUM
-#endif
-
-#ifdef SX128X_DIO1_PIN_CONF 
-#define SX128X_DIO1_PIN SX128X_DIO1_PIN_CONF 
-#else
-//#define SX128X_DIO1_PIN 2
-#define SX128X_DIO1_PIN 5
-//#define SX128X_DIO1_PIN 6
-#endif
-
-#ifdef SX128X_BUSY_PORT_CONF
-#define SX128X_BUSY_PORT SX128X_BUSY_PORT_CONF
-#else
-//#define SX128X_BUSY_PORT GPIO_B_NUM
-#define SX128X_BUSY_PORT GPIO_A_NUM
-#endif
-
-#ifdef SX128X_BUSY_PIN_CONF 
-#define SX128X_BUSY_PIN SX128X_BUSY_PIN_CONF 
-#else
-//#define SX128X_BUSY_PIN 0
-//#define SX128X_BUSY_PIN 2
-#define SX128X_BUSY_PIN 4
-#endif
-
-#ifdef SX128X_CONF_BUSY_RX
-#define SX128X_BUSY_RX SX128X_CONF_BUSY_RX
+// extra functionalities like busy, interrupts, header detection
+#if 1
+#ifdef SX128X_BUSY_RX_CONF
+#define SX128X_BUSY_RX SX128X_BUSY_RX_CONF
 #else
 #ifndef MAC_CONF_WITH_CSMA
 #define SX128X_BUSY_RX 0//was 1 for testing irq, 0 to enable interrupt (receiving with interrupt not yet written)
-
 #else
 #define SX128X_BUSY_RX 0
 #endif
 #endif
 
-#if defined(SX128X_DIO1_PORT) && defined(SX128X_DIO1_PIN)
-#define SX128X_USE_INTERRUPT 1
+#if SX128X_USE_INTERRUPT_CONF
+#define SX128X_USE_INTERRUPT SX128X_USE_INTERRUPT_CONF
 #else
-#define SX128X_USE_INTERRUPT 0
+#define SX128X_USE_INTERRUPT 1
 #endif
 
-#ifdef SX128X_LORA_INIT_SF_CONF
-#define SX128X_LORA_INIT_SF SX128X_LORA_INIT_SF_CONF
-#else 
-#define SX128X_LORA_INIT_SF RADIO_SF_7
+#if SX128X_USE_INTERRUPT
+#define SX128X_DIO1_PORT_BASE GPIO_PORT_TO_BASE(SX128X_DIO1_PORT)
+#define SX128X_DIO1_PIN_MASK GPIO_PIN_MASK(SX128X_DIO1_PIN)
 #endif
 
-#ifdef SX128X_LORA_INIT_BW_CONF
-#define SX128X_LORA_INIT_BW SX128X_LORA_INIT_BW_CONF
-#else 
-//#define SX128X_LORA_INIT_BW RADIO_BW_200
-#define SX128X_LORA_INIT_BW RADIO_BW_400 //try 1600 also change in lora24.h
+#if SX128X_HEADER_DETECTION_CONF
+#define SX128X_HEADER_DETECTION SX128X_HEADER_DETECTION_CONF
+#else
+#define SX128X_HEADER_DETECTION 0
 #endif
 
-#ifdef SX128X_LORA_INIT_CR_CONF
-#define SX128X_LORA_INIT_CR SX128X_LORA_INIT_CR_CONF
-#else 
-#define SX128X_LORA_INIT_CR RADIO_CR_4_5
+/**
+ * @brief   SX128X initialization result.
+ */
+enum {
+    SX128X_INIT_OK = 0,                /**< Initialization was successful */
+    SX128X_ERR_SPI,                    /**< Failed to initialize SPI bus or CS line */
+    SX128X_ERR_GPIOS,                  /**< Failed to initialize GPIOs */
+    SX128X_ERR_NODEV                   /**< No valid device version found */
+};
+
+
 #endif
 
-#ifdef SX128X_LORA_INIT_PRLEN_CONF
-#define SX128X_LORA_INIT_PRLEN SX128X_LORA_INIT_PRLEN_CONF
-#else 
-#define SX128X_LORA_INIT_PRLEN 8
-#endif
-
-#ifdef SX128X_LORA_INIT_CRC_CONF
-#define SX128X_LORA_INIT_CRC SX128X_LORA_INIT_CRC_CONF
-#else 
-#define SX128X_LORA_INIT_CRC true
-#endif
-
-#ifdef SX128X_LORA_INIT_IMPLICIT_HEADER_CONF
-#define SX128X_LORA_INIT_IMPLICIT_HEADER SX128X_LORA_INIT_IMPLICIT_HEADER_CONF
-#else 
-#define SX128X_LORA_INIT_IMPLICIT_HEADER false
-#endif
-
+// TSCH constants
+#if 1
 #define SX128X_TSCH_DEFAULT_TS_MAX_TX 363776
 
 #define SX128X_TSCH_DEFAULT_TS_CCA_OFFSET 0
@@ -241,11 +104,10 @@ extern "C" {
 #define SX128X_TSCH_DEFAULT_TS_TIMESLOT_LENGTH                                 \
   (SX128X_TSCH_DEFAULT_TS_TX_OFFSET + SX128X_TSCH_DEFAULT_TS_MAX_TX +          \
    SX128X_TSCH_DEFAULT_TS_TX_ACK_DELAY + SX128X_TSCH_DEFAULT_TS_MAX_ACK)
+#endif
 
-/**
- * @name    SX128X device default configuration
- * @{
- */
+
+#if 1
 #define SX128X_PACKET_TYPE_DEFAULT       (SX128X_PACKET_TYPE_LORA) /**< Use LoRa as default packet type */
 #define SX128X_CHANNEL_DEFAULT           (2400UL)                  /**< Default channel frequency, 868.3MHz (Europe) */
 #define SX128X_XTAL_FREQ                 (32000000UL)              /**< Internal oscillator frequency, 32MHz */
@@ -256,111 +118,28 @@ extern "C" {
 
 #define SX128X_TX_TIMEOUT_DEFAULT        (30 * MS_PER_SEC)      /**< TX timeout, 30s */
 #define SX128X_RX_SINGLE                 (false)                /**< Single byte receive mode => continuous by default */
-#define SX128X_RX_BUFFER_SIZE            (256)                  /**< RX buffer size */
+#define SX128X_BUFFER_SIZE            (256)                  /**< RX buffer size */
 #define SX128X_RADIO_TX_POWER            (13U)                  /**< Radio power in dBm */
-#define SX128X_RADIO_TX_RAMP_TIME        (SX128X_TX_RADIO_RAMP_02_US) /**< Power amplifier ramp time */
+#define SX128X_RADIO_TX_RAMP_TIME        (TX_RADIO_RAMP_02_US) /**< Power amplifier ramp time */
 
 
 #define SX128X_EVENT_HANDLER_STACK_SIZE  (2048U) /**< Stack size event handler */
-#define SX128X_IRQ_DIO0                  (1<<0)  /**< DIO0 IRQ */
-#define SX128X_IRQ_DIO1                  (1<<1)  /**< DIO1 IRQ */
-#define SX128X_IRQ_DIO2                  (1<<2)  /**< DIO2 IRQ */
-#define SX128X_IRQ_DIO3                  (1<<3)  /**< DIO3 IRQ */
-#define SX128X_IRQ_DIO4                  (1<<4)  /**< DIO4 IRQ */
-#define SX128X_IRQ_DIO5                  (1<<5)  /**< DIO5 IRQ */
-/** @} */
-
-/**
- * @defgroup drivers_sx128x_config     Semtech SX128X and SX1280 driver compile configuration
- * @ingroup config_drivers_netdev
- * @{
- */
-/**
- * @brief   GPIO mode of DIOx Pins.
- */
-#ifndef SX128X_DIO_PULL_MODE
-#define SX128X_DIO_PULL_MODE             (GPIO_IN_PD)
 #endif
-/** @} */
 
-/**
- * @brief   SX128X initialization result.
- */
-enum {
-    SX128X_INIT_OK = 0,                /**< Initialization was successful */
-    SX128X_ERR_SPI,                    /**< Failed to initialize SPI bus or CS line */
-    SX128X_ERR_GPIOS,                  /**< Failed to initialize GPIOs */
-    SX128X_ERR_NODEV                   /**< No valid device version found */
-};
-
-/**
- * @brief   Radio driver supported modems.
- */
-enum {
-    SX128X_PACKET_TYPE_GFSK = 0,       /**< FSK modem driver */
-    SX128X_PACKET_TYPE_LORA,           /**< LoRa modem driver */
-    SX128X_PACKET_TYPE_RANGING,        /**< Ranging modem driver */
-    SX128X_PACKET_TYPE_FLRC,           /**< FLRC modem driver */
-    SX128X_PACKET_TYPE_BLE,            /**< BLE modem driver */
-};
-
-/**
- * @brief   Radio driver internal state machine states definition.
- */
-enum {
-    SX128X_RF_IDLE = 0,                /**< Idle state */
-    SX128X_RF_RX_RUNNING,              /**< Sending state */
-    SX128X_RF_TX_RUNNING,              /**< Receiving state */
-    SX128X_RF_CAD,                     /**< Channel activity detection state */
-};
-
-/**
- * @brief   Event types.
- */
-enum {
-    SX128X_RX_DONE = 0,                /**< Receiving complete */
-    SX128X_TX_DONE,                    /**< Sending complete*/
-    SX128X_RX_TIMEOUT,                 /**< Receiving timeout */
-    SX128X_TX_TIMEOUT,                 /**< Sending timeout */
-    SX128X_RX_ERROR_CRC,               /**< Receiving CRC error */
-    SX128X_FHSS_CHANGE_CHANNEL,        /**< Channel change */
-    SX128X_CAD_DONE,                   /**< Channel activity detection complete */
-};
-
-/**
- * @brief Power amplifier modes
- *
- * Default value is SX128X_PA_RFO.
- *
- * The power amplifier mode depends on the module hardware configuration.
- */
-enum {
-    SX128X_PA_RFO = 0,                 /**< RFO HF or RFO LF */
-    SX128X_PA_BOOST,                   /**< Power amplifier boost (high power) */
-};
-
-/**
- * @name    SX128X device descriptor boolean flags
- * @{
- */
-#define SX128X_LOW_DATARATE_OPTIMIZE_FLAG       (1 << 0)
-#define SX128X_ENABLE_FIXED_HEADER_LENGTH_FLAG  (1 << 1)
-#define SX128X_ENABLE_CRC_FLAG                  (1 << 2)
-#define SX128X_CHANNEL_HOPPING_FLAG             (1 << 3)
-#define SX128X_IQ_INVERTED_FLAG                 (1 << 4)
-#define SX128X_RX_CONTINUOUS_FLAG               (1 << 5)
-/** @} */
-
+// sx128x state
+#if 1
 typedef enum {
-  sx128x_mode_sleep          = 0x00,
-  sx128x_mode_standby        = 0x01,
-  sx128x_mode_synthesizer_tx = 0x02,
-  sx128x_mode_transmitter    = 0x03,
-  sx128x_mode_synthesizer_rx = 0x04,
-  sx128x_mode_receiver       = 0x05,
-  sx128x_mode_receiver_single= 0x06,
-  sx128x_mode_cad            = 0x07,
-} sx128x_mode;
+  SX128X_OPMODE_SLEEP               = 0x00,
+  SX128X_OPMODE_STANDBY,
+  SX128X_OPMODE_SYNTHESIZER_TX,
+  SX128X_OPMODE_TX,
+  SX128X_OPMODE_SYNTHESIZER_RX,
+  SX128X_OPMODE_RX,
+  SX128X_OPMODE_RX_SINGLE,
+  SX128X_OPMODE_RX_CONTINUOUS,
+  SX128X_OPMODE_RX_ACK,
+  SX128X_OPMODE_CAD,
+} sx128x_opmode_t;
 
 typedef enum {
   sx128x_rx_off,
@@ -368,52 +147,127 @@ typedef enum {
   sx128x_rx_receiving,
   sx128x_rx_received,
   sx128x_rx_read,
-} sx128x_rx_mode;
+} sx128x_rx_state_t;
+
+/**
+ * @enum sx128x_event_state_t
+ * @brief possible event states of the device
+ */
+typedef enum sx128x_event_state_t{
+    SX128X_NO_EVENT = 0,               /**< No event */
+    SX128X_RX_DONE,                    /**< Receiving complete */
+    SX128X_TX_DONE,                    /**< Sending complete*/
+    SX128X_RX_TIMEOUT,                 /**< Receiving timeout */
+    SX128X_TX_TIMEOUT,                 /**< Sending timeout */
+    SX128X_RX_ERROR_CRC,               /**< Receiving CRC error */
+    SX128X_CAD_DONE,                   /**< Channel activity detection complete */
+    SX128X_CAD_DETECTED,               /**< Channel activity detected */
+}sx128x_event_state_t;
+
+/**
+ * @brief   Radio state.
+ */
+typedef struct {
+    sx128x_opmode_t opmode;
+    sx128x_rx_state_t rx;
+    sx128x_event_state_t event;
+} sx128x_state_t;
+
+#endif 
+
+// sx128x settings
+#if 1
+/**
+ * @brief   Radio driver supported modems.
+ */
+typedef enum {
+    SX128X_PACKET_TYPE_GFSK = 0,       /**< FSK modem driver */
+    SX128X_PACKET_TYPE_LORA,           /**< LoRa modem driver */
+    SX128X_PACKET_TYPE_RANGING,        /**< Ranging modem driver */
+    SX128X_PACKET_TYPE_FLRC,           /**< FLRC modem driver */
+    SX128X_PACKET_TYPE_BLE,            /**< BLE modem driver */
+}sx128x_packet_type_t;
+
+/**
+ * @brief   radio driver regulator mode.
+ */
+typedef enum {
+  SX128X_REGULATOR_MODE_LDO = 0x00,       /*LDO regulator mode */
+  SX128X_REGULATOR_MODE_DCDC = 0x01       /*DCDC regulator mode */
+}sx128x_regulator_mode_t;
+
+/**
+ * @brief   radio driver regulator mode.
+ */
+typedef enum {
+  SX128X_RX_MODE_PERIOD = 0x00,           /*RX mode period */
+  SX128X_RX_MODE_SINGLE = 0x01,           /*RX mode single */
+  SX128X_RX_MODE_CONTINUOUS = 0x02        /*RX mode continuous */
+}sx128x_rx_mode_t;
+
+/**
+ * @brief ramp times.
+*/
+typedef enum {
+  /* TX params settings */
+TX_RADIO_RAMP_02_US = SX128X_TX_RADIO_RAMP_02_US,
+TX_RADIO_RAMP_04_US = SX128X_TX_RADIO_RAMP_04_US,
+TX_RADIO_RAMP_06_US = SX128X_TX_RADIO_RAMP_06_US,
+TX_RADIO_RAMP_08_US = SX128X_TX_RADIO_RAMP_08_US,
+TX_RADIO_RAMP_10_US = SX128X_TX_RADIO_RAMP_10_US,
+TX_RADIO_RAMP_12_US = SX128X_TX_RADIO_RAMP_12_US,
+TX_RADIO_RAMP_16_US = SX128X_TX_RADIO_RAMP_16_US,
+TX_RADIO_RAMP_20_US = SX128X_TX_RADIO_RAMP_20_US,
+}sx128x_tx_ramp_times_t;
 
 /**
  * @brief   LoRa configuration structure.
  */
 typedef struct {
-    uint16_t preamble_len;             /**< Length of preamble header */
-    int8_t power;                      /**< Signal power */
-    uint8_t bandwidth;                 /**< Signal bandwidth */
-    uint8_t datarate;                  /**< Spreading factor rate, e.g datarate */
-    uint8_t coderate;                  /**< Error coding rate */
-    uint32_t frequency;                 /**< Frequency hop period */
-    uint8_t freq_hop_period;           /**< Frequency hop period */
-    uint8_t flags;                     /**< Boolean flags */
-    uint32_t rx_timeout;               /**< RX timeout in milliseconds */
-    uint32_t tx_timeout;               /**< TX timeout in milliseconds */
+  uint16_t preamble_len;                      /**< Length of preamble header */
+  LoRa_spreading_factors spreading_factor;    /**< Spreading factor */ 
+  LoRa_bandwidths bandwidth;                  /**< Signal bandwidth */
+  LoRa_coding_rates coderate;                 /**< Error coding rate */
+  uint8_t payload_length;                     /**< Default payload length */
+  uint32_t frequency;                         /**< Channel frequency */
+  uint8_t flags;                              /**< Boolean flags */
 } sx128x_lora_settings_t;
+
+#define SX128X_FLAG_IQ_INVERTED                 (1 << 0)
+#define SX128X_FLAG_ENABLE_FIXED_HEADER_LENGTH  (1 << 2)
+#define SX128X_FLAG_ENABLE_CRC                  (1 << 3)
 
 /**
  * @brief   Radio settings.
  */
 typedef struct {
-    uint32_t channel;                  /**< Radio channel */
-    uint8_t state;                     /**< Radio state */
-    uint8_t opmode;
-    sx128x_rx_mode rx;
-    uint8_t modem;                     /**< Driver model (FSK or LoRa) */
-    sx128x_lora_settings_t lora;       /**< LoRa settings */
+    uint32_t channel;                     /*Radio channel */
+    sx128x_packet_type_t packet_type;     /*Radio packet type */         
+    sx128x_regulator_mode_t regulator_mode; /*Radio regulator mode */
+    int8_t power;                         /*Signal power */
+    sx128x_tx_ramp_times_t ramp_time;     /*ramp time */
+    sx128x_rx_mode_t rx_mode;              /*RX mode */
+    sx128x_lora_settings_t lora;          /*LoRa settings */
 } sx128x_radio_settings_t;
+#endif
 
+// sx128x internal
+#if 1
 /**
  * @brief   SX128X internal data.
  */
 typedef struct {
-    /* Data that will be passed to events handler in application */
-    /* ztimer_t tx_timeout_timer; */
-    /* ztimer_t rx_timeout_timer; */
     int16_t rx_rssi;
     uint16_t rx_snr;
     uint16_t rx_length;
     rtimer_clock_t rx_timestamp;
     rtimer_clock_t receiv_timestamp;
-    uint8_t pending;
     uint8_t packet[256];
 } sx128x_internal_t;
+#endif
 
+// sx128x params
+#if 1
 /**
  * @brief   SX128X hardware and global parameters.
  */
@@ -425,31 +279,163 @@ typedef struct {
     gpio_hal_pin_t dio1_pin;           /**< Interrupt line DIO1 (Tx done, Rx timeout) */
     gpio_hal_pin_t dio2_pin;           /**< Interrupt line DIO2 (FHSS channel change) */
     gpio_hal_pin_t dio3_pin;           /**< Interrupt line DIO3 (CAD done) */
-#if defined(SX128X_USE_TX_SWITCH) || defined(SX128X_USE_RX_SWITCH)
-    gpio_hal_pin_t rx_switch_pin;      /**< Rx antenna switch */
-    gpio_hal_pin_t tx_switch_pin;      /**< Tx antenna switch */
-#endif
     uint8_t paselect;                  /**< Power amplifier mode (RFO or PABOOST) */
 } sx128x_params_t;
+#endif
 
+// sx128x flags
+#if 1
 /**
  * @brief   SX128X IRQ flags.
  */
-typedef uint16_t sx128x_flags_t;
+typedef uint16_t sx128x_irq_t;
+#endif
 
 /**
  * @brief   SX128X device descriptor.
- * @extends netdev_t
  */
 typedef struct {
+    sx128x_state_t state;              /**< Radio state */
     sx128x_radio_settings_t settings;  /**< Radio settings */
     sx128x_params_t params;            /**< Device driver parameters */
     sx128x_internal_t _internal;       /**< Internal sx128x data used within the driver */
-    sx128x_flags_t irq;                /**< Device IRQ flags */
+    sx128x_irq_t irq;                  /**< Device IRQ flags */
 } sx128x_t;
+
+// ! getset functions
+# if 1
+
+// ! hardware
+# if 1
+/**
+ * @brief This command fixes the base address for the packet handing operation in Tx and Rx mode for all packet types.
+ * 
+ * @param dev device
+ * @param tx_address TX address  
+ * @param rx_address RX address
+ */
+void sx128x_cmd_set_buffer_base_address(const sx128x_t *dev, uint8_t tx_address, uint8_t rx_address);
+
+/**
+ * @brief This command returns the length of the last received packet (payloadLengthRx) and the address of the first byte received
+(rxBufferOffset), it is applicable to all modems. The address is an offset relative to the first byte of the data buffer
+ * 
+ * @param dev pointer to device object
+ * @return (uint8_t) payload_length
+ */
+uint8_t sx128x_cmd_get_rx_buffer_status(sx128x_t *dev);
+
+/**
+ * @brief This command is used to enable IRQs and to route IRQs to DIO pins
+ * 
+ * @param dev pointer to device
+ * @param dio1_mask interrupts to be enabled on DIO1
+ * @param dio2_mask interrupts to be enabled on DIO2
+ * @param dio3_mask interrupts to be enabled on DIO3
+ */
+void sx128x_cmd_set_dio_irq_params(const sx128x_t *dev, uint16_t dio1_mask, uint16_t dio2_mask, uint16_t dio3_mask);
+/**
+ * @brief This command returns the value of the IRQ register. 
+ * 
+ * @param dev pointer to device
+ * @return (uint16_t) irq 16 flags over 16 bits 
+ */
+uint16_t sx128x_cmd_get_irq_status(const sx128x_t *dev);
+
+/**
+ * @brief This command clears an IRQ flag in IRQ register.
+ * if only 1 DIO pin is used, only 1 flag is set and clearing it resets the register. Incase of multiple DIO pins used, the flags will stay high until cleared.
+ * 
+ * @param dev 
+ * @param irq_mask bits to clear (default 0xFFFF to clear all)
+ */
+void sx128x_cmd_clear_irq_status(const sx128x_t *dev, uint16_t irq_mask);
+
+/**
+ * @brief Use this command to retrieve information about the last received packet. The returned parameters are frame-dependent.
+ * The value returned by GetPacketStatus() command is packet-type-dependent.
+ * in case of LoRa packet: [7:0] = rssiSync, [15:8] = snr.
+ * 
+ * @param dev pointer to device object
+ */
+void sx128x_cmd_get_packet_status(sx128x_t *dev);
+
+/**
+ * @brief This function is used to write the data payload to be transmitted. 
+ * The address is auto-incremented, when the address exceeds 255 it wraps back to 0 due to the circular nature of data buffer. 
+ * The address starts from the offset given as a parameter of the function.
+ * 
+ * @param dev pointer to device object
+ * @param buf pointer to buffer containing the payload
+ * @param len payload length
+ */
+void sx128x_cmd_write_buffer(const sx128x_t *dev, uint8_t *buf, size_t len);
+
+
+
+
+
+
+
+/**
+ * @brief set the event of the device. 
+ * 
+ * @param dev pointer to the device object
+ * @param event[possibilities:, SX128X_NO_EVENT, SX128X_RX_DONE, SX128X_TX_DONE, SX128X_RX_TIMEOUT, SX128X_TX_TIMEOUT, SX128X_CAD_DONE, SX128X_CAD_DETECTED]
+ */
+void sx128x_set_state_event(sx128x_t *dev, sx128x_event_state_t event);
+
+/**
+ * @brief Get current event of the device.
+ * 
+ * @return ::sx128x_event_state_t 
+ */
+uint8_t sx128x_get_state_event(const sx128x_t *dev);
+
+/**
+ * @brief get custom state of rx.
+ * 
+ * @param dev pointer to the device object
+ * @return uint8_t state from enum ::sx128x_rx_state_t
+ */
+uint8_t sx128x_get_state_rx(const sx128x_t *dev);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * @brief Sets the packet type for the SX128x device.
+ *
+ * @param dev The SX128x device.
+ * @param packet_type The packet type to set.
+ *                    Only SX128X_PACKET_TYPE_LORA is supported.
+ */
+void sx128x_cmd_set_packet_type(sx128x_t *dev, sx128x_packet_type_t packet_type);
+
+/**
+ * @brief Gets the packet type for the SX128x device.
+ *
+ * @param dev The SX128x device.
+ * @return The packet type.
+ */
+uint8_t sx128x_cmd_get_packet_type(const sx128x_t *dev);
+#endif
+#endif
+
 
 /**
  * @brief   Hardware IO IRQ callback function definition.
+ * ! this function is probably
  */
 typedef void (sx128x_dio_irq_handler_t)(sx128x_t *dev);
 
@@ -492,8 +478,7 @@ void sx128x_init_radio_settings(sx128x_t *dev);
  * @attention This function sets the radio in LoRa mode and disables all
  *            interrupts from it. After calling this function either
  *            sx128x_set_rx_config or sx128x_set_tx_config functions must
- *            be called.
- *
+ *            be called.static void sx128x_set_state_rx(sx128x_t *dev, 
  * @param[in] dev                      The sx128x device structure pointer
  *
  * @return random 32 bits value
@@ -519,7 +504,10 @@ void sx128x_start_cad(sx128x_t *dev);
 bool sx128x_is_channel_free(sx128x_t *dev, uint32_t freq, int16_t rssi_threshold);
 
 /**
- * @brief   Reads the current RSSI value.
+ * @brief 
+ * 
+ */
+ /* @brief   Reads the current RSSI value.
  *
  * @param[in] dev                      The sx128x device structure pointer
  *
@@ -540,71 +528,39 @@ uint16_t sx128x_get_firmware_version(const sx128x_t *dev);
 
 uint8_t sx128x_cmd_get_status(const sx128x_t *dev);
 
+
 /**
- * @name    SX128X Radio Operation Modes
- * @{
  */
 void sx128x_cmd_set_sleep(const sx128x_t *dev, uint8_t config);
 void sx128x_cmd_set_standby(const sx128x_t *dev, uint8_t config);
 void sx128x_cmd_set_auto_tx(const sx128x_t *dev, uint16_t time);
 void sx128x_cmd_set_tx(const sx128x_t *dev, uint8_t period_base, uint16_t period_base_count);
-void sx128x_cmd_set_rx(const sx128x_t *dev, uint8_t period_base, uint16_t period_base_count);
+void _sx128x_cmd_set_rx(sx128x_t *dev, uint8_t period_base, uint16_t period_base_count);
 void sx128x_cmd_set_rx_duty_cycle(const sx128x_t *dev, uint8_t period_base, uint16_t period_base_count, uint16_t sleep_period_base_count);
 void sx128x_cmd_set_cad(const sx128x_t *dev);
-/** @} */
+void sx128x_set_state_rx(sx128x_t *dev, sx128x_rx_state_t rx);
 
-/**
- * @name    SX128X Radio Configuration Modes
- * @{
- */
 void sx128x_cmd_set_packet_type(sx128x_t *dev, uint8_t packet_type);
 uint8_t sx128x_cmd_get_packet_type(const sx128x_t *dev);
 void sx128x_cmd_set_regulator_mode(sx128x_t *dev, uint8_t mode);
-uint32_t sx128x_cmd_get_frequency(const sx128x_t *dev);
+uint32_t sx128x_get_frequency(const sx128x_t *dev);
 void sx128x_cmd_set_frequency(sx128x_t *dev, uint32_t freq);
-void sx128x_cmd_set_tx_params(const sx128x_t *dev, int8_t power, uint8_t ramp_time);
+void sx128x_cmd_set_tx_params(sx128x_t *dev, int8_t power, sx128x_tx_ramp_times_t ramp_time);
 void sx128x_cmd_set_cad_params(const sx128x_t *dev, uint8_t symbol_num);
-void sx128x_cmd_set_buffer_base_address(const sx128x_t *dev, uint8_t tx_address, uint8_t rx_address);
+
 void sx128x_cmd_set_modulation_params(sx128x_t *dev, uint8_t param1, uint8_t param2, uint8_t param3);
 void sx128x_cmd_set_packet_params(sx128x_t *dev, uint8_t param1, uint8_t param2, uint8_t param3, uint8_t param4, uint8_t param5, uint8_t param6, uint8_t param7);
-/** @} */
 
-/**
- * @name    SX128X Communication status information
- * @{
- */
-uint8_t sx128x_cmd_get_rx_buffer_status(sx128x_t *dev);
-void sx128x_cmd_get_packet_status(sx128x_t *dev);
 uint8_t sx128x_cmd_get_rssi_inst(const sx128x_t *dev);
-/** @} */
-
-/**
- * @name    SX128X IRQ Handling
- * @{
- */
-void sx128x_cmd_set_dio_irq_params(const sx128x_t *dev, uint16_t dio1_mask, uint16_t dio2_mask, uint16_t dio3_mask);
-uint16_t sx128x_cmd_get_irq_status(const sx128x_t *dev);
-void sx128x_cmd_clear_irq_status(const sx128x_t *dev, uint16_t irq_mask);
-/** @} */
 
 
 /**
- * @brief   Sets current state of transceiver.
- *
- * @param[in] dev                      The sx128x device descriptor
- * @param[in] state                    The new radio state
- *
- * @return radio state [RF_IDLE, RF_RX_RUNNING, RF_TX_RUNNING]
- */
-void sx128x_set_state(sx128x_t *dev, uint8_t state);
-
-/**
- * @brief   Configures the radio with the given modem.
+ * @brief   Configures the radio with the given packet_type.
  *
  * @param[in] dev                      The sx128x device descriptor
  * @param[in] modem                    Modem to be used [0: FSK, 1: LoRa]
  */
-void sx128x_set_modem(sx128x_t *dev, uint8_t modem);
+void sx128x_set_modem(sx128x_t *dev, uint8_t packet_type);
 
 /**
  * @brief   Gets the synchronization word.
@@ -705,7 +661,7 @@ void sx128x_set_max_payload_len(const sx128x_t *dev, uint8_t maxlen);
  *
  * @return The actual operating mode
  */
-uint8_t sx128x_get_op_mode(const sx128x_t *dev);
+uint8_t sx128x_get_state_opmode(const sx128x_t *dev);
 
 /**
  * @brief   Sets the SX128X operating mode
@@ -713,7 +669,7 @@ uint8_t sx128x_get_op_mode(const sx128x_t *dev);
  * @param[in] dev                      The sx128x device descriptor
  * @param[in] op_mode                  The new operating mode
  */
-void sx128x_set_op_mode(sx128x_t *dev, uint8_t op_mode);
+void sx128x_set_state_opmode(sx128x_t *dev, uint8_t op_mode);
 
 /**
  * @brief   Gets the SX128X bandwidth
@@ -766,14 +722,6 @@ uint8_t sx128x_get_coding_rate(const sx128x_t *dev);
  */
 void sx128x_set_coding_rate(sx128x_t *dev, uint8_t coderate);
 
-/**
- * @brief   Checks if the SX128X LoRa RX single mode is enabled/disabled
- *
- * @param[in] dev                      The sx128x device descriptor
- *
- * @return the LoRa single mode
- */
-bool sx128x_get_rx_single(const sx128x_t *dev);
 
 /**
  * @brief   Enable/disable the SX128X LoRa RX single mode
@@ -866,7 +814,7 @@ uint8_t sx128x_get_tx_power(const sx128x_t *dev);
  * @param[in] dev                      The sx128x device descriptor
  * @param[in] power                    The TX power
  */
-void sx128x_set_tx_power(sx128x_t *dev, int8_t power);
+// void sx128x_set_tx_power(sx128x_t *dev, int8_t power);
 
 /**
  * @brief   Gets the SX128X preamble length
@@ -916,7 +864,7 @@ void sx128x_set_tx_timeout(sx128x_t *dev, uint32_t timeout);
  *
  * @return the LoRa IQ inverted mode
  */
-bool sx128x_get_iq_invert(const sx128x_t *dev);
+bool sx128x_get_iq_inverted(const sx128x_t *dev);
 
 /**
  * @brief   Enable/disable the SX128X LoRa IQ inverted mode
@@ -924,7 +872,7 @@ bool sx128x_get_iq_invert(const sx128x_t *dev);
  * @param[in] dev                      The sx128x device descriptor
  * @param[in] iq_invert                The LoRa IQ inverted mode
  */
-void sx128x_set_iq_invert(sx128x_t *dev, bool iq_invert);
+void sx128x_set_iq_inverted(sx128x_t *dev, bool iq_invert);
 
 /**
  * @brief   Sets the SX128X LoRa frequency hopping mode
@@ -956,5 +904,7 @@ extern const struct radio_driver sx128x_radio_driver;
 }
 #endif
 
+#include "sx128x_internal.h"
+
+
 #endif /* SX128X_H */
-/** @} */

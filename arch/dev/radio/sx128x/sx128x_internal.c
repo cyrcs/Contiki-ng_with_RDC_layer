@@ -29,11 +29,8 @@
 #include "dev/spi.h"
 #include "dev/gpio-hal.h"
 
-#include "lora24.h"
-
 #include "sx128x.h"
-#include "sx128x_registers.h"
-#include "sx128x_internal.h"
+
 #include "sys/_stdint.h"
 /* #include "sx128x_params.h" */
 

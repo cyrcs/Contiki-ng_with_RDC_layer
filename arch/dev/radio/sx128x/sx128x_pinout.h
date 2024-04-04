@@ -1,0 +1,112 @@
+
+/*
+you can change the ports in the project configuration file with the following syntax:
+# define SX128X_..._PORT_CONF GPIO_..._NUM
+# define SX128X_..._PIN_CONF ...
+*/
+#ifndef SX128X_PINOUT_H
+#define SX128X_PINOUT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+current pinout 26/3/2024
+
+SCK: B2 
+MISO: B3
+MOSI: B1
+CS: A3
+RESET: A2 
+INT: A5
+BUSY: A4
+*/ 
+// CLK
+#ifdef SX128X_SPI_SCK_PORT_CONF
+#define SX128X_SPI_SCK_PORT SX128X_SPI_SCK_PORT_CONF
+#else
+#define SX128X_SPI_SCK_PORT GPIO_B_NUM
+#endif
+#ifdef SX128X_SPI_SCK_CONF
+#define SX128X_SPI_SCK SX128X_SPI_SCK_CONF
+#else
+#define SX128X_SPI_SCK 2
+#endif
+// MISO
+#ifdef SX128X_SPI_MISO_PORT_CONF
+#define SX128X_SPI_MISO_PORT SX128X_SPI_MISO_PORT_CONF
+#else
+#define SX128X_SPI_MISO_PORT GPIO_B_NUM
+#endif
+#ifdef SX128X_SPI_MISO_CONF
+#define SX128X_SPI_MISO SX128X_SPI_MISO_CONF
+#else
+#define SX128X_SPI_MISO 3
+#endif
+// MOSI
+#ifdef SX128X_SPI_MOSI_PORT_CONF
+#define SX128X_SPI_MOSI_PORT SX128X_SPI_MOSI_PORT_CONF
+#else
+#define SX128X_SPI_MOSI_PORT GPIO_B_NUM
+#endif
+#ifdef SX128X_SPI_MOSI_CONF
+#define SX128X_SPI_MOSI SX128X_SPI_MOSI_CONF
+#else
+#define SX128X_SPI_MOSI 1
+#endif
+// CS
+#ifdef SX128X_SPI_CS_PORT_CONF
+#define SX128X_SPI_CS_PORT SX128X_SPI_CS_PORT_CONF
+#else
+#define SX128X_SPI_CS_PORT GPIO_A_NUM
+#endif
+#ifdef SX128X_SPI_CS_CONF
+#define SX128X_SPI_CS SX128X_SPI_CS_CONF
+#else
+#define SX128X_SPI_CS 3
+#endif
+// RESET
+#ifdef SX128X_RESET_GPIO_PORT_CONF
+#define SX128X_RESET_GPIO_PORT SX128X_RESEST_GPIO_PORT_CONF
+#else
+#define SX128X_RESET_GPIO_PORT GPIO_A_NUM
+#endif
+#ifdef SX128X_RESET_GPIO_CONF
+#define SX128X_RESET_GPIO SX128X_RESEST_GPIO_CONF
+#else
+#define SX128X_RESET_GPIO 2
+#endif
+// DIO1
+#ifdef SX128X_DIO1_PORT_CONF
+#define SX128X_DIO1_PORT SX128X_DIO1_PORT_CONF
+#else
+#define SX128X_DIO1_PORT GPIO_A_NUM
+#endif
+#ifdef SX128X_DIO1_PIN_CONF 
+#define SX128X_DIO1_PIN SX128X_DIO1_PIN_CONF 
+#else
+#define SX128X_DIO1_PIN 5
+#endif
+// BUSY
+#ifdef SX128X_BUSY_PORT_CONF
+#define SX128X_BUSY_PORT SX128X_BUSY_PORT_CONF
+#else
+#define SX128X_BUSY_PORT GPIO_A_NUM
+#endif
+#ifdef SX128X_BUSY_PIN_CONF 
+#define SX128X_BUSY_PIN SX128X_BUSY_PIN_CONF 
+#else
+#define SX128X_BUSY_PIN 4
+#endif
+
+// general pin configuration
+#ifndef SX128X_DIO_PULL_MODE
+#define SX128X_DIO_PULL_MODE             (GPIO_IN_PD)
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* SX128X_PINOUT_H */

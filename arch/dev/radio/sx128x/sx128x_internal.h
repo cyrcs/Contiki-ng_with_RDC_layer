@@ -22,7 +22,6 @@
 #ifndef SX128X_INTERNAL_H
 #define SX128X_INTERNAL_H
 
-#include "sx128x.h"
 #include <inttypes.h>
 #include <stdint.h>
 

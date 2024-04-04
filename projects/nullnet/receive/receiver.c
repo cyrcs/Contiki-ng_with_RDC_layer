@@ -63,8 +63,9 @@
 #define LOG_MODULE "App"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
+#define WAKE_UP_INTERVAL (CLOCK_SECOND * 2)
+
 /* Configuration */
-#define SEND_INTERVAL (8 * CLOCK_SECOND)
 
 /*---------------------------------------------------------------------------*/
 PROCESS(nullnet_example_process, "NullNet unicast receiver");
@@ -85,20 +86,22 @@ void input_callback(const void *data, uint16_t len,
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(nullnet_example_process, ev, data)
 {
-  PROCESS_BEGIN();
+  static struct etimer periodic_timer;
 
+  PROCESS_BEGIN();
+  
+  /* Initialize NullNet */
   nullnet_set_input_callback(input_callback);
 
-  while (1) {
-    RX_DONE_FLAG = 0;
-    NETSTACK_RADIO.on();
+  etimer_set(&periodic_timer, WAKE_UP_INTERVAL);
 
-    // While still receiving
-    while (RX_DONE_FLAG == 0) {
-      watchdog_periodic();
-      clock_delay_usec(50);
-    }
+  while(1){
+    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
+    NETSTACK_RDC.on();
+    etimer_reset(&periodic_timer);  
+
   }
+
 
   PROCESS_END();
 }

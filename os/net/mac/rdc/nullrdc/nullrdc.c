@@ -66,10 +66,17 @@
 #define LOG_MODULE "NULLRDC"
 #define LOG_LEVEL LOG_LEVEL_RDC
 
+#ifndef RECEIVER
+#define RECEIVER 0
+#endif 
+
 #include "sys/rtimer.h"
 #include "dev/watchdog.h"
 
 #define ACK_LEN 3
+
+bool packet_received;
+bool radio_on;
 
 /*---------------------------------------------------------------------------*/
 static int on(void);
@@ -139,9 +146,17 @@ send_one_packet(mac_callback_t sent, void *ptr)
           /* Check for ack */
 
           /* Wait for max CSMA_ACK_WAIT_TIME */
-          RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_ACK_WAIT_TIME);
+          // RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet, CSMA_ACK_WAIT_TIME);
+
+          uint32_t time = 0;
+          while ((time < CSMA_ACK_WAIT_TIME) || !(NETSTACK_RADIO.pending_packet)) {
+            watchdog_periodic();
+            clock_delay_usec(500);
+            time++;
+          }
 
           ret = MAC_TX_NOACK;
+
           if(NETSTACK_RADIO.receiving_packet() ||
              NETSTACK_RADIO.pending_packet() ||
              NETSTACK_RADIO.channel_clear() == 0) {
@@ -156,9 +171,11 @@ send_one_packet(mac_callback_t sent, void *ptr)
               len = NETSTACK_RADIO.read(ackbuf, ACK_LEN);
               if(len == ACK_LEN && ackbuf[2] == dsn) {
                 /* Ack received */
+                LOG_INFO("ACK received\n");
                 ret = MAC_TX_OK;
               } else {
                 /* Not an ack or ack not for us: collision */
+                LOG_INFO("NO ACK or not for us\n");
                 ret = MAC_TX_COLLISION;
               }
             }
@@ -177,8 +194,6 @@ send_one_packet(mac_callback_t sent, void *ptr)
   if(ret == MAC_TX_OK) {
     last_sent_ok = 1;
   }
-  // TODO check if this leads to csma packet_send function
-  // TODO Maybe need to change argument names but need to look further into this
   mac_call_sent_callback(sent, ptr, ret, 1);
   return last_sent_ok;
 }
@@ -218,6 +233,7 @@ packet_input(void)
 {
   LOG_DBG("Function call: %s\n", __func__);
   NETSTACK_MAC.input();
+  packet_received = true;
 }
 /*---------------------------------------------------------------------------*/
 static int
@@ -225,7 +241,24 @@ on(void)
 {
   LOG_DBG("\n\n\n\n");
   LOG_DBG("Function call: %s\n", __func__);
-  return NETSTACK_RADIO.on();
+
+  #if RECEIVER
+  radio_on = true;
+  // infinite loop to wait for packets to be received
+  while(radio_on){
+    NETSTACK_RADIO.on();
+    packet_received = false;
+    while(!packet_received){
+      // wait for packet to be received
+      watchdog_periodic();
+      clock_delay_usec(500);
+    }
+  }
+  #else
+  NETSTACK_RADIO.on();
+  #endif
+  
+  return 1;
 }
 /*---------------------------------------------------------------------------*/
 static int
@@ -233,7 +266,9 @@ off(void)
 {
   LOG_DBG("Function call: %s\n", __func__);
   LOG_DBG("\n\n\n\n");
-  return NETSTACK_RADIO.off();
+
+  radio_on = false;
+    return NETSTACK_RADIO.off();
 }
 /*---------------------------------------------------------------------------*/
 static unsigned short

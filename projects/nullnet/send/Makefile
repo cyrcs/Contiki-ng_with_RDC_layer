@@ -4,7 +4,7 @@ CONTIKI = ../../..
 
 TARGET=zoul
 BOARD=firefly-reva
-PORT=/dev/ttyUSB0
+PORT=/dev/ttyUSB1
 
 include $(CONTIKI)/Makefile.dir-variables
 MODULES += $(CONTIKI_NG_DRIVERS_RADIO_DIR)/sx128x
