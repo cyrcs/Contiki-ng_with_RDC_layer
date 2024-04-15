@@ -55,23 +55,12 @@ extern "C" {
  * which increases energy consumption, reduces the data rate, and improves
  * communication range. Each step up in spreading factor effectively doubles the
  * time on air to transmit the same amount of data. Refer to country specific
- * air time usage regulations before varying the SF. To calculate air time refer
- * https://www.loratools.nl/#/airtime .
+ * air time usage regulations before varying the SF.
 */
 
 #ifndef CONFIG_LORA24_SF_DEFAULT
-#define CONFIG_LORA24_SF_DEFAULT                      (LORA_SF_7)
+#define CONFIG_LORA24_SF_DEFAULT                      (LORA_SF_12)
 #endif
-typedef enum {
-    LORA_SF_5 = 5,                  /**< spreading factor 5 */
-    LORA_SF_6,                      /**< spreading factor 6 */
-    LORA_SF_7,                      /**< spreading factor 7 */
-    LORA_SF_8,                      /**< spreading factor 8 */
-    LORA_SF_9,                      /**< spreading factor 9 */
-    LORA_SF_10,                     /**< spreading factor 10 */
-    LORA_SF_11,                     /**< spreading factor 11 */
-    LORA_SF_12                      /**< spreading factor 12 */
-}LoRa_spreading_factors;
 
 
 /** @brief Set channel bandwidth
@@ -83,12 +72,7 @@ typedef enum {
 #ifndef CONFIG_LORA24_BW_DEFAULT
 #define CONFIG_LORA24_BW_DEFAULT                      (LORA_BW_400)
 #endif
-typedef enum {
-    LORA_BW_200 = 0,               /**< 200 kHz bandwidth */
-    LORA_BW_400,                   /**< 400 kHz bandwidth */
-    LORA_BW_800,                   /**< 800 kHz bandwidth */
-    LORA_BW_1600                   /**< 1600 kHz bandwidth */
-}LoRa_bandwidths;
+
 
 /** @brief Set Coding Rate (CR)
  *
@@ -105,16 +89,11 @@ typedef enum {
 #ifndef CONFIG_LORA24_CR_DEFAULT
 #define CONFIG_LORA24_CR_DEFAULT                      (LORA_CR_4_5)
 #endif
-typedef enum {
-    LORA_CR_4_5 = 1,                   /**< coding rate 4/5 */
-    LORA_CR_4_6,                       /**< coding rate 4/6 */
-    LORA_CR_4_7,                       /**< coding rate 4/7 */
-    LORA_CR_4_8,                       /**< coding rate 4/8 */
-    LORA_CR_LI_4_5,                    /**< coding rate 4/5 */
-    LORA_CR_LI_4_6,                    /**< coding rate 4/6 */
-    LORA_CR_LI_4_7,                    /**< coding rate 4/7 */
 
-}LoRa_coding_rates;
+#ifndef CONFIG_LORA24_CAD_SYMBOLS_DEFAULT
+#define CONFIG_LORA24_CAD_SYMBOLS_DEFAULT             (CAD_SYMBOLS_01)
+#endif
+
 
 /** @brief Configure payload length
  *
@@ -169,7 +148,7 @@ typedef enum {
  *
  * Configure symbol time out in terms of number of symbols. One symbol has a
  * length in time of (2^SF)/BW seconds.
-*/
+*/ // ! shouldn't this be a calcuation based on the SF and BW?
 #ifndef CONFIG_LORA24_SYMBOL_TIMEOUT_DEFAULT
 #define CONFIG_LORA24_SYMBOL_TIMEOUT_DEFAULT          (10U)
 #endif
@@ -178,8 +157,8 @@ typedef enum {
  * @name    LoRa syncword values for network types
  * @{
  */
-#define LORA24_SYNCWORD_PUBLIC           (0x34)  /**< Syncword used for public networks */
-#define LORA24_SYNCWORD_PRIVATE          (0x12)  /**< Syncword used for private networks */
+#define LORA24_SYNCWORD_PUBLIC (0x34)  /**< Syncword used for public networks */
+#define LORA24_SYNCWORD_PRIVATE (0x12)  /**< Syncword used for private networks */
 /** @} */
 
 // ! LoRa convertion functions

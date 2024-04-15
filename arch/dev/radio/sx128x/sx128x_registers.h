@@ -103,53 +103,70 @@ extern "C" {
 #define SX128X_STANDBY_RC (0x00) /* Device running on RC 13MHz */
 #define SX128X_STANDBY_XOSC (0x01) /* Device running on XTAL 52MHz */
 
-/* TX params settings */
-#define SX128X_TX_PERIOD_BASE_15_US  (0x00)
-#define SX128X_TX_PERIOD_BASE_62_US  (0x01)
-#define SX128X_TX_PERIOD_BASE_01_MS  (0x02)
-#define SX128X_TX_PERIOD_BASE_04_MS  (0x03)
+/**
+ * @brief period base for RX and TX.
+ * 
+ */
+typedef enum{
+    PERIOD_BASE_15_US = 0x00,
+    PERIOD_BASE_62_US = 0x01,
+    PERIOD_BASE_01_MS = 0x02,
+    PERIOD_BASE_04_MS = 0x03,
+}sx128x_period_base_t;
 
-/* TX ramp time*/
-#define SX128X_TX_RADIO_RAMP_02_US (0x00)
-#define SX128X_TX_RADIO_RAMP_04_US (0x20)
-#define SX128X_TX_RADIO_RAMP_06_US (0x40)
-#define SX128X_TX_RADIO_RAMP_08_US (0x60)
-#define SX128X_TX_RADIO_RAMP_10_US (0x80)
-#define SX128X_TX_RADIO_RAMP_12_US (0xA0)
-#define SX128X_TX_RADIO_RAMP_16_US (0xC0)
-#define SX128X_TX_RADIO_RAMP_20_US (0xE0)
 
-/* CAD symbol number */
-#define SX128X_LORA_CAD_01_SYMBOL  (0x00)
-#define SX128X_LORA_CAD_02_SYMBOLS (0x20)
-#define SX128X_LORA_CAD_04_SYMBOL (0x40)
-#define SX128X_LORA_CAD_08_SYMBOL (0x60)
-#define SX128X_LORA_CAD_16_SYMBOL (0x80)
+/**
+ * @brief TX ramp times.
+*/
+typedef enum {
+TX_RADIO_RAMP_02_US = 0x00,
+TX_RADIO_RAMP_04_US = 0x20,
+TX_RADIO_RAMP_06_US = 0x40,
+TX_RADIO_RAMP_08_US = 0x60,
+TX_RADIO_RAMP_10_US = 0x80,
+TX_RADIO_RAMP_12_US = 0xA0,
+TX_RADIO_RAMP_16_US = 0xC0,
+TX_RADIO_RAMP_20_US = 0xE0,
+} sx128x_tx_ramp_times_t;
 
-/* Modulation Parameters Spreading Factor */
-#define SX128X_LORA_SF_5 (0x50)
-#define SX128X_LORA_SF_6 (0x60)
-#define SX128X_LORA_SF_7 (0x70)
-#define SX128X_LORA_SF_8 (0x80)
-#define SX128X_LORA_SF_9 (0x90)
-#define SX128X_LORA_SF_10 (0xA0)
-#define SX128X_LORA_SF_11 (0xB0)
-#define SX128X_LORA_SF_12 (0xC0)
+/**
+ * @brief Symbols used for 1 CAD.
+*/
+typedef enum {
+CAD_SYMBOLS_01 = 0x00,              /**< 1 symbol */
+CAD_SYMBOLS_02 = 0x20,              /**< 2 symbols */
+CAD_SYMBOLS_04 = 0x40,              /**< 4 symbols */
+CAD_SYMBOLS_08 = 0x60,              /**< 8 symbols */
+CAD_SYMBOLS_16 = 0x80,              /**< 16 symbols */
+}sx128x_cad_symbols_t;
 
-/* Modulation Parameters Bandwidth */
-#define SX128X_LORA_BW_1600 (0x0A)
-#define SX128X_LORA_BW_800 (0x18)
-#define SX128X_LORA_BW_400 (0x26)
-#define SX128X_LORA_BW_200 (0x34)
+typedef enum {
+    LORA_SF_5 = 0x50,                  /**< spreading factor 5 */
+    LORA_SF_6 = 0x60,                  /**< spreading factor 6 */
+    LORA_SF_7 = 0x70,                  /**< spreading factor 7 */
+    LORA_SF_8 = 0x80,                  /**< spreading factor 8 */
+    LORA_SF_9 = 0x90,                  /**< spreading factor 9 */
+    LORA_SF_10 = 0xA0,                 /**< spreading factor 10 */
+    LORA_SF_11 = 0xB0,                 /**< spreading factor 11 */
+    LORA_SF_12 = 0xC0                  /**< spreading factor 12 */
+}LoRa_spreading_factors;
 
-/* Modulation Parameters Coding Rate */
-#define SX128X_LORA_CR_4_5 (0x01)
-#define SX128X_LORA_CR_4_6 (0x02)
-#define SX128X_LORA_CR_4_7 (0x03)
-#define SX128X_LORA_CR_4_8 (0x04)
-#define SX128X_LORA_CR_LI_4_5 (0x05)
-#define SX128X_LORA_CR_LI_4_6 (0x06)
-#define SX128X_LORA_CR_LI_4_7 (0x07)
+typedef enum {
+    LORA_BW_200 = 0x0A,               /**< 200 kHz bandwidth */
+    LORA_BW_400 = 0x18,               /**< 400 kHz bandwidth */
+    LORA_BW_800 = 0x26,               /**< 800 kHz bandwidth */
+    LORA_BW_1600 = 0x34               /**< 1600 kHz bandwidth */
+}LoRa_bandwidths;
+
+typedef enum {
+    LORA_CR_4_5 = 0x01,                   /**< coding rate 4/5 */
+    LORA_CR_4_6 = 0x02,                   /**< coding rate 4/6 */
+    LORA_CR_4_7 = 0x03,                   /**< coding rate 4/7 */
+    LORA_CR_4_8 = 0x04,                   /**< coding rate 4/8 */
+    LORA_CR_LI_4_5 = 0x05,                /**< coding rate 4/5 */
+    LORA_CR_LI_4_6 = 0x06,                /**< coding rate 4/6 */
+    LORA_CR_LI_4_7 = 0x07,                /**< coding rate 4/7 */
+}LoRa_coding_rates;
 
 /* Packet type header definition */
 #define SX128X_LORA_EXPLICIT_HEADER (0x00)
@@ -164,38 +181,22 @@ extern "C" {
 #define SX128X_LORA_IQ_INVERTED (0x00)
 
 /* IRQ Register */
-#define SX128X_IRQ_REG_TX_DONE_OFFSET (0x00)
-#define SX128X_IRQ_REG_TX_DONE (1 << SX128X_IRQ_REG_TX_DONE_OFFSET)
-#define SX128X_IRQ_REG_RX_DONE_OFFSET (0x01)
-#define SX128X_IRQ_REG_RX_DONE (1 << SX128X_IRQ_REG_RX_DONE_OFFSET)
-#define SX128X_IRQ_REG_SYNC_WORD_VALID_OFFSET (0x02)
-#define SX128X_IRQ_REG_SYNC_WORD_VALID (1 << SX128X_IRQ_REG_SYNC_WORD_VALID_OFFSET)
-#define SX128X_IRQ_REG_SYNC_WORD_ERROR_OFFSET (0x03)
-#define SX128X_IRQ_REG_SYNC_WORD_ERROR (1 << SX128X_IRQ_REG_SYNC_WORD_ERROR_OFFSET)
-#define SX128X_IRQ_REG_HEADER_VALID_OFFSET (0x04)
-#define SX128X_IRQ_REG_HEADER_VALID (1 << SX128X_IRQ_REG_HEADER_VALID_OFFSET)
-#define SX128X_IRQ_REG_HEADER_ERROR_OFFSET (0x05)
-#define SX128X_IRQ_REG_HEADER_ERROR (1 << SX128X_IRQ_REG_HEADER_ERROR_OFFSET)
-#define SX128X_IRQ_REG_CRC_ERROR_OFFSET (0x06)
-#define SX128X_IRQ_REG_CRC_ERROR (1 << SX128X_IRQ_REG_CRC_ERROR_OFFSET)
-#define SX128X_IRQ_REG_RANGING_SLAVE_RESPONSE_DONE_OFFSET (0x07)
-#define SX128X_IRQ_REG_RANGING_SLAVE_RESPONSE_DONE (1 << SX128X_IRQ_REG_RANGING_SLAVE_RESPONSE_DONE_OFFSET)
-#define SX128X_IRQ_REG_RANGING_SLAVE_REQUEST_DISCARD_OFFSET (0x08)
-#define SX128X_IRQ_REG_RANGING_SLAVE_REQUEST_DISCARD (1 << SX128X_IRQ_REG_RANGING_SLAVE_REQUEST_DISCARD_OFFSET)
-#define SX128X_IRQ_REG_RANGING_MASTER_RESULT_VALID_OFFSET (0x09)
-#define SX128X_IRQ_REG_RANGING_MASTER_RESULT_VALID (1 << SX128X_IRQ_REG_RANGING_MASTER_RESULT_VALID_OFFSET)
-#define SX128X_IRQ_REG_RANGING_MASTER_TIMEOUT_OFFSET (0x0A)
-#define SX128X_IRQ_REG_RANGING_MASTER_TIMEOUT (1 << SX128X_IRQ_REG_RANGING_MASTER_TIMEOUT_OFFSET)
-#define SX128X_IRQ_REG_RANGING_MASTER_REQUEST_VALID_OFFSET (0x0B)
-#define SX128X_IRQ_REG_RANGING_MASTER_REQUEST_VALID (1 << SX128X_IRQ_REG_RANGING_MASTER_REQUEST_VALID_OFFSET)
-#define SX128X_IRQ_REG_CAD_DONE_OFFSET (0x0C)
-#define SX128X_IRQ_REG_CAD_DONE (1 << SX128X_IRQ_REG_CAD_DONE_OFFSET)
-#define SX128X_IRQ_REG_CAD_DETECTED_OFFSET (0x0D)
-#define SX128X_IRQ_REG_CAD_DETECTED (1 << SX128X_IRQ_REG_CAD_DETECTED_OFFSET)
-#define SX128X_IRQ_REG_RX_TX_TIMEOUT_OFFSET (0x0E)
-#define SX128X_IRQ_REG_RX_TX_TIMEOUT (1 << SX128X_IRQ_REG_RX_TX_TIMEOUT_OFFSET)
-#define SX128X_IRQ_REG_PREAMBLE_DETECTED_OFFSET (0x0F)
-#define SX128X_IRQ_REG_PREAMBLE_DETECTED (1 << SX128X_IRQ_REG_PREAMBLE_DETECTED_OFFSET)
+#define SX128X_IRQ_REG_TX_DONE (1 << 0x00)
+#define SX128X_IRQ_REG_RX_DONE (1 << 0x01)
+#define SX128X_IRQ_REG_SYNC_WORD_VALID (1 << 0x02)
+#define SX128X_IRQ_REG_SYNC_WORD_ERROR (1 << 0x03)
+#define SX128X_IRQ_REG_HEADER_VALID (1 << 0x04)
+#define SX128X_IRQ_REG_HEADER_ERROR (1 << 0x05)
+#define SX128X_IRQ_REG_CRC_ERROR (1 << 0x06)
+#define SX128X_IRQ_REG_RANGING_SLAVE_RESPONSE_DONE (1 << 0x07)
+#define SX128X_IRQ_REG_RANGING_SLAVE_REQUEST_DISCARD (1 << 0x08)
+#define SX128X_IRQ_REG_RANGING_MASTER_RESULT_VALID (1 << 0x09)
+#define SX128X_IRQ_REG_RANGING_MASTER_TIMEOUT (1 << 0x0A)
+#define SX128X_IRQ_REG_RANGING_MASTER_REQUEST_VALID (1 << 0x0B)
+#define SX128X_IRQ_REG_CAD_DONE (1 << 0x0C)
+#define SX128X_IRQ_REG_CAD_DETECTED (1 << 0x0D)
+#define SX128X_IRQ_REG_RX_TX_TIMEOUT (1 << 0x0E)
+#define SX128X_IRQ_REG_PREAMBLE_DETECTED (1 << 0x0F)
 #define SX128X_IRQ_REG_ALL (0xFFFF)
 
 #define SX128X_IRQ_REG_LORA_MASK (SX128X_IRQ_REG_TX_DONE | SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_HEADER_VALID \
