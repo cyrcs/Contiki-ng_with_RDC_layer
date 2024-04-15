@@ -169,11 +169,6 @@ input_packet(void)
       NETSTACK_NETWORK.input();
     }
   }
-
-
-
-
-// NETSTACK_NETWORK.input();
 }
 /*---------------------------------------------------------------------------*/
 static int

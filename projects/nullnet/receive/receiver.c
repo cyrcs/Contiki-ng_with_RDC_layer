@@ -96,6 +96,7 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
   etimer_set(&periodic_timer, WAKE_UP_INTERVAL);
 
   while(1){
+    printf("while");
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
     NETSTACK_RDC.on();
     etimer_reset(&periodic_timer);  

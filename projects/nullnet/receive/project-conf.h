@@ -30,8 +30,8 @@
 
 #define NETSTACK_CONF_RADIO                        sx128x_radio_driver
 
-extern int tsch_packet_duration(size_t len); 
-#define TSCH_PACKET_DURATION(len) tsch_packet_duration(len) 
+// extern int tsch_packet_duration(size_t len); 
+// #define TSCH_PACKET_DURATION(len) tsch_packet_duration(len) 
 
 #define CSMA_CONF_SEND_SOFT_ACK 1
 #define CSMA_CONF_ACK_WAIT_TIME 1000
@@ -41,6 +41,6 @@ extern int tsch_packet_duration(size_t len);
 
 /* Logging */
 // #define LOG_CONF_LEVEL_RPL                         LOG_LEVEL_DBG
-// #define LOG_CONF_LEVEL_MAC                         LOG_LEVEL_DBG
+#define LOG_CONF_LEVEL_MAC                         LOG_LEVEL_DBG
 // #define LOG_CONF_LEVEL_RDC                         LOG_LEVEL_DBG
-// #define LOG_CONF_LEVEL_RADIO                       LOG_LEVEL_INFO
+#define LOG_CONF_LEVEL_RADIO                       LOG_LEVEL_FUNC

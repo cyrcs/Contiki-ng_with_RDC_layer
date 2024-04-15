@@ -32,7 +32,7 @@ unsigned int validHeader = 0; //changes to 1 if lora preamble detected is valid
 unsigned int RX_DONE_FLAG = 0;
 sx128x_t __sx128x_dev = {
   .settings = {
-    .channel = 2400,     
+    .channel = 2400,
     .lora = {
      },
   },
@@ -59,15 +59,15 @@ sx128x_t __sx128x_dev = {
 int tsch_packet_duration(size_t len)
 {
   return US_TO_RTIMERTICKS(LORA_T_PACKET_USEC(
-    sx128x_get_spreading_factor(&SX128X_DEV), 
-    sx128x_get_bandwidth(&SX128X_DEV), 
-    sx128x_get_crc(&SX128X_DEV), 
+    sx128x_get_spreading_factor(&SX128X_DEV),
+    sx128x_get_bandwidth(&SX128X_DEV),
+    sx128x_get_crc(&SX128X_DEV),
     !sx128x_get_fixed_header_len_mode(&SX128X_DEV),
-    sx128x_get_coding_rate(&SX128X_DEV), 
+    sx128x_get_coding_rate(&SX128X_DEV),
     sx128x_get_preamble_length(&SX128X_DEV),
     len
   ));
-} 
+}
 
 /* TSCH timeslot timing (microseconds) */
 tsch_timeslot_timing_usec tsch_timing_sx128x = {
@@ -121,57 +121,57 @@ static void sx128x_rx_internal_set(sx128x_t* dev, sx128x_rx_mode rx) {
 #define SX128X_DIO1_PIN_MASK GPIO_PIN_MASK(SX128X_DIO1_PIN)
 
 #if SX128X_BUSY_RX
-static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask) { 
+static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask) {
 }
 #else
-static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask) {   
+static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask) {
   SX128X_DEV.irq = sx128x_cmd_get_irq_status(&SX128X_DEV);
   LOG_DBG("!!  interrupt detected !!\n");
-  
+
   if (sx128x_get_op_mode(&SX128X_DEV) == SX128X_RF_OPMODE_RECEIVER) {
     LOG_DBG("OPMODE RECEIVER\n");
     #if HEADER_DETECTION
-    switch (SX128X_DEV.irq)  {      
-      case SX128X_IRQ_REG_RX_DONE:           
+    switch (SX128X_DEV.irq)  {
+      case SX128X_IRQ_REG_RX_DONE:
         if(validHeader == 1){
           LOG_DBG("timer_RX_DONE: %ld\n",RTIMER_NOW());
           SX128X_DEV._internal.rx_timestamp = RTIMER_NOW();
           sx128x_cmd_get_packet_status(&SX128X_DEV);
           sx128x_cmd_get_rx_buffer_status(&SX128X_DEV);
           sx128x_rx_internal_set(&SX128X_DEV, sx128x_rx_received);
-          sx128x_set_standby(&SX128X_DEV);   
-          validHeader = 0;      
+          sx128x_set_standby(&SX128X_DEV);
+          validHeader = 0;
         }
         else{
           LOG_ERR("\nheader was not valid\n");
         }
-        break;        
+        break;
       case SX128X_IRQ_REG_HEADER_VALID:
-        LOG_DBG("timer_HEADER_VALID %ld\n",RTIMER_NOW());        
-        
-        //valid LORA header 
+        LOG_DBG("timer_HEADER_VALID %ld\n",RTIMER_NOW());
+
+        //valid LORA header
         validHeader = 1;
         break;
     }
     #else
-    switch (SX128X_DEV.irq)  {  
-      case SX128X_IRQ_REG_RX_DONE: 
+    switch (SX128X_DEV.irq)  {
+      case SX128X_IRQ_REG_RX_DONE:
         LOG_DBG("timer_RX_DONE: %ld\n",RTIMER_NOW());
         SX128X_DEV._internal.rx_timestamp = RTIMER_NOW();
         sx128x_cmd_get_packet_status(&SX128X_DEV);
         sx128x_cmd_get_rx_buffer_status(&SX128X_DEV);
         sx128x_rx_internal_set(&SX128X_DEV, sx128x_rx_received);
-        sx128x_set_standby(&SX128X_DEV);  
-        RX_DONE_FLAG = 1;     
-        break;       
+        sx128x_set_standby(&SX128X_DEV);
+        RX_DONE_FLAG = 1;
+        break;
       case SX128X_IRQ_REG_RX_TX_TIMEOUT:
         LOG_DBG("timer_RX_teimout(1s): %ld\n",RTIMER_NOW());
         sx128x_set_standby(&SX128X_DEV); //should already happen automatically
         RX_DONE_FLAG = 2;
-        break;        
+        break;
     }
     #endif
-  }   
+  }
   //sx128X_RF_OPMODE_CAD changed to SX128X_RF_LORA_OPMODE_CAD, since previous one not found
   else if (sx128x_get_op_mode(&SX128X_DEV) == SX128X_RF_LORA_OPMODE_CAD) {
     LOG_DBG("OPMODE CAD\n");
@@ -184,7 +184,7 @@ static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask) {
         sx128x_rx_internal_set(&SX128X_DEV, sx128x_rx_receiving);
         break;
     }
-  }   
+  }
   else if (sx128x_get_op_mode(&SX128X_DEV) == SX128X_RF_OPMODE_TRANSMITTER) {
     LOG_DBG("OPMODE TRANSMITTER\n");
     switch (SX128X_DEV.irq)  {
@@ -234,7 +234,7 @@ sx128x_prepare(const void *payload, unsigned short payload_len) {
   sx128x_cmd_set_tx_params(&SX128X_DEV,13,0xE0); //added
   sx128x_set_payload_length(&SX128X_DEV, payload_len);;
   sx128x_cmd_set_buffer_base_address(&SX128X_DEV, 0, 0);
- 
+
   sx128x_write_fifo(&SX128X_DEV, (uint8_t*) payload, payload_len);
 
   sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
@@ -246,8 +246,8 @@ sx128x_prepare(const void *payload, unsigned short payload_len) {
 static int
 sx128x_transmit(unsigned short payload_len) {
   sx128x_set_state(&SX128X_DEV, SX128X_RF_TX_RUNNING);
-  sx128x_set_op_mode(&SX128X_DEV, SX128X_RF_OPMODE_TRANSMITTER);  
-  
+  sx128x_set_op_mode(&SX128X_DEV, SX128X_RF_OPMODE_TRANSMITTER);
+
   //changed to work with interrupt
   uint16_t irq_reg = 0;
   unsigned int timeout = 0;
@@ -259,14 +259,14 @@ sx128x_transmit(unsigned short payload_len) {
   }
   if(timeout>=100000){
     LOG_DBG("timeoutreached: no message send, no interrupt received");
-  }  
+  }
   else{
     LOG_DBG("interupt high so let us get irq status");
     irq_reg = sx128x_cmd_get_irq_status(&SX128X_DEV);
 
   }
   varTest = 1;
-  
+
   sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
   sx128x_set_standby(&SX128X_DEV);
   if (irq_reg | SX128X_IRQ_REG_TX_DONE) {
@@ -287,10 +287,10 @@ sx128x_send(const void *payload, unsigned short payload_len) {
 
 static int
 sx128x_pending_packet(void) {
-#if SX128X_BUSY_RX 
+#if SX128X_BUSY_RX
   if (SX128X_DEV.settings.rx == sx128x_rx_received) {
     return true;
-  } 
+  }
   else if (SX128X_DEV.settings.rx == sx128x_rx_listening) {
     sx128x_receiving_packet();
     return false;
@@ -313,7 +313,7 @@ sx128x_pending_packet(void) {
 #else
   if (SX128X_DEV.settings.rx == sx128x_rx_received) {
     return true;
-  } 
+  }
   else if (SX128X_DEV.settings.rx == sx128x_rx_listening) {
     sx128x_receiving_packet();
     return false;
@@ -333,13 +333,13 @@ sx128x_receiving_packet(void) {
   }
 
   //problem cad: disable
-  
+
   sx128x_set_cad(&SX128X_DEV, SX128X_LORA_CAD_04_SYMBOL); //channel activity detection
   uint16_t irq_reg = 0;
-  
+
   LOG_DBG("STUCK?\n");
-  while(!(irq_reg = sx128x_cmd_get_irq_status(&SX128X_DEV))); 
-  
+  while(!(irq_reg = sx128x_cmd_get_irq_status(&SX128X_DEV)));
+
   /*
   unsigned int timeout = 0;
   unsigned int timeoutValue = 10000;
@@ -353,13 +353,13 @@ sx128x_receiving_packet(void) {
   LOG_DBG("UNSTUCK!\n");
 
   //cad disable
-  
+
   if (irq_reg & SX128X_IRQ_REG_CAD_DETECTED) {
     sx128x_set_rx(&SX128X_DEV);
     sx128x_rx_internal_set(&SX128X_DEV, sx128x_rx_receiving);
   } else {
     sx128x_set_standby(&SX128X_DEV);
-  }  
+  }
   sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
 #else
   if (SX128X_DEV.settings.rx == sx128x_rx_receiving) {
@@ -367,7 +367,7 @@ sx128x_receiving_packet(void) {
       return false;
     }
     return true;
-  }  
+  }
 #endif
   return SX128X_DEV.settings.rx == sx128x_rx_receiving;
 }
@@ -388,7 +388,7 @@ sx128x_read_packet(void *buf, unsigned short bufsize) {
     ((uint8_t*) buf)[SX128X_DEV._internal.rx_length] = '\0';
     //LOG_DBG("size error");
   }
- 
+
   //LOG_INFO("Received packet of %d bytes\n", SX128X_DEV._internal.rx_length);
 
   // TODO continuous rx handling
@@ -407,29 +407,29 @@ sx128x_read_packet(void *buf, unsigned short bufsize) {
 //radio on, start listening
 static int
 sx128x_on(void) {
-  //this should only turn the radio on 
+  //this should only turn the radio on
   LOG_DBG("radio ON\n");
   //set as listening
   sx128x_rx_internal_set(&SX128X_DEV, sx128x_rx_listening);
-#if !SX128X_BUSY_RX 
+#if !SX128X_BUSY_RX
   //set buffer base address
   //sx128x_set_preamble_length(&SX128X_DEV, CONFIG_LORA24_PREAMBLE_LENGTH_DEFAULT); // this sets the packet params again (should not be needed)
   sx128x_cmd_set_buffer_base_address(&SX128X_DEV, 0, 0);
   sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
-  #if HEADER_DETECTION  
+  #if HEADER_DETECTION
   sx128x_cmd_set_dio_irq_params(&SX128X_DEV,SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_HEADER_VALID,0,0);
-  #else   
+  #else
   //set interrupt + timeout added
-  sx128x_cmd_set_dio_irq_params(&SX128X_DEV,SX128X_IRQ_REG_RX_DONE|SX128X_IRQ_REG_RX_TX_TIMEOUT,0,0);  
+  sx128x_cmd_set_dio_irq_params(&SX128X_DEV,SX128X_IRQ_REG_RX_DONE|SX128X_IRQ_REG_RX_TX_TIMEOUT,0,0);
   #endif
   //set state as rx running
   sx128x_set_state(&SX128X_DEV, SX128X_RF_RX_RUNNING);
   //for interrupt it is set to 0
-  // In busy reception mode the RX is triggered with a CAD 
-  // scan that is faster to detect the packet than the DIO3 
+  // In busy reception mode the RX is triggered with a CAD
+  // scan that is faster to detect the packet than the DIO3
   // interrupt for the valid header
   // In async reception mode the reception notification will come
-  // from the interrupt.  
+  // from the interrupt.
 
   //this uses set rx command
   sx128x_set_op_mode(&SX128X_DEV, SX128X_RF_LORA_OPMODE_RECEIVER);
@@ -718,14 +718,14 @@ static void sx128x_init_radio(sx128x_t* dev) {
   sx128x_cmd_set_dio_irq_params(dev, 0, 0, 0);
 }
 
-int sx128x_initialization() { 
-  LOG_DBG("Init SPI\n");  
+int sx128x_initialization() {
+  LOG_DBG("Init SPI\n");
   if (spi_acquire(&SX128X_DEV.params.spi) != SPI_DEV_STATUS_OK) {
     LOG_ERR("Error init SPI\n");
     LOG_ERR("%d\n",spi_acquire(&SX128X_DEV.params.spi));
     return RADIO_RESULT_ERROR;
   }
-  
+
 
   sx128x_gpio_init(&SX128X_DEV);
 
@@ -736,12 +736,12 @@ int sx128x_initialization() {
 
   sx128x_init_radio(&SX128X_DEV);
 
-  LOG_INFO("Initialized LoRa module with SF: %d, CR: %d, BW: %d, CRC: %d, PRLEN: %d, HEADER: %d\n", 
-      sx128x_get_spreading_factor(&SX128X_DEV), 
-      sx128x_get_coding_rate(&SX128X_DEV), 
-      sx128x_get_bandwidth(&SX128X_DEV), 
-      sx128x_get_crc(&SX128X_DEV), 
-      sx128x_get_preamble_length(&SX128X_DEV), 
+  LOG_INFO("Initialized LoRa module with SF: %d, CR: %d, BW: %d, CRC: %d, PRLEN: %d, HEADER: %d\n",
+      sx128x_get_spreading_factor(&SX128X_DEV),
+      sx128x_get_coding_rate(&SX128X_DEV),
+      sx128x_get_bandwidth(&SX128X_DEV),
+      sx128x_get_crc(&SX128X_DEV),
+      sx128x_get_preamble_length(&SX128X_DEV),
       sx128x_get_fixed_header_len_mode(&SX128X_DEV)
 
   );
