@@ -116,6 +116,10 @@ uint8_t sx128x_cmd_get_rx_buffer_status(sx128x_t *dev)
 void sx128x_cmd_set_dio_irq_params(const sx128x_t *dev, uint16_t dio1_mask, uint16_t dio2_mask, uint16_t dio3_mask)
 {
     LOG_FUNC("Function call: %s\n", __func__);
+
+    // before setting new mask: clear all IRQ's
+    sx128x_cmd_clear_irq_status(dev, SX128X_IRQ_REG_ALL);
+
     switch (dev->settings.packet_type)
     {
     case SX128X_PACKET_TYPE_LORA:;
@@ -250,11 +254,10 @@ void _sx128x_cmd_set_rx(sx128x_t *dev, uint8_t period_base, uint16_t period_base
 }
 
 /*-------------- CAD --------------*/
-// ! untested
-void sx128x_set_cad(sx128x_t *dev, uint8_t cad_symbols)
+
+void sx128x_set_cad(sx128x_t *dev)
 {
     LOG_FUNC("Function call: %s\n", __func__);
-    sx128x_cmd_clear_irq_status(dev, SX128X_IRQ_REG_ALL);
     sx128x_set_state_event(&SX128X_DEV, SX128X_NO_EVENT);
     switch (dev->settings.packet_type)
     {
@@ -268,16 +271,16 @@ void sx128x_set_cad(sx128x_t *dev, uint8_t cad_symbols)
         return;
     }
 
-    sx128x_cmd_set_cad_params(dev, cad_symbols);
     sx128x_set_state_opmode(dev, SX128X_OPMODE_CAD);
 }
-// ! untested
-void sx128x_cmd_set_cad_params(const sx128x_t *dev, uint8_t symbol_num)
+
+void sx128x_cmd_set_cad_params(sx128x_t *dev, uint8_t symbol_num)
 {
     LOG_FUNC("Function call: %s\n", __func__);
+    dev->settings.lora.cad_symbols = symbol_num;
     sx128x_cmd_burst(dev, SX128X_CMD_SET_CAD_PARAMS, &symbol_num, 1, NULL, 0);
 }
-// ! untested
+
 void sx128x_cmd_set_cad(const sx128x_t *dev)
 {
     LOG_FUNC("Function call: %s\n", __func__);
@@ -288,7 +291,7 @@ void sx128x_cmd_set_cad(const sx128x_t *dev)
 
 /*-------------- STANDBY --------------*/
 
-void sx128x_cmd_set_standby(const sx128x_t *dev, uint8_t config)
+void _cmd_sx128x_set_standby(const sx128x_t *dev, uint8_t config)
 {
     LOG_FUNC("Function call: %s\n", __func__);
     LOG_DBG("Cmd set standby with config %#02x\n", config);
@@ -302,7 +305,6 @@ void sx128x_set_standby(sx128x_t *dev)
     LOG_DBG("Set standby\n");
 
     sx128x_set_state_rx(&SX128X_DEV, sx128x_rx_off);
-    sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
     sx128x_set_state_opmode(dev, SX128X_OPMODE_STANDBY);
     sx128x_cmd_set_dio_irq_params(dev, 0, 0, 0);
 }
@@ -393,7 +395,7 @@ void sx128x_set_state_opmode(sx128x_t *dev, sx128x_opmode_t op_mode)
         break;
     case SX128X_OPMODE_STANDBY:
         LOG_DBG_("set op mode: STANDBY\n");
-        sx128x_cmd_set_standby(dev, 0);
+        _cmd_sx128x_set_standby(dev, 0);
         break;
     case SX128X_OPMODE_CAD:
         LOG_DBG_("set op mode: CAD\n");

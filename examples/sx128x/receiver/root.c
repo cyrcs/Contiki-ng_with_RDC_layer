@@ -77,35 +77,42 @@ int initTimer = 0;
 PROCESS(node_process, "Shell");
 AUTOSTART_PROCESSES(&node_process);
 
-PROCESS_THREAD(node_process, ev, data) {
+PROCESS_THREAD(node_process, ev, data)
+{
 
-  PROCESS_BEGIN();
-  while (1) {
-    RX_DONE_FLAG = 0;
-    char buf[255];
-    NETSTACK_RADIO.on();
+    PROCESS_BEGIN();
+    while (1)
+    {
+        char buf[255];
+        NETSTACK_RADIO.on();
 
-    // While still receiving
-    while (RX_DONE_FLAG == 0) {
-      watchdog_periodic();
-      clock_delay_usec(50);
+        // While still receiving
+        while (SX128X_DEV.state.event != SX128X_RX_DONE)
+        {
+            watchdog_periodic();
+            clock_delay_usec(50);
+        }
+        // if receiving is done, read packet
+        if (SX128X_DEV.state.event == SX128X_RX_DONE)
+        {
+            packetbuf_clear();
+
+            // Read 255 chars into the buffer variable
+            int len = NETSTACK_RADIO.read((void *)buf, 255);
+            // if it exists, print the buffer
+            if (len > 0)
+            {
+                LOG_DBG("Received (%d bytes): '%s'\n", len, buf);
+            }
+            // else print time
+        }
+        else
+        {
+            LOG_DBG("RTIMER_NOW: %ld\n", RTIMER_NOW());
+        }
+        NETSTACK_RADIO.off();
+        clock_delay_usec(100);
     }
-    // if receiving is done, read packet
-    if (RX_DONE_FLAG == 1) {
-
-      // Read 255 chars into the buffer variable
-      int len = NETSTACK_RADIO.read((void *)buf, 255);
-      // if it exists, print the buffer
-      if (len > 0) {
-        LOG_DBG("Received (%d bytes): '%s'\n", len, buf);
-      }
-      // else print time
-    } else {
-      LOG_DBG("RTIMER_NOW: %ld\n", RTIMER_NOW());
-    }
-    NETSTACK_RADIO.off();
-    clock_delay_usec(100);
-  }
-  PROCESS_END();
+    PROCESS_END();
 }
 // #endregion ------------------------------------------------------------------

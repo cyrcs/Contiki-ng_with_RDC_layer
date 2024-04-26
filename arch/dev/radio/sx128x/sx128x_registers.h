@@ -25,19 +25,20 @@
 #define SX128X_REGISTERS_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
- * @name   SX128X transceiver available commands
- * @{
- */
+    /**
+     * @name   SX128X transceiver available commands
+     * @{
+     */
 
 #define SX128X_CMD_GET_STATUS (0xC0)
 #define SX128X_CMD_WRITE_REG (0x18)
 #define SX128X_CMD_READ_REG (0x19)
 #define SX128X_CMD_WRITE_BUF (0x1A)
-#define SX128X_CMD_READ_BUF  (0x1B)
+#define SX128X_CMD_READ_BUF (0x1B)
 #define SX128X_CMD_SET_SLEEP (0x84)
 #define SX128X_CMD_SET_STANDBY (0x80)
 #define SX128X_CMD_SET_FS (0xC1)
@@ -100,73 +101,78 @@ extern "C" {
 #define SX128X_SLEEP_INSTRUCTION_RAM_RETENTION (0x04)
 
 /* Standby settings */
-#define SX128X_STANDBY_RC (0x00) /* Device running on RC 13MHz */
+#define SX128X_STANDBY_RC (0x00)   /* Device running on RC 13MHz */
 #define SX128X_STANDBY_XOSC (0x01) /* Device running on XTAL 52MHz */
 
-/**
- * @brief period base for RX and TX.
- * 
- */
-typedef enum{
-    PERIOD_BASE_15_US = 0x00,
-    PERIOD_BASE_62_US = 0x01,
-    PERIOD_BASE_01_MS = 0x02,
-    PERIOD_BASE_04_MS = 0x03,
-}sx128x_period_base_t;
+    /**
+     * @brief period base for RX and TX.
+     *
+     */
+    typedef enum
+    {
+        PERIOD_BASE_15_US = 0x00,
+        PERIOD_BASE_62_US = 0x01,
+        PERIOD_BASE_01_MS = 0x02,
+        PERIOD_BASE_04_MS = 0x03,
+    } sx128x_period_base_t;
 
+    /**
+     * @brief TX ramp times.
+     */
+    typedef enum
+    {
+        TX_RADIO_RAMP_02_US = 0x00,
+        TX_RADIO_RAMP_04_US = 0x20,
+        TX_RADIO_RAMP_06_US = 0x40,
+        TX_RADIO_RAMP_08_US = 0x60,
+        TX_RADIO_RAMP_10_US = 0x80,
+        TX_RADIO_RAMP_12_US = 0xA0,
+        TX_RADIO_RAMP_16_US = 0xC0,
+        TX_RADIO_RAMP_20_US = 0xE0,
+    } sx128x_tx_ramp_times_t;
 
-/**
- * @brief TX ramp times.
-*/
-typedef enum {
-TX_RADIO_RAMP_02_US = 0x00,
-TX_RADIO_RAMP_04_US = 0x20,
-TX_RADIO_RAMP_06_US = 0x40,
-TX_RADIO_RAMP_08_US = 0x60,
-TX_RADIO_RAMP_10_US = 0x80,
-TX_RADIO_RAMP_12_US = 0xA0,
-TX_RADIO_RAMP_16_US = 0xC0,
-TX_RADIO_RAMP_20_US = 0xE0,
-} sx128x_tx_ramp_times_t;
+    /**
+     * @brief Symbols used for 1 CAD.
+     */
+    typedef enum
+    {
+        CAD_SYMBOLS_01 = 0x00, /**< 1 symbol */
+        CAD_SYMBOLS_02 = 0x20, /**< 2 symbols */
+        CAD_SYMBOLS_04 = 0x40, /**< 4 symbols */
+        CAD_SYMBOLS_08 = 0x60, /**< 8 symbols */
+        CAD_SYMBOLS_16 = 0x80, /**< 16 symbols */
+    } sx128x_cad_symbols_t;
 
-/**
- * @brief Symbols used for 1 CAD.
-*/
-typedef enum {
-CAD_SYMBOLS_01 = 0x00,              /**< 1 symbol */
-CAD_SYMBOLS_02 = 0x20,              /**< 2 symbols */
-CAD_SYMBOLS_04 = 0x40,              /**< 4 symbols */
-CAD_SYMBOLS_08 = 0x60,              /**< 8 symbols */
-CAD_SYMBOLS_16 = 0x80,              /**< 16 symbols */
-}sx128x_cad_symbols_t;
+    typedef enum
+    {
+        LORA_SF_5 = 0x50,  /**< spreading factor 5 */
+        LORA_SF_6 = 0x60,  /**< spreading factor 6 */
+        LORA_SF_7 = 0x70,  /**< spreading factor 7 */
+        LORA_SF_8 = 0x80,  /**< spreading factor 8 */
+        LORA_SF_9 = 0x90,  /**< spreading factor 9 */
+        LORA_SF_10 = 0xA0, /**< spreading factor 10 */
+        LORA_SF_11 = 0xB0, /**< spreading factor 11 */
+        LORA_SF_12 = 0xC0  /**< spreading factor 12 */
+    } LoRa_spreading_factors;
 
-typedef enum {
-    LORA_SF_5 = 0x50,                  /**< spreading factor 5 */
-    LORA_SF_6 = 0x60,                  /**< spreading factor 6 */
-    LORA_SF_7 = 0x70,                  /**< spreading factor 7 */
-    LORA_SF_8 = 0x80,                  /**< spreading factor 8 */
-    LORA_SF_9 = 0x90,                  /**< spreading factor 9 */
-    LORA_SF_10 = 0xA0,                 /**< spreading factor 10 */
-    LORA_SF_11 = 0xB0,                 /**< spreading factor 11 */
-    LORA_SF_12 = 0xC0                  /**< spreading factor 12 */
-}LoRa_spreading_factors;
+    typedef enum
+    {
+        LORA_BW_200 = 0x34, /**< 200 kHz bandwidth */
+        LORA_BW_400 = 0x26, /**< 400 kHz bandwidth */
+        LORA_BW_800 = 0x18, /**< 800 kHz bandwidth */
+        LORA_BW_1600 = 0x0A /**< 1600 kHz bandwidth */
+    } LoRa_bandwidths;
 
-typedef enum {
-    LORA_BW_200 = 0x0A,               /**< 200 kHz bandwidth */
-    LORA_BW_400 = 0x18,               /**< 400 kHz bandwidth */
-    LORA_BW_800 = 0x26,               /**< 800 kHz bandwidth */
-    LORA_BW_1600 = 0x34               /**< 1600 kHz bandwidth */
-}LoRa_bandwidths;
-
-typedef enum {
-    LORA_CR_4_5 = 0x01,                   /**< coding rate 4/5 */
-    LORA_CR_4_6 = 0x02,                   /**< coding rate 4/6 */
-    LORA_CR_4_7 = 0x03,                   /**< coding rate 4/7 */
-    LORA_CR_4_8 = 0x04,                   /**< coding rate 4/8 */
-    LORA_CR_LI_4_5 = 0x05,                /**< coding rate 4/5 */
-    LORA_CR_LI_4_6 = 0x06,                /**< coding rate 4/6 */
-    LORA_CR_LI_4_7 = 0x07,                /**< coding rate 4/7 */
-}LoRa_coding_rates;
+    typedef enum
+    {
+        LORA_CR_4_5 = 0x01,    /**< coding rate 4/5 */
+        LORA_CR_4_6 = 0x02,    /**< coding rate 4/6 */
+        LORA_CR_4_7 = 0x03,    /**< coding rate 4/7 */
+        LORA_CR_4_8 = 0x04,    /**< coding rate 4/8 */
+        LORA_CR_LI_4_5 = 0x05, /**< coding rate 4/5 */
+        LORA_CR_LI_4_6 = 0x06, /**< coding rate 4/6 */
+        LORA_CR_LI_4_7 = 0x07, /**< coding rate 4/7 */
+    } LoRa_coding_rates;
 
 /* Packet type header definition */
 #define SX128X_LORA_EXPLICIT_HEADER (0x00)
@@ -199,9 +205,7 @@ typedef enum {
 #define SX128X_IRQ_REG_PREAMBLE_DETECTED (1 << 0x0F)
 #define SX128X_IRQ_REG_ALL (0xFFFF)
 
-#define SX128X_IRQ_REG_LORA_MASK (SX128X_IRQ_REG_TX_DONE | SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_HEADER_VALID \
-            | SX128X_IRQ_REG_HEADER_ERROR | SX128X_IRQ_REG_CRC_ERROR | SX128X_IRQ_REG_RANGING_SLAVE_REQUEST_DISCARD \
-            | SX128X_IRQ_REG_CAD_DONE | SX128X_IRQ_REG_CAD_DETECTED | SX128X_IRQ_REG_RX_TX_TIMEOUT)
+#define SX128X_IRQ_REG_LORA_MASK (SX128X_IRQ_REG_TX_DONE | SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_HEADER_VALID | SX128X_IRQ_REG_HEADER_ERROR | SX128X_IRQ_REG_CRC_ERROR | SX128X_IRQ_REG_RANGING_SLAVE_REQUEST_DISCARD | SX128X_IRQ_REG_CAD_DONE | SX128X_IRQ_REG_CAD_DETECTED | SX128X_IRQ_REG_RX_TX_TIMEOUT)
 
 /* Regulator mode */
 // #define SX128X_REGULATOR_MODE_LDO (0x00)
@@ -210,184 +214,182 @@ typedef enum {
 /*!
  * \brief Compensation delay for SetAutoTx method in microseconds
  */
-#define AUTO_TX_OFFSET                              33
+#define AUTO_TX_OFFSET 33
 
 /*!
  * \brief The address of the register holding the firmware version MSB
  */
-#define REG_LR_FIRMWARE_VERSION_MSB                 0x0153
+#define REG_LR_FIRMWARE_VERSION_MSB 0x0153
 
 /*!
  * \brief The address of the register holding the first byte defining the CRC seed
  *
  * \remark Only used for packet types GFSK and Flrc
  */
-#define REG_LR_CRCSEEDBASEADDR                      0x09C8
- 
+#define REG_LR_CRCSEEDBASEADDR 0x09C8
+
 /*!
  * \brief The address of the register holding the first byte defining the CRC polynomial
  *
  * \remark Only used for packet types GFSK and Flrc
  */
-#define REG_LR_CRCPOLYBASEADDR                      0x09C6
- 
+#define REG_LR_CRCPOLYBASEADDR 0x09C6
+
 /*!
  * \brief The address of the register holding the first byte defining the whitening seed
  *
  * \remark Only used for packet types GFSK, FLRC and BLE
  */
-#define REG_LR_WHITSEEDBASEADDR                     0x09C5
- 
+#define REG_LR_WHITSEEDBASEADDR 0x09C5
+
 /*!
  * \brief The address of the register holding the ranging id check length
  *
  * \remark Only used for packet type Ranging
  */
-#define REG_LR_RANGINGIDCHECKLENGTH                 0x0931
- 
+#define REG_LR_RANGINGIDCHECKLENGTH 0x0931
+
 /*!
  * \brief The address of the register holding the device ranging id
  *
  * \remark Only used for packet type Ranging
  */
-#define REG_LR_DEVICERANGINGADDR                    0x0916
- 
+#define REG_LR_DEVICERANGINGADDR 0x0916
+
 /*!
  * \brief The address of the register holding the device ranging id
  *
  * \remark Only used for packet type Ranging
  */
-#define REG_LR_REQUESTRANGINGADDR                   0x0912
- 
+#define REG_LR_REQUESTRANGINGADDR 0x0912
+
 /*!
  * \brief The address of the register holding ranging results configuration
  * and the corresponding mask
  *
  * \remark Only used for packet type Ranging
  */
-#define REG_LR_RANGINGRESULTCONFIG                  0x0924
-#define MASK_RANGINGMUXSEL                          0xCF
- 
+#define REG_LR_RANGINGRESULTCONFIG 0x0924
+#define MASK_RANGINGMUXSEL 0xCF
+
 /*!
  * \brief The address of the register holding the first byte of ranging results
  * Only used for packet type Ranging
  */
-#define REG_LR_RANGINGRESULTBASEADDR                0x0961
- 
+#define REG_LR_RANGINGRESULTBASEADDR 0x0961
+
 /*!
  * \brief The address of the register allowing to read ranging results
  *
  * \remark Only used for packet type Ranging
  */
-#define REG_LR_RANGINGRESULTSFREEZE                 0x097F
- 
+#define REG_LR_RANGINGRESULTSFREEZE 0x097F
+
 /*!
  * \brief The address of the register holding the first byte of ranging calibration
  *
  * \remark Only used for packet type Ranging
  */
-#define REG_LR_RANGINGRERXTXDELAYCAL                0x092C
- 
+#define REG_LR_RANGINGRERXTXDELAYCAL 0x092C
+
 /*!
  *\brief The address of the register holding the ranging filter window size
  *
  * \remark Only used for packet type Ranging
  */
-#define REG_LR_RANGINGFILTERWINDOWSIZE              0x091E
- 
+#define REG_LR_RANGINGFILTERWINDOWSIZE 0x091E
+
 /*!
  *\brief The address of the register to reset for clearing ranging filter
  *
  * \remark Only used for packet type Ranging
  */
-#define REG_LR_RANGINGRESULTCLEARREG                0x0923
- 
- 
-#define REG_RANGING_RSSI                            0x0964
- 
+#define REG_LR_RANGINGRESULTCLEARREG 0x0923
+
+#define REG_RANGING_RSSI 0x0964
+
 /*!
  * \brief The default number of samples considered in built-in ranging filter
  */
-#define DEFAULT_RANGING_FILTER_SIZE                 127
- 
+#define DEFAULT_RANGING_FILTER_SIZE 127
+
 /*!
  * \brief The address of the register holding LORA packet parameters
  */
-#define REG_LR_PACKETPARAMS                         0x903
- 
+#define REG_LR_PACKETPARAMS 0x903
+
 /*!
  * \brief The address of the register holding payload length
  *
  * \remark Do NOT try to read it directly. Use GetRxBuffer( ) instead.
  */
-#define REG_LR_PAYLOADLENGTH                        0x901
- 
+#define REG_LR_PAYLOADLENGTH 0x901
+
 /*!
  * \brief The addresses of the registers holding SyncWords values
  *
  * \remark The addresses depends on the Packet Type in use, and not all
  *         SyncWords are available for every Packet Type
  */
-#define REG_LR_SYNCWORDBASEADDRESS1                 0x09CE
-#define REG_LR_SYNCWORDBASEADDRESS2                 0x09D3
-#define REG_LR_SYNCWORDBASEADDRESS3                 0x09D8
- 
+#define REG_LR_SYNCWORDBASEADDRESS1 0x09CE
+#define REG_LR_SYNCWORDBASEADDRESS2 0x09D3
+#define REG_LR_SYNCWORDBASEADDRESS3 0x09D8
+
 /*!
  * \brief The MSB address and mask used to read the estimated frequency
  * error
  */
-#define REG_LR_ESTIMATED_FREQUENCY_ERROR_MSB        0x0954
-#define REG_LR_ESTIMATED_FREQUENCY_ERROR_MASK       0x0FFFFF
- 
+#define REG_LR_ESTIMATED_FREQUENCY_ERROR_MSB 0x0954
+#define REG_LR_ESTIMATED_FREQUENCY_ERROR_MASK 0x0FFFFF
+
 /*!
  * \brief Defines how many bit errors are tolerated in sync word detection
  */
-#define REG_LR_SYNCWORDTOLERANCE                    0x09CD
- 
+#define REG_LR_SYNCWORDTOLERANCE 0x09CD
+
 /*!
  * \brief Register and mask for GFSK and BLE preamble length forcing
  */
-#define REG_LR_PREAMBLELENGTH                       0x09C1
-#define MASK_FORCE_PREAMBLELENGTH                   0x8F
- 
+#define REG_LR_PREAMBLELENGTH 0x09C1
+#define MASK_FORCE_PREAMBLELENGTH 0x8F
+
 /*!
  * \brief Register for MSB Access Address (BLE)
  */
-#define REG_LR_BLE_ACCESS_ADDRESS                   0x09CF
-#define BLE_ADVERTIZER_ACCESS_ADDRESS               0x8E89BED6
- 
+#define REG_LR_BLE_ACCESS_ADDRESS 0x09CF
+#define BLE_ADVERTIZER_ACCESS_ADDRESS 0x8E89BED6
+
 /*!
  * \brief Select high sensitivity versus power consumption
  */
-#define REG_LNA_REGIME                              0x0891
-#define MASK_LNA_REGIME                             0xC0
- 
+#define REG_LNA_REGIME 0x0891
+#define MASK_LNA_REGIME 0xC0
+
 /*
  * \brief Register and mask controling the enabling of manual gain control
  */
-#define REG_ENABLE_MANUAL_GAIN_CONTROL     0x089F
-#define MASK_MANUAL_GAIN_CONTROL           0x80
- 
+#define REG_ENABLE_MANUAL_GAIN_CONTROL 0x089F
+#define MASK_MANUAL_GAIN_CONTROL 0x80
+
 /*!
  * \brief Register and mask controling the demodulation detection
  */
-#define REG_DEMOD_DETECTION                0x0895
-#define MASK_DEMOD_DETECTION               0xFE
- 
+#define REG_DEMOD_DETECTION 0x0895
+#define MASK_DEMOD_DETECTION 0xFE
+
 /*!
  * Register and mask to set the manual gain parameter
  */
-#define REG_MANUAL_GAIN_VALUE              0x089E
-#define MASK_MANUAL_GAIN_VALUE             0xF0
+#define REG_MANUAL_GAIN_VALUE 0x089E
+#define MASK_MANUAL_GAIN_VALUE 0xF0
 
-#define SX128X_RF_LORA_OPMODE_MASK                                   (0xF8)
+#define SX128X_RF_LORA_OPMODE_MASK (0xF8)
 
-/* LoRa specific modes */
+    /* LoRa specific modes */
 
-#define SX128X_RF_OPMODE_MASK                                        (0xF8)
+#define SX128X_RF_OPMODE_MASK (0xF8)
 
-
-/** @} */
+    /** @} */
 
 #ifdef __cplusplus
 }

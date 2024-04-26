@@ -21,7 +21,7 @@ unsigned int validHeader = 0; // changes to 1 if lora preamble detected is valid
 
 PROCESS(sx128x_rf_process, "sx128x RF driver");
 
-/*-------------------------------- CONFIGURE DEVICE --------------------------*/
+/* ---------------------------- CONFIGURE DEVICE ---------------------------- */
 
 sx128x_t __sx128x_dev = {
     .state = {},
@@ -46,7 +46,7 @@ sx128x_t __sx128x_dev = {
     .irq = 0,
 };
 
-/*-------------------------------------- TSCH --------------------------------*/
+/* ---------------------------------- TSCH ---------------------------------- */
 int tsch_packet_duration(size_t len)
 {
     LOG_DBG("tsch_packet_duration\n");
@@ -79,7 +79,7 @@ tsch_timeslot_timing_usec tsch_timing_sx128x = {
 static int sx128x_receiving_packet(void);
 static int sx128x_read_packet(void *buf, unsigned short bufsize);
 
-/*----------------------------------- INTERRUPT ------------------------------*/
+/* -------------------------------- INTERRUPT ------------------------------- */
 #if SX128X_USE_INTERRUPT
 #define SX128X_DIO1_PORT_BASE GPIO_PORT_TO_BASE(SX128X_DIO1_PORT)
 #define SX128X_DIO1_PIN_MASK GPIO_PIN_MASK(SX128X_DIO1_PIN)
@@ -188,6 +188,7 @@ void sx128x_interrupt_opmode_transmitter()
 static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask)
 {
     LOG_FUNC("Function call: %s\n", __func__);
+    // printf("inside interrupt\n");
     // get irq status and then reset it
     SX128X_DEV.irq = sx128x_cmd_get_irq_status(&SX128X_DEV);
     sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
@@ -225,6 +226,7 @@ static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask)
         break;
     }
     LOG_DBG("Done handling interrupt\n");
+    // printf("done interrupt\n");
 }
 
 gpio_hal_event_handler_t sx128x_event_handler_dio1 = {
@@ -233,7 +235,7 @@ gpio_hal_event_handler_t sx128x_event_handler_dio1 = {
     .pin_mask = (gpio_hal_pin_to_mask(SX128X_DIO1_PIN) << (SX128X_DIO1_PORT << 3))};
 #endif // SX128X_USE_INTERRUPT
 
-/*-------------------------------------- TX ----------------------------------*/
+/* ----------------------------------- TX ----------------------------------- */
 static int
 sx128x_prepare(const void *payload, unsigned short payload_len)
 {
@@ -245,7 +247,6 @@ sx128x_prepare(const void *payload, unsigned short payload_len)
     if (sx128x_get_state_opmode(&SX128X_DEV) != SX128X_OPMODE_STANDBY)
     {
         sx128x_set_standby(&SX128X_DEV);
-        // clock_delay_usec(20000);
     }
     // reset address pointer
     sx128x_cmd_set_buffer_base_address(&SX128X_DEV, 0, 0);
@@ -269,13 +270,13 @@ sx128x_transmit(unsigned short payload_len)
     // set radio to TX
     sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_TX);
 
-    // wait for interrupt
+    // wait for interrupt to trigger OR wait for manual timeout after 10s
     unsigned int timeout = 0;
-    unsigned int timeoutValue = 10000;
+    unsigned int timeoutValue = 100000;
     while ((sx128x_get_state_event(&SX128X_DEV) != SX128X_TX_DONE) && (timeout <= timeoutValue))
     {
         watchdog_periodic();
-        clock_delay_usec(500);
+        clock_delay_usec(100);
         timeout++;
     }
     LOG_DBG("TIMEOUT: %d\n", timeout);
@@ -317,12 +318,11 @@ sx128x_send(const void *payload, unsigned short payload_len)
     return sx128x_transmit(payload_len);
 }
 
-/*-------------------------------------- RX ----------------------------------*/
+/* ----------------------------------- RX ----------------------------------- */
 static int
 sx128x_pending_packet(void)
 {
     LOG_FUNC("Function call: %s\n", __func__);
-
     if (SX128X_DEV.state.event == SX128X_RX_DONE)
     {
         return true;
@@ -390,13 +390,14 @@ static void sx128x_poll_handler(void)
     if (sx128x_pending_packet() && sx128x_get_state_rx(&SX128X_DEV) == sx128x_rx_received)
     {
         LOG_DBG("reading packet\n");
-        packetbuf_clear();
         len = sx128x_read_packet(packetbuf_dataptr(), (&SX128X_DEV)->_internal.rx_length);
+        packetbuf_clear();
         if (len > 0)
         {
             packetbuf_set_datalen(len);
             NETSTACK_RDC.input();
         }
+        packetbuf_clear();
     }
 
     // TODO handle other flags below
@@ -415,7 +416,7 @@ PROCESS_THREAD(sx128x_rf_process, ev, data)
     PROCESS_END();
 }
 
-/*------------------------------------- CAD ----------------------------------*/
+/* ----------------------------------- CAD ---------------------------------- */
 int sx128x_clear_channel_assesment()
 {
     LOG_FUNC("Function call: %s\n", __func__);
@@ -428,13 +429,13 @@ int sx128x_channel_activity_detection()
     LOG_FUNC("Function call: %s\n", __func__);
 
     // do a CAD
-    sx128x_set_cad(&SX128X_DEV, CONFIG_LORA24_CAD_SYMBOLS_DEFAULT);
+    sx128x_set_cad(&SX128X_DEV);
 
     // wait for interrupt for either CAD done or CAD detected
     while ((sx128x_get_state_event(&SX128X_DEV) != SX128X_CAD_DONE) && (sx128x_get_state_event(&SX128X_DEV) != SX128X_CAD_DETECTED))
     {
+        clock_delay_usec(50);
         watchdog_periodic();
-        clock_delay_usec(500);
     }
 
     if (sx128x_get_state_event(&SX128X_DEV) == SX128X_CAD_DETECTED)
@@ -453,8 +454,7 @@ int sx128x_channel_activity_detection()
         return CCA_ERROR;
     }
 }
-
-/* ----------------------------------- ON/OFF ------------------------------- */
+/* --------------------------------- ON/OFF --------------------------------- */
 static int
 sx128x_on(void)
 {
@@ -706,8 +706,7 @@ radio_result_t sx128x_set_object(radio_param_t param, const void *src, size_t si
     LOG_FUNC("Function call: %s\n", __func__);
     return RADIO_RESULT_OK;
 }
-
-/*---------------------------------------------------------------------------*/
+/* -------------------------------------------------------------------------- */
 int sx128x_reset(const sx128x_t *dev)
 {
     LOG_FUNC("Function call: %s\n", __func__);
@@ -723,7 +722,7 @@ int sx128x_reset(const sx128x_t *dev)
     return 0;
 }
 
-/*--------------------------------INITIALIZATION -----------------------------*/
+/* ----------------------------- INITIALIZATION ----------------------------- */
 static void sx128x_gpio_init(sx128x_t *dev)
 {
     LOG_FUNC("Function call: %s\n", __func__);
@@ -742,7 +741,6 @@ static void sx128x_gpio_init(sx128x_t *dev)
     ioc_set_over(SX128X_DIO1_PORT, SX128X_DIO1_PIN, IOC_OVERRIDE_DIS);
     gpio_hal_register_handler(&sx128x_event_handler_dio1);
     GPIO_ENABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
-
     NVIC_EnableIRQ(GPIO_B_IRQn);
 #endif
 }
@@ -760,19 +758,19 @@ static void sx128x_init_radio(sx128x_t *dev)
     sx128x_set_standby(dev);
 
     // LoRa settings
-    LOG_DBG("set bandwidth\n");
-    sx128x_set_bandwidth(dev, CONFIG_LORA24_BW_DEFAULT); // zet bandwidth default
-    LOG_DBG("set spreading factor\n");
+    LOG_DBG("Configuring LoRa modulation\n");
     sx128x_set_spreading_factor(dev, CONFIG_LORA24_SF_DEFAULT);
-    LOG_DBG("set coding rate\n");
+    sx128x_set_bandwidth(dev, CONFIG_LORA24_BW_DEFAULT);
     sx128x_set_coding_rate(dev, CONFIG_LORA24_CR_DEFAULT);
 
+    sx128x_cmd_set_cad_params(&SX128X_DEV, CONFIG_LORA24_CAD_SYMBOLS_DEFAULT);
+
     // default packet parameters
-    sx128x_set_crc(dev, CONFIG_LORA24_PAYLOAD_CRC_ON_DEFAULT);
+    sx128x_set_preamble_length(dev, CONFIG_LORA24_PREAMBLE_LENGTH_DEFAULT);
     sx128x_set_fixed_header_len_mode(dev, false); // ! add variable for this
     sx128x_set_iq_inverted(dev, false);           // ! add variable for this
-    sx128x_set_preamble_length(dev, CONFIG_LORA24_PREAMBLE_LENGTH_DEFAULT);
-    sx128x_set_payload_length(dev, CONFIG_LORA24_PAYLOAD_LENGTH_DEFAULT);
+    sx128x_set_crc(dev, CONFIG_LORA24_PAYLOAD_CRC_ON_DEFAULT);
+    sx128x_set_payload_length(dev, CONFIG_LORA24_PAYLOAD_LENGTH_DEFAULT); //! this function looks pretty useless since this value is set every time a packet is sent. Only use would be combined with implicit header but then the prepare_packet function should be updated
 
     sx128x_cmd_set_frequency(dev, SX128X_CHANNEL_DEFAULT);
     sx128x_cmd_set_buffer_base_address(dev, 0, 0);
@@ -816,14 +814,14 @@ int sx128x_initialization()
     LOG_INFO("RX_OFFSET: %d\n", SX128X_TSCH_DEFAULT_TS_RX_OFFSET);
     LOG_INFO("TX_ACK_DELAY: %d\n", SX128X_TSCH_DEFAULT_TS_TX_ACK_DELAY);
     LOG_INFO("RX_ACK_DELAY: %d\n", SX128X_TSCH_DEFAULT_TS_RX_ACK_DELAY);
-    LOG_INFO("MAX_TX: %d\n", SX128X_TSCH_DEFAULT_TS_MAX_TX);
+    LOG_INFO("MAX_TX: %d\n", SX128X_TSCH_DEdata rateFAULT_TS_MAX_TX);
     LOG_INFO("MAX_ACK: %d\n", SX128X_TSCH_DEFAULT_TS_MAX_ACK);
 #endif
 
     return RADIO_RESULT_OK;
 }
 
-/* ---------------------------- RADIO DRIVER -------------------------------- */
+/* ------------------------------ RADIO DRIVER ------------------------------ */
 const struct radio_driver sx128x_radio_driver = {
     sx128x_initialization,
     sx128x_prepare,

@@ -1,51 +1,3 @@
-// #region License -------------------------------------------------------------
-/*
- * Copyright (c) 2020, Perale Thomas
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the Institute nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- * This file is part of the Contiki operating system.
- *
- */
-// #endregion ------------------------------------------------------------------
-// #region File Description ----------------------------------------------------
-/**
- * \addtogroup zoul-examples
- * @{
- *
- * \defgroup zoul-sx1280-test RN2483 Wireless Module sensor.
- *
- * @{
- *
- * \file
- *         A quick program for testing the SX1280 Wireless Module sensor.
- * \author
- *         Perale Thomas <tperale@vub.be>
- */
-// #endregion ------------------------------------------------------------------
 // #region Libraries -----------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,62 +14,164 @@
 #include "sys/log.h"
 #include "sx128x.h"
 #include "antenna-sw.h"
-
 #include "string.h"
 #include "sys/etimer.h"
 // #endregion ------------------------------------------------------------------
 // #region Defines--------------------------------------------------------------
 #define LOG_MODULE "MAIN"
 #define LOG_LEVEL LOG_LEVEL_DBG
-#define TIMEOUTVALUE (100 * 2000)
-int initTimer = 0;
+
+#define AMOUNT_OF_PACKETS 10
+
+// ------------------------------- refactor -----------------------------------
+int convert_sf(int sf)
+{
+    switch (sf)
+    {
+    case LORA_SF_12:
+        return 12;
+    case LORA_SF_7:
+        return 7;
+    case LORA_SF_5:
+        return 5;
+    default:
+        return -1;
+    }
+}
+int convert_bw(int bw)
+{
+    switch (bw)
+    {
+    case LORA_BW_200:
+        return 200;
+    case LORA_BW_1600:
+        return 1600;
+    default:
+        return -1;
+    }
+}
+int convert_cad_symbols(int cad_symbols)
+{
+    switch (cad_symbols)
+    {
+    case CAD_SYMBOLS_01:
+        return 1;
+    case CAD_SYMBOLS_02:
+        return 2;
+    case CAD_SYMBOLS_04:
+        return 4;
+    case CAD_SYMBOLS_08:
+        return 8;
+    case CAD_SYMBOLS_16:
+        return 16;
+    default:
+        return -1;
+    }
+}
+
+void send_start_packet(int mode)
+{
+    // printf("starting in mode: %d\n", mode);
+
+    char message[255];
+    sprintf(message, "start: %d", mode);
+
+    // use default parameters
+    sx128x_cmd_set_modulation_params(&SX128X_DEV, LORA_SF_12, LORA_BW_200, LORA_CR_4_8);
+    // NETSTACK_RADIO.on();
+
+    // printf("sending start packet in status: %d, %d\n", SX128X_DEV.settings.lora.spreading_factor, SX128X_DEV.settings.lora.bandwidth);
+
+    // send message
+    NETSTACK_RADIO.send(message, strlen(message));
+    // printf("sent start packet: %s\n", message);
+}
 
 // #endregion ------------------------------------------------------------------
 // #region Process -------------------------------------------------------------
 PROCESS(node_process, "Shell");
 AUTOSTART_PROCESSES(&node_process);
 
-PROCESS_THREAD(node_process, ev, data) {
+PROCESS_THREAD(node_process, ev, data)
+{
 
+    static struct etimer et;
+    static int WAIT_TIME;
+    static int SF;
+    static int BW;
+    static int j;
+    static int k;
+    static int i;
+    PROCESS_BEGIN();
+    static const int modes[4][3] = {
+        {LORA_SF_12, LORA_BW_200, 1000},
+        {LORA_SF_12, LORA_BW_1600, 125},
+        {LORA_SF_7, LORA_BW_200, 62},   // 0.5
+        {LORA_SF_7, LORA_BW_1600, 10}}; // 0.06
+    static const int cads_to_perform[4][5] = {
+        {161, 107, 65, 38, 23},
+        {149, 101, 63, 37, 22},
+        {200, 134, 86, 52, 30},
+        {95, 84, 70, 59, 39}};
+    static const int arr_CAD_symbols[5] = {1, 2, 4, 8, 16};
+    static const int arr_CAD_symbols_settings[5] = {CAD_SYMBOLS_01, CAD_SYMBOLS_02, CAD_SYMBOLS_04, CAD_SYMBOLS_08, CAD_SYMBOLS_16};
 
-  // static struct etimer et;
-  PROCESS_BEGIN();
+    // loop over every mode
+    for (i = 0; i < 4; i++)
+    {
+        // set the correct parameters according to the mode
+        SF = modes[i][0];
+        BW = modes[i][1];
+        WAIT_TIME = modes[i][2];
 
-  // etimer_set(&et, CLOCK_SECOND * 1);
+        // test every mode 5 times
+        for (j = 0; j < 5; j++)
+        {
+            // send start packet
+            send_start_packet(i);
 
-  uint8_t busy_counter = 0;
+            // set timer
+            etimer_set(&et, WAIT_TIME);
 
-  while (1) {
-    // PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-    // etimer_reset(&et);
+            // print the current configuration that is being tested
+            // printf("Testing mode: %d, with params: SF: %d, BW: %d, %d symbols per cad, total symbols: %d, amount_of_cads_to_measure: %d, WAIT_TIME: %d\n", i, convert_sf(SF), convert_bw(BW), arr_CAD_symbols[j], symbols, cads_to_perform[i][j], WAIT_TIME);
+            printf("Testing  with params: SF: %d, BW: %d, symbols per CAD: %d\n", convert_sf(SF), convert_bw(BW), arr_CAD_symbols[j]);
 
-    watchdog_periodic();
+            // make sure the device is using the correct configurations
+            // set CAD params
+            sx128x_cmd_set_cad_params(&SX128X_DEV, arr_CAD_symbols_settings[j]);
+            // set the correct parameters
+            sx128x_cmd_set_modulation_params(&SX128X_DEV, SF, BW, LORA_CR_4_5);
 
+            // repeat for 20 packets
+            for (k = 0; k < AMOUNT_OF_PACKETS; k++)
+            {
+                // wait for timer to finish
+                PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
 
-    sx128x_set_state_event(&SX128X_DEV, SX128X_NO_EVENT); 
-    int cca = sx128x_channel_activity_detection();
-    
-    /*
-    only keep the first 5 busy channel states, otherwise the entire .csv file is filled with 0 making it a lot harder to look at. otherwise save the time since the start of the program and the state of the channel and write them to a .csv file.
-    */
-    if(cca == 0)
-      busy_counter += 1;
-    else if(cca == 1)
-      busy_counter = 0;
+                /* Reset the etimer to trig again in 1 second */
+                etimer_reset(&et);
 
-    if (busy_counter < 5)
-      printf("%d; %lu\n", cca, RTIMER_NOW());
-
-    // LOG_DBG("CCA: %d at %llu\n", cca, RTIMER_NOW() - time);
-
-    // if(cca == 0){
-    //   LOG_DBG("Channel is busy\n");
-    // }else if( cca == 1){
-    //   LOG_DBG("Channel is clear\n");
-    // }else{
-    //   LOG_DBG("CCA failed\n");
-    // }
-  }
-  PROCESS_END();
+                // ! malloc not recommended, should be using memb_alloc
+                int *results = (int *)malloc(cads_to_perform[i][j] * sizeof(int));
+                // continuously perform CAD's
+                for (int h = 0; h < cads_to_perform[i][j]; h++)
+                {
+                    results[h] = sx128x_channel_activity_detection();
+                }
+                for (int h = 0; h < cads_to_perform[i][j]; h++)
+                {
+                    printf("%d", results[h]);
+                }
+                // ! free not recommended, should be using memb_free
+                free(results);
+                printf("\n");
+                // wait again for timer to allow for the transmitter to change mode
+            }
+            PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+            etimer_reset(&et);
+        }
+    }
+    PROCESS_END();
 }
 // #endregion ------------------------------------------------------------------

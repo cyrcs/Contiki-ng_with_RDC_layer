@@ -8,20 +8,21 @@ you can change the ports in the project configuration file with the following sy
 #define SX128X_PINOUT_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /*
 current pinout 26/3/2024
 
-SCK: B2 
+SCK: B2
 MISO: B3
 MOSI: B1
 CS: A3
-RESET: A2 
+RESET: A2
 INT: A5
 BUSY: A4
-*/ 
+*/
 // CLK
 #ifdef SX128X_SPI_SCK_PORT_CONF
 #define SX128X_SPI_SCK_PORT SX128X_SPI_SCK_PORT_CONF
@@ -83,8 +84,8 @@ BUSY: A4
 #else
 #define SX128X_DIO1_PORT GPIO_A_NUM
 #endif
-#ifdef SX128X_DIO1_PIN_CONF 
-#define SX128X_DIO1_PIN SX128X_DIO1_PIN_CONF 
+#ifdef SX128X_DIO1_PIN_CONF
+#define SX128X_DIO1_PIN SX128X_DIO1_PIN_CONF
 #else
 #define SX128X_DIO1_PIN 5
 #endif
@@ -94,15 +95,15 @@ BUSY: A4
 #else
 #define SX128X_BUSY_PORT GPIO_A_NUM
 #endif
-#ifdef SX128X_BUSY_PIN_CONF 
-#define SX128X_BUSY_PIN SX128X_BUSY_PIN_CONF 
+#ifdef SX128X_BUSY_PIN_CONF
+#define SX128X_BUSY_PIN SX128X_BUSY_PIN_CONF
 #else
 #define SX128X_BUSY_PIN 4
 #endif
 
 // general pin configuration
 #ifndef SX128X_DIO_PULL_MODE
-#define SX128X_DIO_PULL_MODE             (GPIO_IN_PD)
+#define SX128X_DIO_PULL_MODE (GPIO_IN_PD)
 #endif
 
 #ifdef __cplusplus
