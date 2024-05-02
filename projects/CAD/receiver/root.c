@@ -32,8 +32,8 @@ int convert_sf(int sf)
         return 12;
     case LORA_SF_7:
         return 7;
-    case LORA_SF_5:
-        return 5;
+    case LORA_SF_9:
+        return 9;
     default:
         return -1;
     }
@@ -103,21 +103,26 @@ PROCESS_THREAD(node_process, ev, data)
     static int k;
     static int i;
     PROCESS_BEGIN();
-    static const int modes[4][3] = {
-        {LORA_SF_12, LORA_BW_200, 1000},
+    static const int modes[6][3] = {
+        {LORA_SF_7, LORA_BW_1600, 10}, // 0.06
+        {LORA_SF_7, LORA_BW_200, 82},  // 0.5
+        {LORA_SF_9, LORA_BW_1600, 30},
+        {LORA_SF_9, LORA_BW_200, 150},
         {LORA_SF_12, LORA_BW_1600, 125},
-        {LORA_SF_7, LORA_BW_200, 62},   // 0.5
-        {LORA_SF_7, LORA_BW_1600, 10}}; // 0.06
-    static const int cads_to_perform[4][5] = {
-        {161, 107, 65, 38, 23},
-        {149, 101, 63, 37, 22},
+        {LORA_SF_12, LORA_BW_200, 1000}};
+    static const int cads_to_perform[6][5] = {
+        {112, 90, 70, 59, 39},
         {200, 134, 86, 52, 30},
-        {95, 84, 70, 59, 39}};
+        {140, 100, 70, 45, 30},
+        {190, 125, 78, 47, 27},
+        {160, 110, 67, 37, 22},
+        {181, 120, 70, 40, 23},
+    };
     static const int arr_CAD_symbols[5] = {1, 2, 4, 8, 16};
     static const int arr_CAD_symbols_settings[5] = {CAD_SYMBOLS_01, CAD_SYMBOLS_02, CAD_SYMBOLS_04, CAD_SYMBOLS_08, CAD_SYMBOLS_16};
 
     // loop over every mode
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 6; i++)
     {
         // set the correct parameters according to the mode
         SF = modes[i][0];

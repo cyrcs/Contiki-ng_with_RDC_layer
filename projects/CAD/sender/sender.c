@@ -77,11 +77,13 @@ static char buf[255];
 static char message[255] = "helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld \0";
 static struct etimer et;
 
-static const int modes[4][3] = {
-    {LORA_SF_12, LORA_BW_200, 1000},
+static const int modes[6][3] = {
+    {LORA_SF_7, LORA_BW_1600, 10}, // 0.06
+    {LORA_SF_7, LORA_BW_200, 82},  // 0.5
+    {LORA_SF_9, LORA_BW_1600, 30},
+    {LORA_SF_9, LORA_BW_200, 150},
     {LORA_SF_12, LORA_BW_1600, 125},
-    {LORA_SF_7, LORA_BW_200, 62},   // 0.5
-    {LORA_SF_7, LORA_BW_1600, 10}}; // 0.06
+    {LORA_SF_12, LORA_BW_200, 1000}};
 /* -------------------------------------------------------------------------- */
 void wait_for_start_packet()
 {
@@ -110,11 +112,6 @@ void wait_for_start_packet()
             printf("setting mode 0\n");
             start_packet_found = 1;
             sx128x_cmd_set_modulation_params(&SX128X_DEV, modes[0][0], modes[0][1], LORA_CR_4_5);
-            for (int t = 0; t < 200; t++)
-            {
-                clock_delay_usec(1000);
-                watchdog_periodic();
-            }
             etimer_set(&et, modes[0][2]);
         }
         else if (strcmp(buf, "start: 1") == 0)
@@ -137,6 +134,30 @@ void wait_for_start_packet()
             start_packet_found = 1;
             sx128x_cmd_set_modulation_params(&SX128X_DEV, modes[3][0], modes[3][1], LORA_CR_4_5);
             etimer_set(&et, modes[3][2]);
+        }
+        else if (strcmp(buf, "start: 4") == 0)
+        {
+            for (int t = 0; t < 50; t++)
+            {
+                clock_delay_usec(1000);
+                watchdog_periodic();
+            }
+            printf("setting mode 4\n");
+            start_packet_found = 1;
+            sx128x_cmd_set_modulation_params(&SX128X_DEV, modes[4][0], modes[4][1], LORA_CR_4_5);
+            etimer_set(&et, modes[4][2]);
+        }
+        else if (strcmp(buf, "start: 5") == 0)
+        {
+            for (int t = 0; t < 500; t++)
+            {
+                clock_delay_usec(1000);
+                watchdog_periodic();
+            }
+            printf("setting mode 5\n");
+            start_packet_found = 1;
+            sx128x_cmd_set_modulation_params(&SX128X_DEV, modes[5][0], modes[5][1], LORA_CR_4_5);
+            etimer_set(&et, modes[5][2]);
         }
     }
 }

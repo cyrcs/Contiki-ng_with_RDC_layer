@@ -4,7 +4,7 @@ all: $(CONTIKI_PROJECT)
 
 TARGET = zoul
 BOARD = firefly
-PORT=/dev/ttyUSB0
+PORT=/dev/ttyUSB1
 
 CONTIKI = ../../..
 
