@@ -126,24 +126,21 @@ PROCESS_THREAD(node_process, ev, data)
     {
         // set the correct parameters according to the mode
         SF = modes[i][0];
-        printf("SF%d\n", convert_sf(SF));
         BW = modes[i][1];
-        printf("BW%d\n", convert_bw(BW));
         WAIT_TIME = modes[i][2];
 
         // test every mode 5 times
         for (j = 0; j < 5; j++)
         {
-            printf("CAD%d\n", arr_CAD_symbols[j]);
             // send start packet
             send_start_packet(i);
 
             // set timer
-            etimer_set(&et, WAIT_TIME);
+            // etimer_set(&et, WAIT_TIME);
 
             // print the current configuration that is being tested
             // printf("Testing mode: %d, with params: SF: %d, BW: %d, %d symbols per cad, total symbols: %d, amount_of_cads_to_measure: %d, WAIT_TIME: %d\n", i, convert_sf(SF), convert_bw(BW), arr_CAD_symbols[j], symbols, cads_to_perform[i][j], WAIT_TIME);
-            // printf("Testing  with params: SF: %d, BW: %d, symbols per CAD: %d\n", convert_sf(SF), convert_bw(BW), arr_CAD_symbols[j]);
+            printf("Testing  with params: SF: %d, BW: %d, symbols per CAD: %d\n", convert_sf(SF), convert_bw(BW), arr_CAD_symbols[j]);
 
             // make sure the device is using the correct configurations
             // set CAD params
@@ -154,30 +151,40 @@ PROCESS_THREAD(node_process, ev, data)
             // repeat for 20 packets
             for (k = 0; k < AMOUNT_OF_PACKETS; k++)
             {
-                // wait for timer to finish
-                PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-
-                /* Reset the etimer to trig again in 1 second */
-                etimer_reset(&et);
-
-                // ! malloc not recommended, should be using memb_alloc
-                int *results = (int *)malloc(cads_to_perform[i][j] * sizeof(int));
-                // continuously perform CAD's
-                for (int h = 0; h < cads_to_perform[i][j]; h++)
-                {
-                    results[h] = sx128x_channel_activity_detection();
-                }
-                for (int h = 0; h < cads_to_perform[i][j]; h++)
-                {
-                    printf("%d", results[h]);
-                }
-                // ! free not recommended, should be using memb_free
-                free(results);
-                printf("\n");
-                // wait again for timer to allow for the transmitter to change mode
+                    NETSTACK_RADIO.on();
+                    while(SX128X_DEV.state.event != SX128X_RX_DONE)
+                    {
+                        clock_delay_usec(50);
+                        watchdog_periodic();
+                    }
+                    NETSTACK_RADIO.read(buf, 255);
+                    printf("Received packet: %s\n", buf);
             }
-            PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-            etimer_reset(&et);
+
+            //     // wait for timer to finish
+            //     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+
+            //     /* Reset the etimer to trig again in 1 second */
+            //     etimer_reset(&et);
+
+            //     // ! malloc not recommended, should be using memb_alloc
+            //     int *results = (int *)malloc(cads_to_perform[i][j] * sizeof(int));
+            //     // continuously perform CAD's
+            //     for (int h = 0; h < cads_to_perform[i][j]; h++)
+            //     {
+            //         results[h] = sx128x_channel_activity_detection();
+            //     }
+            //     for (int h = 0; h < cads_to_perform[i][j]; h++)
+            //     {
+            //         printf("%d", results[h]);
+            //     }
+            //     // ! free not recommended, should be using memb_free
+            //     free(results);
+            //     printf("\n");
+            //     // wait again for timer to allow for the transmitter to change mode
+            // }
+            // PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+            // etimer_reset(&et);
         }
     }
     PROCESS_END();
