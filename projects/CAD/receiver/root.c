@@ -23,6 +23,8 @@
 
 #define AMOUNT_OF_PACKETS 10
 
+static char message[255] = "helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld aa";
+
 // ------------------------------- refactor -----------------------------------
 int convert_sf(int sf)
 {
@@ -80,11 +82,8 @@ void send_start_packet(int mode)
     sx128x_cmd_set_modulation_params(&SX128X_DEV, LORA_SF_12, LORA_BW_200, LORA_CR_4_8);
     // NETSTACK_RADIO.on();
 
-    // printf("sending start packet in status: %d, %d\n", SX128X_DEV.settings.lora.spreading_factor, SX128X_DEV.settings.lora.bandwidth);
-
     // send message
     NETSTACK_RADIO.send(message, strlen(message));
-    // printf("sent start packet: %s\n", message);
 }
 
 // #endregion ------------------------------------------------------------------
@@ -94,6 +93,7 @@ AUTOSTART_PROCESSES(&node_process);
 
 PROCESS_THREAD(node_process, ev, data)
 {
+    static char buf[255];
 
     static struct etimer et;
     static int WAIT_TIME;
@@ -105,7 +105,7 @@ PROCESS_THREAD(node_process, ev, data)
     PROCESS_BEGIN();
     static const int modes[6][3] = {
         {LORA_SF_7, LORA_BW_1600, 10}, // 0.06
-        {LORA_SF_7, LORA_BW_200, 82},  // 0.5
+        {LORA_SF_7, LORA_BW_200, 100}, // 0.5
         {LORA_SF_9, LORA_BW_1600, 30},
         {LORA_SF_9, LORA_BW_200, 150},
         {LORA_SF_12, LORA_BW_1600, 125},
@@ -141,15 +141,9 @@ PROCESS_THREAD(node_process, ev, data)
             // set timer
             etimer_set(&et, WAIT_TIME);
 
-            // print the current configuration that is being tested
-            // printf("Testing mode: %d, with params: SF: %d, BW: %d, %d symbols per cad, total symbols: %d, amount_of_cads_to_measure: %d, WAIT_TIME: %d\n", i, convert_sf(SF), convert_bw(BW), arr_CAD_symbols[j], symbols, cads_to_perform[i][j], WAIT_TIME);
-            // printf("Testing  with params: SF: %d, BW: %d, symbols per CAD: %d\n", convert_sf(SF), convert_bw(BW), arr_CAD_symbols[j]);
-
             // make sure the device is using the correct configurations
             // set CAD params
             sx128x_cmd_set_cad_params(&SX128X_DEV, arr_CAD_symbols_settings[j]);
-            // set the correct parameters
-            sx128x_cmd_set_modulation_params(&SX128X_DEV, SF, BW, LORA_CR_4_5);
 
             // repeat for 20 packets
             for (k = 0; k < AMOUNT_OF_PACKETS; k++)
@@ -174,11 +168,49 @@ PROCESS_THREAD(node_process, ev, data)
                 // ! free not recommended, should be using memb_free
                 free(results);
                 printf("\n");
-                // wait again for timer to allow for the transmitter to change mode
             }
-            PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-            etimer_reset(&et);
         }
+
+        // wait again for timer to allow for the transmitter to change mode
+        PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+        etimer_reset(&et);
+
+        send_start_packet(i);
+
+        etimer_reset(&et);
+
+        // set the correct parameters
+        sx128x_cmd_set_modulation_params(&SX128X_DEV, SF, BW, LORA_CR_4_5);
+        NETSTACK_RADIO.on();
+
+        PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+
+        printf("Correct packet received:");
+        for (k = 0; k < AMOUNT_OF_PACKETS; k++)
+        {
+            /* Reset the etimer to trig again in 1 second */
+            etimer_reset(&et);
+
+            NETSTACK_RADIO.on();
+
+            while ((SX128X_DEV.state.event != SX128X_RX_DONE) && (etimer_expired(&et) != 1))
+            {
+                clock_delay_usec(50);
+                watchdog_periodic();
+            }
+            NETSTACK_RADIO.read(buf, 255);
+            if (strcmp(buf, message))
+            {
+                printf("1");
+            }
+            else
+            {
+                printf("0");
+            }
+        }
+        printf("\n");
+        PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+        etimer_reset(&et);
     }
     PROCESS_END();
 }

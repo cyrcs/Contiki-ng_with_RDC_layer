@@ -95,8 +95,8 @@ AUTOSTART_PROCESSES(&node_process);
 PROCESS_THREAD(node_process, ev, data)
 {
 
-    static struct etimer et;
-    static int WAIT_TIME;
+    static char buf[255];
+
     static int SF;
     static int BW;
     static int j;
@@ -104,30 +104,22 @@ PROCESS_THREAD(node_process, ev, data)
     static int i;
     PROCESS_BEGIN();
     static const int modes[6][3] = {
-        {LORA_SF_7, LORA_BW_1600, 10}, // 0.06
+        {LORA_SF_7, LORA_BW_1600, 15}, // 0.06
         {LORA_SF_7, LORA_BW_200, 82},  // 0.5
         {LORA_SF_9, LORA_BW_1600, 30},
         {LORA_SF_9, LORA_BW_200, 150},
         {LORA_SF_12, LORA_BW_1600, 125},
         {LORA_SF_12, LORA_BW_200, 1000}};
-    static const int cads_to_perform[6][5] = {
-        {105, 85, 70, 53, 35},
-        {195, 134, 86, 52, 30},
-        {130, 95, 63, 40, 25},
-        {180, 115, 70, 40, 20},
-        {160, 110, 67, 37, 22},
-        {181, 120, 70, 40, 23},
-    };
-    static const int arr_CAD_symbols[5] = {1, 2, 4, 8, 16};
-    static const int arr_CAD_symbols_settings[5] = {CAD_SYMBOLS_01, CAD_SYMBOLS_02, CAD_SYMBOLS_04, CAD_SYMBOLS_08, CAD_SYMBOLS_16};
+    // static const int arr_CAD_symbols[5] = {1, 2, 4, 8, 16};
+    // static const int arr_CAD_symbols_settings[5] = {CAD_SYMBOLS_01, CAD_SYMBOLS_02, CAD_SYMBOLS_04, CAD_SYMBOLS_08, CAD_SYMBOLS_16};
 
     // loop over every mode
-    for (i = 0; i < 6; i++)
+    for (i = 5; i < 6; i++)
     {
         // set the correct parameters according to the mode
         SF = modes[i][0];
         BW = modes[i][1];
-        WAIT_TIME = modes[i][2];
+        // WAIT_TIME = modes[i][2];
 
         // test every mode 5 times
         for (j = 0; j < 5; j++)
@@ -140,25 +132,24 @@ PROCESS_THREAD(node_process, ev, data)
 
             // print the current configuration that is being tested
             // printf("Testing mode: %d, with params: SF: %d, BW: %d, %d symbols per cad, total symbols: %d, amount_of_cads_to_measure: %d, WAIT_TIME: %d\n", i, convert_sf(SF), convert_bw(BW), arr_CAD_symbols[j], symbols, cads_to_perform[i][j], WAIT_TIME);
-            printf("Testing  with params: SF: %d, BW: %d, symbols per CAD: %d\n", convert_sf(SF), convert_bw(BW), arr_CAD_symbols[j]);
+            printf("Testing  with params: SF: %d, BW: %d\n", convert_sf(SF), convert_bw(BW));
 
             // make sure the device is using the correct configurations
             // set CAD params
-            sx128x_cmd_set_cad_params(&SX128X_DEV, arr_CAD_symbols_settings[j]);
             // set the correct parameters
             sx128x_cmd_set_modulation_params(&SX128X_DEV, SF, BW, LORA_CR_4_5);
 
             // repeat for 20 packets
             for (k = 0; k < AMOUNT_OF_PACKETS; k++)
             {
-                    NETSTACK_RADIO.on();
-                    while(SX128X_DEV.state.event != SX128X_RX_DONE)
-                    {
-                        clock_delay_usec(50);
-                        watchdog_periodic();
-                    }
-                    NETSTACK_RADIO.read(buf, 255);
-                    printf("Received packet: %s\n", buf);
+                NETSTACK_RADIO.on();
+                while (SX128X_DEV.state.event != SX128X_RX_DONE)
+                {
+                    clock_delay_usec(50);
+                    watchdog_periodic();
+                }
+                NETSTACK_RADIO.read(buf, 255);
+                printf("Received packet: %s\n", buf);
             }
 
             //     // wait for timer to finish

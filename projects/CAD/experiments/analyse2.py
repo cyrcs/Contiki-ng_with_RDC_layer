@@ -6,8 +6,11 @@ import matplotlib.pyplot as plt
 # list_of_files = ["test_1m.txt", "test_5m.txt", "test_10m.txt", "test_15m.txt", "test_18m.txt", "test_20m.txt", "test_30m.txt"]
 # list_of_files = ["test_10m_indoor_ground.txt", "test_20m_indoor_ground.txt",
 # "test_30m_indoor_ground_door_closed.txt","test_30m_indoor_chair.txt", "test_30m_indoor_chair_door_closed.txt"]
-list_of_files = ["test_10m_indoor.txt", "test_27m_indoor.txt", "test_45m_indoor.txt", "test_45m_indoor_2.txt","test_52m_indoor.txt", "test_58m_indoor.txt"]
-folder = "indoor D3/"
+list_of_files = ["test_10m_indoor", "test_27m_indoor", "test_45m_indoor", "test_45m_indoor_2","test_52m_indoor", "test_58m_indoor"]
+# list_of_files = ["test_14m"]
+folder = "indoor ground vs chair/"
+postfix = ".txt"
+
 arr_actual_cads = [
     52, 46, 37, 27, 17, # SF7 BW1600
     169, 119, 74, 42, 23, # SF7 BW200
@@ -18,7 +21,7 @@ arr_actual_cads = [
 ]   
 amount_of_packets = 10
 
-def read_file(file_name, folder):
+def read_file(file_name):
     print(file_name)
     with open(file_name, "r") as file:
         arr = file.readlines()
@@ -84,8 +87,8 @@ bar_width = 0.15
 
 dfs = []
 for file in list_of_files:
-    file_name = folder + file
-    dfs.append(read_file(file_name, folder))
+    file_name = folder + file + postfix
+    dfs.append(read_file(file_name))
     x_names.append(file[5:-4])    
 
 
@@ -135,3 +138,4 @@ for i in range(30):
     if i % 5 == 4:
         ax.legend()
         plt.show()
+        fig.savefig(f"{i}.eps", dpi=1200)

@@ -74,12 +74,12 @@
 #define AMOUNT_OF_PACKETS 10
 static int i;
 static char buf[255];
-static char message[255] = "helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld \0";
+static char message[256] = "helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld aa\0";
 static struct etimer et;
 
 static const int modes[6][3] = {
     {LORA_SF_7, LORA_BW_1600, 10}, // 0.06
-    {LORA_SF_7, LORA_BW_200, 82},  // 0.5
+    {LORA_SF_7, LORA_BW_200, 100}, // 0.5
     {LORA_SF_9, LORA_BW_1600, 30},
     {LORA_SF_9, LORA_BW_200, 150},
     {LORA_SF_12, LORA_BW_1600, 125},
@@ -187,6 +187,7 @@ PROCESS_THREAD(node_process, ev, data)
             // send packet
             LOG_DBG("Broadcasting raw data packet!\n");
             NETSTACK_RADIO.send(message, strlen(message));
+            printf("packet length: %d\n", strlen(message));
             i++;
         }
     }
