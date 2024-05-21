@@ -171,7 +171,7 @@ extern "C"
         LORA_CR_4_8 = 0x04,    /**< coding rate 4/8 */
         LORA_CR_LI_4_5 = 0x05, /**< coding rate 4/5 */
         LORA_CR_LI_4_6 = 0x06, /**< coding rate 4/6 */
-        LORA_CR_LI_4_7 = 0x07, /**< coding rate 4/7 */
+        LORA_CR_LI_4_8 = 0x07, /**< coding rate 4/7 */
     } LoRa_coding_rates;
 
 /* Packet type header definition */

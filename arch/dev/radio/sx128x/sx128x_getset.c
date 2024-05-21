@@ -380,6 +380,7 @@ void sx128x_set_state_rx(sx128x_t *dev, sx128x_rx_state_t rx)
 }
 uint8_t sx128x_get_state_rx(const sx128x_t *dev)
 {
+    LOG_FUNC("Function call: %s\n", __func__);
     return dev->state.rx;
 }
 
