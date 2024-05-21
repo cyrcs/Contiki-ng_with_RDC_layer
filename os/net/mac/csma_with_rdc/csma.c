@@ -32,7 +32,7 @@
 
 /**
  * \file
-*         The 802.15.4 standard CSMA protocol (nonbeacon-enabled)
+ *         The 802.15.4 standard CSMA protocol (nonbeacon-enabled)
  * \author
  *         Adam Dunkels <adam@sics.se>
  *         Simon Duquennoy <simon.duquennoy@inria.fr>
@@ -45,10 +45,10 @@
 #include "net/netstack.h"
 #include "net/mac/rdc/rdc.h"
 
-  /* Log configuration */
-  #include "sys/log.h"
-  #define LOG_MODULE "CSMA (RDC)"
-  #define LOG_LEVEL LOG_LEVEL_MAC
+/* Log configuration */
+#include "sys/log.h"
+#define LOG_MODULE "CSMA (RDC)"
+#define LOG_LEVEL LOG_LEVEL_MAC
 
 static int on(void);
 static int off(void);
@@ -62,7 +62,8 @@ init(void)
   radio_value_t radio_max_payload_len;
 
   /* Check that the radio can correctly report its max supported payload */
-  if(NETSTACK_RADIO.get_value(RADIO_CONST_MAX_PAYLOAD_LEN, &radio_max_payload_len) != RADIO_RESULT_OK) {
+  if (NETSTACK_RADIO.get_value(RADIO_CONST_MAX_PAYLOAD_LEN, &radio_max_payload_len) != RADIO_RESULT_OK)
+  {
     LOG_ERR("! radio does not support getting RADIO_CONST_MAX_PAYLOAD_LEN. Abort init.\n");
     return;
   }
@@ -71,12 +72,16 @@ init(void)
   radio_value_t radio_rx_mode;
 
   /* Disable radio driver's autoack */
-  if(NETSTACK_RADIO.get_value(RADIO_PARAM_RX_MODE, &radio_rx_mode) != RADIO_RESULT_OK) {
+  if (NETSTACK_RADIO.get_value(RADIO_PARAM_RX_MODE, &radio_rx_mode) != RADIO_RESULT_OK)
+  {
     LOG_WARN("radio does not support getting RADIO_PARAM_RX_MODE\n");
-  } else {
+  }
+  else
+  {
     /* Unset autoack */
     radio_rx_mode &= ~RADIO_RX_MODE_AUTOACK;
-    if(NETSTACK_RADIO.set_value(RADIO_PARAM_RX_MODE, radio_rx_mode) != RADIO_RESULT_OK) {
+    if (NETSTACK_RADIO.set_value(RADIO_PARAM_RX_MODE, radio_rx_mode) != RADIO_RESULT_OK)
+    {
       LOG_WARN("radio does not support setting RADIO_PARAM_RX_MODE\n");
     }
   }
@@ -99,8 +104,9 @@ init_sec(void)
 {
   LOG_DBG("Function call: %s\n", __func__);
 #if LLSEC802154_USES_AUX_HEADER
-  if(packetbuf_attr(PACKETBUF_ATTR_SECURITY_LEVEL) ==
-     PACKETBUF_ATTR_SECURITY_LEVEL_DEFAULT) {
+  if (packetbuf_attr(PACKETBUF_ATTR_SECURITY_LEVEL) ==
+      PACKETBUF_ATTR_SECURITY_LEVEL_DEFAULT)
+  {
     packetbuf_set_attr(PACKETBUF_ATTR_SECURITY_LEVEL,
                        CSMA_LLSEC_SECURITY_LEVEL);
   }
@@ -112,7 +118,7 @@ send_packet(mac_callback_t sent, void *ptr)
 {
 
   LOG_DBG("Function call: %s\n", __func__);
-  
+
   init_sec();
 
   csma_output_packet(sent, ptr);
@@ -127,42 +133,56 @@ input_packet(void)
   uint8_t ackdata[CSMA_ACK_LEN];
 #endif
 
-  if(packetbuf_datalen() == CSMA_ACK_LEN) {
+  if (packetbuf_datalen() == CSMA_ACK_LEN)
+  {
     /* Ignore ack packets */
     LOG_DBG("ignored ack\n");
-  } else if(csma_security_parse_frame() < 0) {
+  }
+  else if (csma_security_parse_frame() < 0)
+  {
     LOG_ERR("failed to parse %u\n", packetbuf_datalen());
-  } else if(!linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
-                                         &linkaddr_node_addr) &&
-            !packetbuf_holds_broadcast()) {
+  }
+  else if (!linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
+                         &linkaddr_node_addr) &&
+           !packetbuf_holds_broadcast())
+  {
     LOG_WARN("not for us\n");
-  } else if(linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_SENDER), &linkaddr_node_addr)) {
+  }
+  else if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_SENDER), &linkaddr_node_addr))
+  {
     LOG_WARN("frame from ourselves\n");
-  } else {
+  }
+  else
+  {
     int duplicate = 0;
 
     /* Check for duplicate packet. */
     duplicate = mac_sequence_is_duplicate();
-    if(duplicate) {
+    if (duplicate)
+    {
       /* Drop the packet. */
       LOG_WARN("drop duplicate link layer packet from ");
       LOG_WARN_LLADDR(packetbuf_addr(PACKETBUF_ADDR_SENDER));
       LOG_WARN_(", seqno %u\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
-    } else {
+    }
+    else
+    {
       mac_sequence_register_seqno();
     }
 
 #if CSMA_SEND_SOFT_ACK
-    if(packetbuf_attr(PACKETBUF_ATTR_MAC_ACK)) {
+    if (packetbuf_attr(PACKETBUF_ATTR_MAC_ACK))
+    {
       ackdata[0] = FRAME802154_ACKFRAME;
       ackdata[1] = 0;
       ackdata[2] = ((uint8_t *)packetbuf_hdrptr())[2];
       LOG_DBG("SENDING ACK\n");
       NETSTACK_RADIO.send(ackdata, CSMA_ACK_LEN);
     }
-    LOG_DBG ("DONE SENDING ACK\n");
+    LOG_DBG("DONE SENDING ACK\n");
 #endif /* CSMA_SEND_SOFT_ACK */
-    if(!duplicate) {
+    if (!duplicate)
+    {
       LOG_INFO("received packet from ");
       LOG_INFO_LLADDR(packetbuf_addr(PACKETBUF_ADDR_SENDER));
       LOG_INFO_(", seqno %u, len %u\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO), packetbuf_datalen());
@@ -179,7 +199,7 @@ on(void)
 }
 /*---------------------------------------------------------------------------*/
 static int
-off(void) 
+off(void)
 {
   LOG_DBG("Function call: %s\n", __func__);
   return NETSTACK_RDC.off();
@@ -201,29 +221,29 @@ max_payload(void)
   res = NETSTACK_RADIO.get_value(RADIO_CONST_MAX_PAYLOAD_LEN,
                                  &max_radio_payload_len);
 
-  if(res == RADIO_RESULT_NOT_SUPPORTED) {
+  if (res == RADIO_RESULT_NOT_SUPPORTED)
+  {
     LOG_ERR("Failed to retrieve max radio driver payload length\n");
     return 0;
   }
 
-  if(framer_hdrlen < 0) {
+  if (framer_hdrlen < 0)
+  {
     /* Framing failed, we assume the maximum header length */
     framer_hdrlen = CSMA_MAC_MAX_HEADER;
   }
 
-  return MIN(max_radio_payload_len, PACKETBUF_SIZE)
-    - framer_hdrlen
-    - LLSEC802154_PACKETBUF_MIC_LEN();
+  return MIN(max_radio_payload_len, PACKETBUF_SIZE) - framer_hdrlen - LLSEC802154_PACKETBUF_MIC_LEN();
 }
 
 /*---------------------------------------------------------------------------*/
 const struct mac_driver csma_with_rdc_driver = {
-  "CSMA WITH RDC",
-  init,
-  send_packet,
-  input_packet,
-  on,
-  off,
-  max_payload,
+    "CSMA WITH RDC",
+    init,
+    send_packet,
+    input_packet,
+    on,
+    off,
+    max_payload,
 };
 /*---------------------------------------------------------------------------*/
