@@ -7,7 +7,7 @@ import os
 actual_cads = {
     "SF7 BW1600": {
         "CAD1": 51,
-        "CAD2": 45,
+        "CAD2": 46,
         "CAD4": 37,
         "CAD8": 26,
         "CAD16": 17
@@ -50,12 +50,16 @@ actual_cads = {
 }
 
 folder = "outdoor_watertoren_down/"
+# folder = "indoor ground vs chair/"
+
 list_of_files = sorted(os.listdir(folder))
 
 if __name__ == "__main__":
 # if __name__ == True:
     results = []
     for file in list_of_files:
+        if not file.endswith(".txt"):
+            continue
         print(file)
         with open(folder + file, "r") as f:
             arr = f.readlines()
@@ -64,8 +68,8 @@ if __name__ == "__main__":
         BW = ""
         CAD = ""
         correct_packets = ""
-        # d = file[8:-5]
-        d = file[5:-4]
+        d = file[8:-5]
+        # d = file[5:-4]
 
         i = 0
         while i < len(arr):
@@ -162,14 +166,17 @@ if __name__ == "__main__":
 
             # set ticks
             ax.set_xticks(x + (cads_to_plot // 2) * (bar_width / 2) + bar_width)
-            # ax.set_xticklabels(data["distance"].unique() + "m")
-            ax.set_xticklabels(data["distance"].unique())
+            ax.set_xticklabels(data["distance"].unique() + " m")
+            # ax.set_xticklabels(data["distance"].unique())
 
             # resize window and tighten layout
             plt.get_current_fig_manager().full_screen_toggle()
-            plt.tight_layout()
+            # plt.tight_layout()
 
             plt.show()
+
+            fig.savefig(f"outdoor_watertoren_down/{sf}{bw}.eps", dpi=1200, bbox_inches='tight')
+
 
 
 
