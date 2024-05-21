@@ -225,11 +225,6 @@ void sx128x_configure_rx(sx128x_t *dev)
     switch (dev->settings.packet_type)
     {
     case SX128X_PACKET_TYPE_LORA:
-#if HEADER_DETECTION
-        sx128x_cmd_set_dio_irq_params(&SX128X_DEV, SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_HEADER_VALID, 0, 0);
-#else
-        sx128x_cmd_set_dio_irq_params(dev, SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_RX_TX_TIMEOUT, 0, 0); // SX128X_IRQ_REG_SYNC_WORD_ERROR | SX128X_IRQ_REG_CRC_ERROR |
-#endif
         break;
     default:
         LOG_DBG("Unsupported packet type\n");
@@ -263,7 +258,6 @@ void sx128x_set_cad(sx128x_t *dev)
     {
     case SX128X_PACKET_TYPE_LORA:
     {
-        sx128x_cmd_set_dio_irq_params(dev, SX128X_IRQ_REG_CAD_DONE | SX128X_IRQ_REG_CAD_DETECTED, 0, 0);
         break;
     }
     default:
@@ -306,7 +300,6 @@ void sx128x_set_standby(sx128x_t *dev)
 
     sx128x_set_state_rx(&SX128X_DEV, sx128x_rx_off);
     sx128x_set_state_opmode(dev, SX128X_OPMODE_STANDBY);
-    sx128x_cmd_set_dio_irq_params(dev, 0, 0, 0);
 }
 
 /*-------------- SLEEP --------------*/
@@ -324,10 +317,6 @@ void sx128x_set_sleep(sx128x_t *dev)
 {
     LOG_FUNC("Function call: %s\n", __func__);
     (void)(dev);
-
-    // sx128x_set_state_rx(&SX128X_DEV, sx128x_rx_off);
-    // sx128x_set_state_event(&SX128X_DEV, SX128X_NO_EVENT);
-    // sx128x_cmd_set_dio_irq_params(dev, 0, 0, 0);
 
     sx128x_set_state_opmode(dev, SX128X_OPMODE_SLEEP);
 }
@@ -419,7 +408,6 @@ void sx128x_set_state_opmode(sx128x_t *dev, sx128x_opmode_t op_mode)
         LOG_DBG_("set op mode: RECEIVER WITH TIMEOUT %d\n", _sx128x_get_timeout_in_s(PERIOD_BASE_04_MS, 2500));
         sx128x_configure_rx(dev);
         _sx128x_cmd_set_rx(dev, PERIOD_BASE_04_MS, 2500);
-        sx128x_set_state_rx(dev, sx128x_rx_off);
         break;
     case SX128X_OPMODE_RX_CONTINUOUS:
         LOG_DBG_("set op mode: RECEIVER CONTINUOUS\n");
