@@ -61,7 +61,7 @@ extern "C"
      */
 
 #ifndef CONFIG_LORA24_SF_DEFAULT
-#define CONFIG_LORA24_SF_DEFAULT (LORA_SF_12)
+#define CONFIG_LORA24_SF_DEFAULT (LORA_SF_7)
 #endif
 
     /** @brief Set channel bandwidth
@@ -134,6 +134,20 @@ extern "C"
  */
 #ifndef CONFIG_LORA24_PAYLOAD_CRC_ON_DEFAULT
 #define CONFIG_LORA24_PAYLOAD_CRC_ON_DEFAULT (true)
+#endif
+
+/** @brief Enable/disable fixed  header mode
+ *
+ */
+#ifndef CONFIG_LORA24_FIXED_HEADER_LEN_MODE_DEFAULT
+#define CONFIG_LORA24_FIXED_HEADER_LEN_MODE_DEFAULT (false)
+#endif
+
+/** @brief Enable/disable iq invertion
+ *
+ */
+#ifndef CONFIG_LORA24_INVERTED_IQ_DEFAULT
+#define CONFIG_LORA24_INVERTED_IQ_DEFAULT (false)
 #endif
 
 // ! below are the unused settings
