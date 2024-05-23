@@ -49,11 +49,9 @@
 #include "net/mac/csma_with_rdc/csma-security.h"
 #include "net/mac/csma_with_rdc/csma.h"
 
-
 #include "dev/watchdog.h"
 #include "sys/ctimer.h"
 #include "sys/rtimer.h"
-
 
 #include "sys/clock.h"
 #include "lib/random.h"
@@ -68,7 +66,7 @@
 
 #ifndef RECEIVER
 #define RECEIVER 0
-#endif 
+#endif
 
 #include "sys/rtimer.h"
 #include "dev/watchdog.h"
@@ -102,26 +100,27 @@ send_one_packet(mac_callback_t sent, void *ptr)
   packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &linkaddr_node_addr);
   packetbuf_set_attr(PACKETBUF_ATTR_MAC_ACK, 1);
 
-
-// This code is used in contiki-ng to enable LLSEC
-// TODO check if still requires additional changes 
-  #if LLSEC802154_ENABLED
-  #if LLSEC802154_USES_EXPLICIT_KEYS
-    /* This should possibly be taken from upper layers in the future */
-    packetbuf_set_attr(PACKETBUF_ATTR_KEY_ID_MODE, CSMA_LLSEC_KEY_ID_MODE);
-  #endif /* LLSEC802154_USES_EXPLICIT_KEYS */
-  #endif /* LLSEC802154_ENABLED */
-
+  // This code is used in contiki-ng to enable LLSEC
+  // TODO check if still requires additional changes
+#if LLSEC802154_ENABLED
+#if LLSEC802154_USES_EXPLICIT_KEYS
+  /* This should possibly be taken from upper layers in the future */
+  packetbuf_set_attr(PACKETBUF_ATTR_KEY_ID_MODE, CSMA_LLSEC_KEY_ID_MODE);
+#endif /* LLSEC802154_USES_EXPLICIT_KEYS */
+#endif /* LLSEC802154_ENABLED */
 
   // TODO contiki-ng uses a csma security function to create the header
   // QUESTION: is it allowed to used MAC layer functions inside the RDC layer?
   // the ELSE statement has to be changed
 
-  if(csma_security_create_frame() < 0) {
+  if (csma_security_create_frame() < 0)
+  {
     /* Failed to allocate space for headers */
     LOG_ERR("failed to create packet, seqno: %d\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
     ret = MAC_TX_ERR_FATAL;
-  } else {
+  }
+  else
+  {
     int is_broadcast;
     uint8_t dsn;
     dsn = ((uint8_t *)packetbuf_hdrptr())[2] & 0xff;
@@ -130,26 +129,34 @@ send_one_packet(mac_callback_t sent, void *ptr)
 
     is_broadcast = packetbuf_holds_broadcast();
 
-    if(NETSTACK_RADIO.receiving_packet() ||
-       (!is_broadcast && NETSTACK_RADIO.pending_packet())) {
+    if (NETSTACK_RADIO.receiving_packet() ||
+        (!is_broadcast && NETSTACK_RADIO.pending_packet()))
+    {
 
       /* Currently receiving a packet over air or the radio has
          already received a packet that needs to be read before
          sending with auto ack. */
       ret = MAC_TX_COLLISION;
-    } else {
-      switch(NETSTACK_RADIO.transmit(packetbuf_totlen())) {
+    }
+    else
+    {
+      switch (NETSTACK_RADIO.transmit(packetbuf_totlen()))
+      {
       case RADIO_TX_OK:
-        if(is_broadcast) {
+        if (is_broadcast)
+        {
           ret = MAC_TX_OK;
-        } else {
+        }
+        else
+        {
           /* Check for ack */
 
           /* Wait for max CSMA_ACK_WAIT_TIME */
           // RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet, CSMA_ACK_WAIT_TIME);
 
           uint32_t time = 0;
-          while ((time < CSMA_ACK_WAIT_TIME) || !(NETSTACK_RADIO.pending_packet)) {
+          while ((time < CSMA_ACK_WAIT_TIME) || !(NETSTACK_RADIO.pending_packet))
+          {
             watchdog_periodic();
             clock_delay_usec(500);
             time++;
@@ -157,9 +164,10 @@ send_one_packet(mac_callback_t sent, void *ptr)
 
           ret = MAC_TX_NOACK;
 
-          if(NETSTACK_RADIO.receiving_packet() ||
-             NETSTACK_RADIO.pending_packet() ||
-             NETSTACK_RADIO.channel_clear() == 0) {
+          if (NETSTACK_RADIO.receiving_packet() ||
+              NETSTACK_RADIO.pending_packet() ||
+              NETSTACK_RADIO.channel_clear() == 0)
+          {
             int len;
             uint8_t ackbuf[ACK_LEN];
 
@@ -167,19 +175,23 @@ send_one_packet(mac_callback_t sent, void *ptr)
             /* Wait an additional CSMA_AFTER_ACK_DETECTED_WAIT_TIME to complete reception */
             RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_AFTER_ACK_DETECTED_WAIT_TIME);
 
-            if(NETSTACK_RADIO.pending_packet()) {
+            if (NETSTACK_RADIO.pending_packet())
+            {
               len = NETSTACK_RADIO.read(ackbuf, ACK_LEN);
-              if(len == ACK_LEN && ackbuf[2] == dsn) {
+              if (len == ACK_LEN && ackbuf[2] == dsn)
+              {
                 /* Ack received */
                 LOG_INFO("ACK received\n");
                 ret = MAC_TX_OK;
-              } else {
+              }
+              else
+              {
                 /* Not an ack or ack not for us: collision */
                 LOG_INFO("NO ACK or not for us\n");
                 ret = MAC_TX_COLLISION;
               }
             }
-          } 
+          }
         }
         break;
       case RADIO_TX_COLLISION:
@@ -191,7 +203,8 @@ send_one_packet(mac_callback_t sent, void *ptr)
       }
     }
   }
-  if(ret == MAC_TX_OK) {
+  if (ret == MAC_TX_OK)
+  {
     last_sent_ok = 1;
   }
   mac_call_sent_callback(sent, ptr, ret, 1);
@@ -209,11 +222,12 @@ static void
 send_list(mac_callback_t sent, void *ptr, struct packet_queue *q)
 {
   LOG_DBG("Function call: %s\n", __func__);
-  while(q != NULL) {
+  while (q != NULL)
+  {
     /* We backup the next pointer, as it may be nullified by
      * mac_call_sent_callback() */
     struct packet_queue *next = q->next;
-    
+
     queuebuf_to_packetbuf(q->buf);
     int last_sent_ok;
     last_sent_ok = send_one_packet(sent, ptr);
@@ -221,7 +235,8 @@ send_list(mac_callback_t sent, void *ptr, struct packet_queue *q)
     /* If packet transmission was not successful, we should back off and let
      * upper layers retransmit, rather than potentially sending out-of-order
      * packet fragments. */
-    if(!last_sent_ok) {
+    if (!last_sent_ok)
+    {
       return;
     }
     q = next;
@@ -239,25 +254,10 @@ packet_input(void)
 static int
 on(void)
 {
-  LOG_DBG("\n\n\n\n");
   LOG_DBG("Function call: %s\n", __func__);
 
-  #if RECEIVER
-  radio_on = true;
-  // infinite loop to wait for packets to be received
-  while(radio_on){
-    NETSTACK_RADIO.on();
-    packet_received = false;
-    while(!packet_received){
-      // wait for packet to be received
-      watchdog_periodic();
-      clock_delay_usec(500);
-    }
-  }
-  #else
   NETSTACK_RADIO.on();
-  #endif
-  
+
   return 1;
 }
 /*---------------------------------------------------------------------------*/
@@ -268,7 +268,7 @@ off(void)
   LOG_DBG("\n\n\n\n");
 
   radio_on = false;
-    return NETSTACK_RADIO.off();
+  return NETSTACK_RADIO.off();
 }
 /*---------------------------------------------------------------------------*/
 static unsigned short
@@ -279,13 +279,13 @@ channel_check_interval(void)
 }
 /*---------------------------------------------------------------------------*/
 const struct rdc_driver nullrdc_driver = {
-  "nullrdc",
-  init,
-  send_packet,
-  send_list,
-  packet_input,
-  on,
-  off,
-  channel_check_interval,
+    "nullrdc",
+    init,
+    send_packet,
+    send_list,
+    packet_input,
+    on,
+    off,
+    channel_check_interval,
 };
 /*---------------------------------------------------------------------------*/

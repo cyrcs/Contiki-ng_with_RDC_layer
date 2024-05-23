@@ -35,7 +35,7 @@
  *
  * \defgroup csma Implementation of the 802.15.4 standard CSMA protocol
  * @{
-*/
+ */
 
 /**
  * \file
@@ -63,20 +63,19 @@
 #ifdef CSMA_CONF_ACK_WAIT_TIME
 #define CSMA_ACK_WAIT_TIME CSMA_CONF_ACK_WAIT_TIME
 #else /* CSMA_CONF_ACK_WAIT_TIME */
-#define CSMA_ACK_WAIT_TIME                      RTIMER_SECOND / 2500
+#define CSMA_ACK_WAIT_TIME RTIMER_SECOND / 2500
 #endif /* CSMA_CONF_ACK_WAIT_TIME */
 
 #ifdef CSMA_CONF_AFTER_ACK_DETECTED_WAIT_TIME
 #define CSMA_AFTER_ACK_DETECTED_WAIT_TIME CSMA_CONF_AFTER_ACK_DETECTED_WAIT_TIME
 #else /* CSMA_CONF_AFTER_ACK_DETECTED_WAIT_TIME */
-#define CSMA_AFTER_ACK_DETECTED_WAIT_TIME       RTIMER_SECOND / 1500
+#define CSMA_AFTER_ACK_DETECTED_WAIT_TIME RTIMER_SECOND / 1500
 #endif /* CSMA_CONF_AFTER_ACK_DETECTED_WAIT_TIME */
 
 #define CSMA_ACK_LEN 3
 
 /* just a default - with LLSEC, etc */
 #define CSMA_MAC_MAX_HEADER 21
-
 
 extern const struct mac_driver csma_driver;
 
@@ -86,7 +85,6 @@ int csma_security_parse_frame(void);
 
 /* key management for CSMA */
 int csma_security_set_key(uint8_t index, const uint8_t *key);
-
 
 #endif /* CSMA_H_ */
 /**
