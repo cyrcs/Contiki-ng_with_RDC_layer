@@ -80,7 +80,6 @@ void input_callback(const void *data, uint16_t len,
     LOG_INFO("Received %u from ", count);
     LOG_INFO_LLADDR(src);
     LOG_INFO_("\n");
-    // NETSTACK_RDC.on();
   }
 }
 /*---------------------------------------------------------------------------*/
@@ -92,6 +91,8 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
   nullnet_set_input_callback(input_callback);
 
   NETSTACK_RDC.on();
+
+  PROCESS_YIELD_UNTIL(ev == PROCESS_EVENT_EXIT);
 
   PROCESS_END();
 }

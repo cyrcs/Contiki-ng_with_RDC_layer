@@ -30,12 +30,19 @@
 
 #define NETSTACK_CONF_RADIO sx128x_radio_driver
 
+// configure ACK
 #define CSMA_CONF_SEND_SOFT_ACK 1
-#define CSMA_CONF_ACK_WAIT_TIME 2500 // 1 wait time = 1s / 2500 = 0.4 ms
-#define CSMA_CONF_MAX_FRAME_RETRIES 5
+#define CSMA_CONF_ACK_WAIT_TIME RTIMER_SECOND / 500                 // time to wait for an ACK
+#define CSMA_CONF_AFTER_ACK_DETECTED_WAIT_TIME RTIMER_SECOND / 1500 // time to wait in order to fully receive the ACK
+#define CSMA_CONF_MAX_FRAME_RETRIES 3
+
+// configure RDC
+// #define NETSTACK_RDC_CHANNEL_CHECK_RATE 1 * 5 // this will divide 1s by 1 and then multiply by 5 => required because LoRa will need a interval larger then 1s
+// #define XMAC_CONF_ON_TIME RTIMER_ARCH_SECOND / 3
+// #define XMAC_CONF_OFF_TIME RTIMER_ARCH_SECOND * 3 - XMAC_CONF_ON_TIME
 
 /* Logging */
 // #define LOG_CONF_LEVEL_RPL                         LOG_LEVEL_DBG
-// #define LOG_CONF_LEVEL_MAC LOG_LEVEL_DBG
+#define LOG_CONF_LEVEL_MAC LOG_LEVEL_DBG
 #define LOG_CONF_LEVEL_RDC LOG_LEVEL_DBG
-// #define LOG_CONF_LEVEL_RADIO                       LOG_LEVEL_FUNC
+// #define LOG_CONF_LEVEL_RADIO LOG_LEVEL_FUNC

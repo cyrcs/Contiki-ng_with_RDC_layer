@@ -31,10 +31,9 @@
 #define NETSTACK_CONF_RADIO sx128x_radio_driver
 
 #define CSMA_CONF_SEND_SOFT_ACK 1
-#define CSMA_CONF_ACK_WAIT_TIME 1000
 
 /* Logging */
 // #define LOG_CONF_LEVEL_RPL                         LOG_LEVEL_DBG
 #define LOG_CONF_LEVEL_MAC LOG_LEVEL_DBG
-// #define LOG_CONF_LEVEL_RDC                         LOG_LEVEL_DBG
-// #define LOG_CONF_LEVEL_RADIO                       LOG_LEVEL_FUNC
+#define LOG_CONF_LEVEL_RDC LOG_LEVEL_DBG
+#define LOG_CONF_LEVEL_RADIO LOG_LEVEL_DBG
