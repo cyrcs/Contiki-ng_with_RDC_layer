@@ -143,11 +143,11 @@ extern "C"
 
     typedef enum
     {
-        sx128x_rx_off,
-        sx128x_rx_listening,
-        sx128x_rx_receiving,
-        sx128x_rx_received,
-        sx128x_rx_read,
+        SX128X_RX_OFF,
+        SX128X_RX_LISTENING,
+        SX128X_RX_RECEIVING,
+        SX128X_RX_RECEIVED,
+        SX128X_RX_READ,
     } sx128x_rx_state_t;
 
     /**
@@ -738,6 +738,8 @@ extern "C"
     LoRa_coding_rates sx128x_get_coding_rate(const sx128x_t *dev);
     // ! undocumented
     void sx128x_set_payload_length(sx128x_t *dev, uint8_t len);
+    //  ! undocumented
+    uint8_t sx128x_get_payload_length(const sx128x_t *dev);
     // ! undocumented
     void sx128x_cmd_set_modulation_params(sx128x_t *dev, LoRa_spreading_factors SF, LoRa_bandwidths BW, LoRa_coding_rates code_rate);
     // ! undocumented

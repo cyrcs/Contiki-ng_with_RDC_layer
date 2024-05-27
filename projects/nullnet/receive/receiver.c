@@ -63,6 +63,9 @@
 #define LOG_MODULE "App"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
+#define PERIOD (1 * CLOCK_SECOND)
+static unsigned int count;
+
 /* Configuration */
 
 /*---------------------------------------------------------------------------*/
@@ -75,7 +78,6 @@ void input_callback(const void *data, uint16_t len,
 {
   if (len == sizeof(unsigned))
   {
-    unsigned count;
     memcpy(&count, data, sizeof(count));
     LOG_INFO("Received %u from ", count);
     LOG_INFO_LLADDR(src);
@@ -85,14 +87,13 @@ void input_callback(const void *data, uint16_t len,
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(nullnet_example_process, ev, data)
 {
+
   PROCESS_BEGIN();
 
   /* Initialize NullNet */
   nullnet_set_input_callback(input_callback);
 
   NETSTACK_RDC.on();
-
-  PROCESS_YIELD_UNTIL(ev == PROCESS_EVENT_EXIT);
 
   PROCESS_END();
 }

@@ -236,7 +236,7 @@ void _sx128x_cmd_set_rx(sx128x_t *dev, uint8_t period_base, uint16_t period_base
 {
     LOG_FUNC("Function call: %s\n", __func__);
     // set current RX state to listening
-    sx128x_set_state_rx(dev, sx128x_rx_listening);
+    sx128x_set_state_rx(dev, SX128X_RX_LISTENING);
 
     // prepare params to set device in RX mode
     uint8_t params[3] = {period_base, (period_base_count >> 8) & 0xFF, (period_base_count & 0xFF)};
@@ -298,7 +298,7 @@ void sx128x_set_standby(sx128x_t *dev)
     (void)(dev);
     LOG_DBG("Set standby\n");
 
-    sx128x_set_state_rx(&SX128X_DEV, sx128x_rx_off);
+    sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
     sx128x_set_state_opmode(dev, SX128X_OPMODE_STANDBY);
 }
 
@@ -307,8 +307,8 @@ void sx128x_set_standby(sx128x_t *dev)
 void sx128x_cmd_set_sleep(const sx128x_t *dev, uint8_t config)
 {
     LOG_FUNC("Function call: %s\n", __func__);
-    // TODO Check we are on STDBY mode
     LOG_DBG("Cmd set sleep with config %#02x\n", config);
+    // TODO Check we are on STDBY mode
     (void)(dev);
     // sx128x_cmd_burst(dev, SX128X_CMD_SET_SLEEP, &config, 1, NULL, 0);
 }
@@ -328,38 +328,38 @@ void sx128x_set_state_rx(sx128x_t *dev, sx128x_rx_state_t rx)
     LOG_FUNC("Function call: %s\n", __func__);
     switch (rx)
     {
-    case sx128x_rx_off:
+    case SX128X_RX_OFF:
         LOG_DBG("set RX state to: off\n");
-        dev->state.rx = sx128x_rx_off;
+        dev->state.rx = SX128X_RX_OFF;
         break;
-    case sx128x_rx_listening:
+    case SX128X_RX_LISTENING:
         LOG_DBG("set RX state to: listening\n");
-        dev->state.rx = sx128x_rx_listening;
+        dev->state.rx = SX128X_RX_LISTENING;
         break;
-    case sx128x_rx_receiving:
-        if (dev->state.rx != sx128x_rx_listening)
+    case SX128X_RX_RECEIVING:
+        if (dev->state.rx != SX128X_RX_LISTENING)
         {
             LOG_ERR("[rx_state] Went from '%d' directly to to 'receiving'\n", dev->state.rx);
         }
-        dev->state.rx = sx128x_rx_receiving;
+        dev->state.rx = SX128X_RX_RECEIVING;
         LOG_DBG("set RX state to: receiving\n");
         break;
-    case sx128x_rx_received:
+    case SX128X_RX_RECEIVED:
 #if SX128X_BUSY_RX
         if (dev->state.rx != sx128x_rx_receiving)
         {
             LOG_WARN("[rx_state] Went to 'received' without 'receiving'\n");
         }
 #endif
-        dev->state.rx = sx128x_rx_received;
+        dev->state.rx = SX128X_RX_RECEIVED;
         LOG_DBG("set RX state to: received\n");
         break;
-    case sx128x_rx_read:
-        if (dev->state.rx != sx128x_rx_received)
+    case SX128X_RX_READ:
+        if (dev->state.rx != SX128X_RX_RECEIVED)
         {
             LOG_WARN("[rx_state] read the content of the module without packet pending\n");
         }
-        dev->state.rx = sx128x_rx_read;
+        dev->state.rx = SX128X_RX_READ;
         LOG_DBG("set RX state to: read\n");
 
         break;
@@ -588,15 +588,6 @@ LoRa_coding_rates sx128x_get_coding_rate(const sx128x_t *dev)
     return dev->settings.lora.coderate;
 }
 
-void sx128x_set_payload_length(sx128x_t *dev, uint8_t len)
-{
-    LOG_FUNC("Function call: %s\n", __func__);
-    (void)(dev);
-    sx128x_cmd_set_packet_params(dev, sx128x_get_preamble_length(dev),
-                                 sx128x_get_fixed_header_len_mode(dev), len,
-                                 sx128x_get_crc(dev), sx128x_get_iq_inverted(dev), 0, 0);
-}
-
 void sx128x_cmd_set_modulation_params(sx128x_t *dev, LoRa_spreading_factors SF, LoRa_bandwidths BW, LoRa_coding_rates code_rate)
 {
     LOG_FUNC("Function call: %s\n", __func__);
@@ -708,6 +699,7 @@ void sx128x_cmd_set_packet_params(sx128x_t *dev, uint8_t preamble_len, uint8_t e
         }
         params[2] = payload_len; // payload length
         LOG_DBG_("Payload length=%d, ", params[2]);
+        dev->settings.lora.payload_length = payload_len;
         _set_flag(dev, SX128X_FLAG_ENABLE_CRC, (bool)enable_crc);
         if (enable_crc)
         {
@@ -738,6 +730,22 @@ void sx128x_cmd_set_packet_params(sx128x_t *dev, uint8_t preamble_len, uint8_t e
         LOG_DBG("Not supported packet type\n");
         return;
     }
+}
+
+void sx128x_set_payload_length(sx128x_t *dev, uint8_t payload_len)
+{
+    LOG_FUNC("Function call: %s\n", __func__);
+    (void)(dev);
+    LOG_DBG("Set payload length: %d\n", payload_len);
+    dev->settings.lora.payload_length = payload_len;
+    sx128x_cmd_set_packet_params(dev, sx128x_get_preamble_length(dev),
+                                 sx128x_get_fixed_header_len_mode(dev), payload_len,
+                                 sx128x_get_crc(dev), sx128x_get_iq_inverted(dev), 0, 0);
+}
+uint8_t sx128x_get_payload_length(const sx128x_t *dev)
+{
+    LOG_FUNC("Function call: %s\n", __func__);
+    return (dev->settings.lora.payload_length);
 }
 
 void sx128x_set_crc(sx128x_t *dev, bool crc)

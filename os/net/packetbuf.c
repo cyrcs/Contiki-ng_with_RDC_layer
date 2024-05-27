@@ -51,7 +51,6 @@
 struct packetbuf_attr packetbuf_attrs[PACKETBUF_NUM_ATTRS];
 struct packetbuf_addr packetbuf_addrs[PACKETBUF_NUM_ADDRS];
 
-
 static uint16_t buflen, bufptr;
 static uint8_t hdrlen;
 
@@ -71,8 +70,7 @@ static uint8_t *packetbuf = (uint8_t *)packetbuf_aligned;
 #endif
 
 /*---------------------------------------------------------------------------*/
-void
-packetbuf_clear(void)
+void packetbuf_clear(void)
 {
   buflen = bufptr = 0;
   hdrlen = 0;
@@ -80,8 +78,7 @@ packetbuf_clear(void)
   packetbuf_attr_clear();
 }
 /*---------------------------------------------------------------------------*/
-int
-packetbuf_copyfrom(const void *from, uint16_t len)
+int packetbuf_copyfrom(const void *from, uint16_t len)
 {
   uint16_t l;
 
@@ -92,10 +89,24 @@ packetbuf_copyfrom(const void *from, uint16_t len)
   return l;
 }
 /*---------------------------------------------------------------------------*/
-int
-packetbuf_copyto(void *to)
+void packetbuf_compact(void)
 {
-  if(hdrlen + buflen > PACKETBUF_SIZE) {
+  int16_t i;
+  if (bufptr)
+  {
+    /* shift data to the left */
+    for (i = 0; i < buflen; i++)
+    {
+      packetbuf[hdrlen + i] = packetbuf[packetbuf_hdrlen() + i];
+    }
+    bufptr = 0;
+  }
+}
+/*---------------------------------------------------------------------------*/
+int packetbuf_copyto(void *to)
+{
+  if (hdrlen + buflen > PACKETBUF_SIZE)
+  {
     return 0;
   }
   memcpy(to, packetbuf_hdrptr(), hdrlen);
@@ -103,27 +114,28 @@ packetbuf_copyto(void *to)
   return hdrlen + buflen;
 }
 /*---------------------------------------------------------------------------*/
-int
-packetbuf_hdralloc(int size)
+int packetbuf_hdralloc(int size)
 {
   int16_t i;
 
-  if(size + packetbuf_totlen() > PACKETBUF_SIZE) {
+  if (size + packetbuf_totlen() > PACKETBUF_SIZE)
+  {
     return 0;
   }
 
   /* shift data to the right */
-  for(i = packetbuf_totlen() - 1; i >= 0; i--) {
+  for (i = packetbuf_totlen() - 1; i >= 0; i--)
+  {
     packetbuf[i + size] = packetbuf[i];
   }
   hdrlen += size;
   return 1;
 }
 /*---------------------------------------------------------------------------*/
-int
-packetbuf_hdrreduce(int size)
+int packetbuf_hdrreduce(int size)
 {
-  if(buflen < size) {
+  if (buflen < size)
+  {
     return 0;
   }
 
@@ -132,8 +144,7 @@ packetbuf_hdrreduce(int size)
   return 1;
 }
 /*---------------------------------------------------------------------------*/
-void
-packetbuf_set_datalen(uint16_t len)
+void packetbuf_set_datalen(uint16_t len)
 {
   PRINTF("packetbuf_set_len: len %d\n", len);
   buflen = len;
@@ -175,34 +186,31 @@ packetbuf_remaininglen(void)
   return PACKETBUF_SIZE - packetbuf_totlen();
 }
 /*---------------------------------------------------------------------------*/
-void
-packetbuf_attr_clear(void)
+void packetbuf_attr_clear(void)
 {
   int i;
   memset(packetbuf_attrs, 0, sizeof(packetbuf_attrs));
-  for(i = 0; i < PACKETBUF_NUM_ADDRS; ++i) {
+  for (i = 0; i < PACKETBUF_NUM_ADDRS; ++i)
+  {
     linkaddr_copy(&packetbuf_addrs[i].addr, &linkaddr_null);
   }
 }
 /*---------------------------------------------------------------------------*/
-void
-packetbuf_attr_copyto(struct packetbuf_attr *attrs,
-                      struct packetbuf_addr *addrs)
+void packetbuf_attr_copyto(struct packetbuf_attr *attrs,
+                           struct packetbuf_addr *addrs)
 {
   memcpy(attrs, packetbuf_attrs, sizeof(packetbuf_attrs));
   memcpy(addrs, packetbuf_addrs, sizeof(packetbuf_addrs));
 }
 /*---------------------------------------------------------------------------*/
-void
-packetbuf_attr_copyfrom(struct packetbuf_attr *attrs,
-                        struct packetbuf_addr *addrs)
+void packetbuf_attr_copyfrom(struct packetbuf_attr *attrs,
+                             struct packetbuf_addr *addrs)
 {
   memcpy(packetbuf_attrs, attrs, sizeof(packetbuf_attrs));
   memcpy(packetbuf_addrs, addrs, sizeof(packetbuf_addrs));
 }
 /*---------------------------------------------------------------------------*/
-void
-packetbuf_set_attr(uint8_t type, const packetbuf_attr_t val)
+void packetbuf_set_attr(uint8_t type, const packetbuf_attr_t val)
 {
   packetbuf_attrs[type].val = val;
 }
@@ -213,8 +221,7 @@ packetbuf_attr(uint8_t type)
   return packetbuf_attrs[type].val;
 }
 /*---------------------------------------------------------------------------*/
-void
-packetbuf_set_addr(uint8_t type, const linkaddr_t *addr)
+void packetbuf_set_addr(uint8_t type, const linkaddr_t *addr)
 {
   linkaddr_copy(&packetbuf_addrs[type - PACKETBUF_ADDR_FIRST].addr, addr);
 }
@@ -225,8 +232,7 @@ packetbuf_addr(uint8_t type)
   return &packetbuf_addrs[type - PACKETBUF_ADDR_FIRST].addr;
 }
 /*---------------------------------------------------------------------------*/
-bool
-packetbuf_holds_broadcast(void)
+bool packetbuf_holds_broadcast(void)
 {
   return linkaddr_cmp(&packetbuf_addrs[PACKETBUF_ADDR_RECEIVER - PACKETBUF_ADDR_FIRST].addr, &linkaddr_null);
 }

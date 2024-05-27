@@ -64,7 +64,7 @@
 #ifdef PACKETBUF_CONF_SIZE
 #define PACKETBUF_SIZE PACKETBUF_CONF_SIZE
 #else
-#define PACKETBUF_SIZE 128
+#define PACKETBUF_SIZE 255
 #endif
 
 /**
@@ -102,7 +102,6 @@ void *packetbuf_hdrptr(void);
  *
  */
 uint8_t packetbuf_hdrlen(void);
-
 
 /**
  * \brief      Get the length of the data in the packetbuf
@@ -162,6 +161,20 @@ int packetbuf_copyfrom(const void *from, uint16_t len);
  *             returned.
  *
  */
+/**
+ * \brief      Compact the packetbuf
+ *
+ *             This function compacts the packetbuf by copying the data
+ *             portion of the packetbuf so that becomes consecutive to
+ *             the header.
+ *
+ *             This function is called by the Rime code before a
+ *             packet is to be sent by a device driver. This assures
+ *             that the entire packet is consecutive in memory.
+ *
+ */
+void packetbuf_compact(void);
+
 int packetbuf_copyto(void *to);
 
 /**
@@ -196,14 +209,17 @@ int packetbuf_hdrreduce(int size);
 
 typedef uint16_t packetbuf_attr_t;
 
-struct packetbuf_attr {
+struct packetbuf_attr
+{
   packetbuf_attr_t val;
 };
-struct packetbuf_addr {
+struct packetbuf_addr
+{
   linkaddr_t addr;
 };
 
-enum {
+enum
+{
   PACKETBUF_ATTR_NONE,
 
   /* Scope 0 attributes: used only on the local node. */
@@ -252,34 +268,41 @@ enum {
 
 #define PACKETBUF_IS_ADDR(type) ((type) >= PACKETBUF_ADDR_FIRST)
 
-void              packetbuf_set_attr(uint8_t type, const packetbuf_attr_t val);
+void packetbuf_set_attr(uint8_t type, const packetbuf_attr_t val);
 packetbuf_attr_t packetbuf_attr(uint8_t type);
-void              packetbuf_set_addr(uint8_t type, const linkaddr_t *addr);
+void packetbuf_set_addr(uint8_t type, const linkaddr_t *addr);
 const linkaddr_t *packetbuf_addr(uint8_t type);
 
 /**
  * \brief       Checks whether the current packet is a broadcast.
  * \retval true iff the current packet is a broadcast
  */
-bool              packetbuf_holds_broadcast(void);
+bool packetbuf_holds_broadcast(void);
 
-void              packetbuf_attr_clear(void);
+void packetbuf_attr_clear(void);
 
-void              packetbuf_attr_copyto(struct packetbuf_attr *attrs,
-                                        struct packetbuf_addr *addrs);
-void              packetbuf_attr_copyfrom(struct packetbuf_attr *attrs,
-                                          struct packetbuf_addr *addrs);
+void packetbuf_attr_copyto(struct packetbuf_attr *attrs,
+                           struct packetbuf_addr *addrs);
+void packetbuf_attr_copyfrom(struct packetbuf_attr *attrs,
+                             struct packetbuf_addr *addrs);
 
-#define PACKETBUF_ATTRIBUTES(...) { __VA_ARGS__ PACKETBUF_ATTR_LAST }
-#define PACKETBUF_ATTR_LAST { PACKETBUF_ATTR_NONE, 0 }
+#define PACKETBUF_ATTRIBUTES(...)   \
+  {                                 \
+    __VA_ARGS__ PACKETBUF_ATTR_LAST \
+  }
+#define PACKETBUF_ATTR_LAST \
+  {                         \
+    PACKETBUF_ATTR_NONE, 0  \
+  }
 
-#define PACKETBUF_ATTR_BIT  1
+#define PACKETBUF_ATTR_BIT 1
 #define PACKETBUF_ATTR_BYTE 8
 #define PACKETBUF_ADDRSIZE (LINKADDR_SIZE * PACKETBUF_ATTR_BYTE)
 
 #define PACKETBUF_ATTR_SECURITY_LEVEL_DEFAULT 0xffff
 
-struct packetbuf_attrlist {
+struct packetbuf_attrlist
+{
   uint8_t type;
   uint8_t len;
 };

@@ -43,6 +43,14 @@
 
 #include "net/mac/rdc/rdc.h"
 
+struct cxmac_config
+{
+    rtimer_clock_t on_time;
+    rtimer_clock_t off_time;
+    rtimer_clock_t strobe_time;
+    rtimer_clock_t strobe_wait_time;
+};
+
 extern const struct rdc_driver xmac_driver;
 
 #endif /* XMAC_H_ */

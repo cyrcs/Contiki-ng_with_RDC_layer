@@ -20,6 +20,8 @@
 PROCESS(sx128x_rf_process, "sx128x RF driver");
 static int sx128x_on(void);
 
+// static uint8_t volatile poll_mode = 0;
+
 /* ---------------------------- CONFIGURE DEVICE ---------------------------- */
 
 sx128x_t __sx128x_dev = {
@@ -56,18 +58,23 @@ void sx128x_interrupt_opmode_receiver()
     switch (SX128X_DEV.irq)
     {
     case SX128X_IRQ_REG_RX_DONE:
-        LOG_DBG("Flag: RX DONE\n");
+        LOG_INFO("Flag set: RX DONE\n");
         SX128X_DEV._internal.rx_timestamp = RTIMER_NOW();
         sx128x_cmd_get_packet_status(&SX128X_DEV);
         sx128x_cmd_get_rx_buffer_status(&SX128X_DEV);
-        sx128x_set_state_rx(&SX128X_DEV, sx128x_rx_received);
+        sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_RECEIVED);
         sx128x_set_state_event(&SX128X_DEV, SX128X_RX_DONE);
         process_poll(&sx128x_rf_process);
         break;
     case SX128X_IRQ_REG_RX_TX_TIMEOUT:
-        LOG_DBG("Flag: RX TIMEOUT\n");
+        LOG_INFO("Flag set: RX TIMEOUT\n");
         sx128x_set_standby(&SX128X_DEV);
         sx128x_set_state_event(&SX128X_DEV, SX128X_RX_TIMEOUT);
+        sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
+        process_poll(&sx128x_rf_process);
+        break;
+    case SX128X_IRQ_REG_CRC_ERROR:
+        LOG_INFO("Flag set: CRC ERROR\n");
         break;
     }
 }
@@ -79,28 +86,28 @@ void sx128x_interrupt_opmode_receiver_ack()
     switch (SX128X_DEV.irq)
     {
     case SX128X_IRQ_REG_RX_DONE:
-        LOG_DBG("Flag: RX DONE\n");
+        LOG_INFO("Flag: RX DONE\n");
         SX128X_DEV._internal.rx_timestamp = RTIMER_NOW();
+        sx128x_set_standby(&SX128X_DEV);
         sx128x_cmd_get_packet_status(&SX128X_DEV);
         sx128x_cmd_get_rx_buffer_status(&SX128X_DEV);
-        sx128x_set_state_rx(&SX128X_DEV, sx128x_rx_off);     // rx state off, this will prevent the process handler from reading the ACK, instead the MAC layer will read it directly from the buffer.
-        sx128x_set_state_event(&SX128X_DEV, SX128X_RX_DONE); // event rx_done
+        sx128x_set_state_event(&SX128X_DEV, SX128X_RX_DONE);
 
         process_poll(&sx128x_rf_process);
         break;
     case SX128X_IRQ_REG_RX_TX_TIMEOUT:
-        LOG_DBG("Flag: RX TIMEOUT\n");
+        LOG_INFO("Flag: RX TIMEOUT\n");
         sx128x_set_standby(&SX128X_DEV);
         sx128x_set_state_event(&SX128X_DEV, SX128X_RX_TIMEOUT);
+        sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
+        process_poll(&sx128x_rf_process);
         break;
     }
 }
 
-// ! untested
 void sx128x_interrupt_opmode_receiver_continuous()
 {
-    LOG_DBG("OPMODE RECEIVER_CONTINUOUS\n");
-    sx128x_set_state_rx(&SX128X_DEV, sx128x_rx_received);
+    LOG_WARN("OPMODE RECEIVER_CONTINUOUS: NOT IMPLEMENTED!!!!!!!!!\n");
 }
 
 void sx128x_interrupt_opmode_cad()
@@ -134,7 +141,7 @@ void sx128x_interrupt_opmode_transmitter()
         break;
     case SX128X_IRQ_REG_RX_TX_TIMEOUT:
         sx128x_set_state_event(&SX128X_DEV, SX128X_TX_TIMEOUT);
-        LOG_DBG("Flag: TX TIMEOUT\n");
+        LOG_INFO("Flag set: TX TIMEOUT\n");
         break;
     default:
         LOG_ERR("TX IRQ NOT FOUND: %d\n", SX128X_DEV.irq);
@@ -143,6 +150,7 @@ void sx128x_interrupt_opmode_transmitter()
 
 static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask)
 {
+    LOG_INFO("Interrupt on DIO1\n");
     LOG_FUNC("Function call: %s\n", __func__);
     // printf("inside interrupt\n");
     // get irq status and then reset it
@@ -171,7 +179,6 @@ static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask)
         sx128x_interrupt_opmode_receiver_ack();
         break;
     case SX128X_OPMODE_RX_CONTINUOUS:
-        LOG_ERR("continuous mode NOT FULLY IMPLEMENTED!!!!!\n");
         sx128x_interrupt_opmode_receiver_continuous();
         break;
     case SX128X_OPMODE_TX:
@@ -196,9 +203,9 @@ static int
 sx128x_prepare(const void *payload, unsigned short payload_len)
 {
     LOG_FUNC("Function call: %s\n", __func__);
-    LOG_DBG("Prepare %d bytes\n", payload_len);
-    LOG_DBG("payload: %s\n", (char *)payload);
+    LOG_DBG("payload(%d): %s\n", payload_len, (char *)payload);
 
+    // ! should we check is or just always go to standby mode?
     // if currently not in standby, set in standby
     if (sx128x_get_state_opmode(&SX128X_DEV) != SX128X_OPMODE_STANDBY)
     {
@@ -220,24 +227,26 @@ sx128x_transmit(unsigned short payload_len)
 {
     LOG_FUNC("Function call: %s\n", __func__);
 
-    // set radio to TX
     sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_TX);
 
-    // wait for interrupt to trigger OR wait for manual timeout after 10s
-    unsigned int timeout = 0;
-    unsigned int timeoutValue = 100000;
-    while ((sx128x_get_state_event(&SX128X_DEV) != SX128X_TX_DONE) && (timeout <= timeoutValue))
+    unsigned int ticks = 0;
+    unsigned int timeoutValue = 100000; // in 100us => 10s
+    while ((sx128x_get_state_event(&SX128X_DEV) != SX128X_TX_DONE) && (ticks < timeoutValue))
     {
         watchdog_periodic();
         clock_delay_usec(100);
-        timeout++;
+        ticks++;
     }
-    LOG_DBG("TIMEOUT: %d\n", timeout);
-
+    LOG_DBG("Transmitted after %d ticks\n", ticks);
+    // this part could be put in the process poll handler instead of here.
     if (sx128x_get_state_event(&SX128X_DEV) == SX128X_TX_DONE)
     {
 
         LOG_DBG("Transmitted %d bytes with success\n", payload_len);
+        // if (payload_len == 44)
+        // {
+        //     sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_SINGLE);
+        // }
         if (payload_len != 3)
         {
 #if CSMA_CONF_SEND_SOFT_ACK
@@ -264,8 +273,6 @@ sx128x_transmit(unsigned short payload_len)
         return RADIO_TX_ERR;
     }
 }
-// static int sx128x_pending_packet(void);
-// static int sx128x_receiving_packet(void);
 
 static int
 sx128x_send(const void *payload, unsigned short payload_len)
@@ -301,7 +308,7 @@ sx128x_receiving_packet(void)
     LOG_FUNC("Function call: %s\n", __func__);
 
     // ! this setting is only set to receiving when using CAD, otherwise it goes from off to listening to received
-    if (SX128X_DEV.state.rx == sx128x_rx_receiving)
+    if (SX128X_DEV.state.rx == SX128X_RX_RECEIVING)
     {
         if (sx128x_pending_packet())
         {
@@ -309,7 +316,7 @@ sx128x_receiving_packet(void)
         }
         return true;
     }
-    return SX128X_DEV.state.rx == sx128x_rx_receiving;
+    return SX128X_DEV.state.rx == SX128X_RX_RECEIVING;
 }
 
 static int
@@ -340,38 +347,35 @@ sx128x_read_packet(void *buf, unsigned short bufsize)
 
 static void sx128x_poll_handler(void)
 {
-    LOG_DBG("Function call: %s\n", __func__);
+    LOG_FUNC("Function call: %s\n", __func__);
     int len;
 
-    // if packet pending and set to received, handle it. (this will ignore ACKs)
-    if (sx128x_pending_packet() && sx128x_get_state_rx(&SX128X_DEV) == sx128x_rx_received)
+    if (sx128x_pending_packet() && sx128x_get_state_rx(&SX128X_DEV) == SX128X_RX_RECEIVED)
     {
-        LOG_DBG("reading packet\n");
-        len = sx128x_read_packet(packetbuf_dataptr(), (&SX128X_DEV)->_internal.rx_length);
+        LOG_INFO("reading packet\n");
         packetbuf_clear();
+        len = sx128x_read_packet(packetbuf_dataptr(), (&SX128X_DEV)->_internal.rx_length);
         if (len > 0)
         {
             packetbuf_set_datalen(len);
             NETSTACK_RDC.input();
         }
-        packetbuf_clear();
-        // ! check if both these packeybuf_clear's are needed
+        // ! hack for continuous mode while using single mode
         if ((&SX128X_DEV)->settings.rx_mode == SX128X_RX_MODE_CONTINUOUS)
         {
+            LOG_DBG("Restarting RX\n");
             sx128x_on();
         }
     }
-    else if (sx128x_pending_packet() && sx128x_get_state_rx(&SX128X_DEV) == sx128x_rx_off)
+    else if (sx128x_get_state_event(&SX128X_DEV) == SX128X_RX_TIMEOUT)
     {
-        LOG_DBG("processed ACK, leave it for the MAC layer.\n");
+        LOG_DBG("processed RX TIMEOUT\n");
     }
-
-    // TODO handle other flags below
 }
 
 PROCESS_THREAD(sx128x_rf_process, ev, data)
 {
-    LOG_DBG("Function call: %s\n", __func__);
+    LOG_FUNC("Function call: %s\n", __func__);
 
     PROCESS_POLLHANDLER(sx128x_poll_handler());
 
@@ -426,6 +430,7 @@ sx128x_on(void)
 {
     LOG_FUNC("Function call: %s\n", __func__);
 #if !SX128X_BUSY_RX
+    // sx128x_cmd_set_dio_irq_params(&(SX128X_DEV), SX128X_IRQ_REG_TX_DONE | SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_CAD_DONE | SX128X_IRQ_REG_CAD_DETECTED | SX128X_IRQ_REG_RX_TX_TIMEOUT, 0, 0);
     sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_SINGLE);
 #endif
     return 1;
@@ -696,8 +701,6 @@ static void sx128x_gpio_init(sx128x_t *dev)
 static void sx128x_init_radio(sx128x_t *dev)
 {
     LOG_FUNC("Function call: %s\n", __func__);
-    // LOG_DBG("cmd get status\n");
-    // sx128x_cmd_get_status(dev); // ! this function returns a value that is never used
     LOG_DBG("cmd set regulator mode\n");
     sx128x_cmd_set_regulator_mode(dev, SX128X_REGULATOR_MODE_DCDC);
     LOG_DBG("cmd set packet type\n");
@@ -717,8 +720,8 @@ static void sx128x_init_radio(sx128x_t *dev)
 
     // default packet parameters
     sx128x_set_preamble_length(dev, CONFIG_LORA24_PREAMBLE_LENGTH_DEFAULT);
-    sx128x_set_fixed_header_len_mode(dev, false); // ! add variable for this
-    sx128x_set_iq_inverted(dev, false);           // ! add variable for this
+    sx128x_set_fixed_header_len_mode(dev, CONFIG_LORA24_FIXED_HEADER_LEN_MODE_DEFAULT);
+    sx128x_set_iq_inverted(dev, CONFIG_LORA24_INVERTED_IQ_DEFAULT);
     sx128x_set_crc(dev, CONFIG_LORA24_PAYLOAD_CRC_ON_DEFAULT);
 
     sx128x_cmd_set_frequency(dev, SX128X_CHANNEL_DEFAULT);
@@ -752,7 +755,7 @@ int sx128x_initialization()
              sx128x_get_fixed_header_len_mode(&SX128X_DEV)
 
     );
-    LOG_INFO("LoRa driver working with busy RX: %d and interrupt: %d\n", SX128X_BUSY_RX, SX128X_USE_INTERRUPT);
+    LOG_INFO("LoRa driver working with interrupt: %d\n", SX128X_USE_INTERRUPT);
 
     return RADIO_RESULT_OK;
 }

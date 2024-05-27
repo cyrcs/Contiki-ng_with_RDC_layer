@@ -103,6 +103,8 @@
 #define NETSTACK_RDC nullrdc_driver
 #elif RDC_CONF_WITH_NULLRDC_NOFRAMER
 #define NETSTACK_RDC nullrdc_noframer_driver
+#elif RDC_CONF_WITH_XMAC
+#define NETSTACK_RDC xmac_driver
 #else
 #error Unknown RDC configuration
 #endif

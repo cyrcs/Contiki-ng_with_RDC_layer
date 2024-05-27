@@ -52,7 +52,6 @@
 #include "sys/log.h"
 #include "sx128x.h"
 #include "antenna-sw.h"
-
 #include "string.h"
 #include "sys/etimer.h"
 #include "net/nullnet/nullnet.h"
@@ -63,7 +62,7 @@
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 /* Configuration */
-#define SEND_INTERVAL (1 * CLOCK_SECOND)
+#define SEND_INTERVAL (20 * CLOCK_SECOND)
 // static linkaddr_t dest_addr = {{ 0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0xa5 }};
 static linkaddr_t dest_addr = {{0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0x88}};
 
@@ -81,6 +80,7 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
   /* Initialize NullNet */
   nullnet_buf = (uint8_t *)&count;
   nullnet_len = sizeof(count);
+  NETSTACK_RDC.on();
 
   if (!linkaddr_cmp(&dest_addr, &linkaddr_node_addr))
   {
@@ -88,7 +88,6 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
     while (count < 50)
     {
       PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
-      NETSTACK_RADIO.on();
 
       LOG_INFO("Sending %u to ", count);
       LOG_INFO_LLADDR(&dest_addr);

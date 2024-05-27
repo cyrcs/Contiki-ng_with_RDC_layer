@@ -3,7 +3,7 @@
  *         A MAC protocol that does not do anything.
  * \author
  *         Adam Dunkels <adam@sics.se>
- * 
+ *
  * Changes made by
  *          Louka Grignard <louka.michael.grignard@vub.be>
  */
@@ -19,18 +19,20 @@
 #define LOG_MODULE "NULLRDC NOFRAMER"
 #define LOG_LEVEL LOG_LEVEL_RDC
 
-
 /*---------------------------------------------------------------------------*/
 static void
 send_packet(mac_callback_t sent, void *ptr)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
 
   int ret;
-  if(NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen()) == RADIO_TX_OK) {
+  if (NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen()) == RADIO_TX_OK)
+  {
     ret = MAC_TX_OK;
-  } else {
-    ret =  MAC_TX_ERR;
+  }
+  else
+  {
+    ret = MAC_TX_ERR;
   }
   mac_call_sent_callback(sent, ptr, ret, 1);
 }
@@ -38,8 +40,9 @@ send_packet(mac_callback_t sent, void *ptr)
 static void
 send_list(mac_callback_t sent, void *ptr, struct packet_queue *q)
 {
-  LOG_DBG("Function call: %s\n", __func__);
-  if(q != NULL) {
+  LOG_FUNC("Function call: %s\n", __func__);
+  if (q != NULL)
+  {
     queuebuf_to_packetbuf(q->buf);
     send_packet(sent, ptr);
   }
@@ -48,14 +51,14 @@ send_list(mac_callback_t sent, void *ptr, struct packet_queue *q)
 static void
 packet_input(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   NETSTACK_MAC.input();
 }
 /*---------------------------------------------------------------------------*/
 static int
 on(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
 
   // work around to print the returned integer value
   // int val;
@@ -68,33 +71,33 @@ on(void)
 /*---------------------------------------------------------------------------*/
 static int
 off(void)
-{   
-  LOG_DBG("Function call: %s\n", __func__);
+{
+  LOG_FUNC("Function call: %s\n", __func__);
   return NETSTACK_RADIO.off();
 }
 /*---------------------------------------------------------------------------*/
 static unsigned short
 channel_check_interval(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   return 0;
 }
 /*---------------------------------------------------------------------------*/
 static void
 init(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   on();
 }
 /*---------------------------------------------------------------------------*/
 const struct rdc_driver nullrdc_noframer_driver = {
-  "nullrdc-noframer",
-  init,
-  send_packet,
-  send_list,
-  packet_input,
-  on,
-  off,
-  channel_check_interval,
+    "nullrdc-noframer",
+    init,
+    send_packet,
+    send_list,
+    packet_input,
+    on,
+    off,
+    channel_check_interval,
 };
 /*---------------------------------------------------------------------------*/

@@ -61,7 +61,7 @@ extern "C"
      */
 
 #ifndef CONFIG_LORA24_SF_DEFAULT
-#define CONFIG_LORA24_SF_DEFAULT (LORA_SF_7)
+#define CONFIG_LORA24_SF_DEFAULT (LORA_SF_12)
 #endif
 
     /** @brief Set channel bandwidth
