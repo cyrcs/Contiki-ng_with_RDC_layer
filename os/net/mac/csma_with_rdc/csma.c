@@ -58,7 +58,7 @@ static int max_payload(void);
 static void
 init(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   radio_value_t radio_max_payload_len;
 
   /* Check that the radio can correctly report its max supported payload */
@@ -102,7 +102,7 @@ init(void)
 static void
 init_sec(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
 #if LLSEC802154_USES_AUX_HEADER
   if (packetbuf_attr(PACKETBUF_ATTR_SECURITY_LEVEL) ==
       PACKETBUF_ATTR_SECURITY_LEVEL_DEFAULT)
@@ -117,7 +117,7 @@ static void
 send_packet(mac_callback_t sent, void *ptr)
 {
 
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
 
   init_sec();
 
@@ -127,81 +127,21 @@ send_packet(mac_callback_t sent, void *ptr)
 static void
 input_packet(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
-
-#if CSMA_SEND_SOFT_ACK
-  uint8_t ackdata[CSMA_ACK_LEN];
-#endif
-
-  if (packetbuf_datalen() == CSMA_ACK_LEN)
-  {
-    /* Ignore ack packets */
-    LOG_DBG("ignored ack\n");
-  }
-  else if (csma_security_parse_frame() < 0)
-  {
-    LOG_ERR("failed to parse %u\n", packetbuf_datalen());
-  }
-  else if (!linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
-                         &linkaddr_node_addr) &&
-           !packetbuf_holds_broadcast())
-  {
-    LOG_WARN("not for us\n");
-  }
-  else if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_SENDER), &linkaddr_node_addr))
-  {
-    LOG_WARN("frame from ourselves\n");
-  }
-  else
-  {
-    int duplicate = 0;
-
-    /* Check for duplicate packet. */
-    duplicate = mac_sequence_is_duplicate();
-    if (duplicate)
-    {
-      /* Drop the packet. */
-      LOG_WARN("drop duplicate link layer packet from ");
-      LOG_WARN_LLADDR(packetbuf_addr(PACKETBUF_ADDR_SENDER));
-      LOG_WARN_(", seqno %u\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
-    }
-    else
-    {
-      mac_sequence_register_seqno();
-    }
-
-#if CSMA_SEND_SOFT_ACK
-    if (packetbuf_attr(PACKETBUF_ATTR_MAC_ACK))
-    {
-      ackdata[0] = FRAME802154_ACKFRAME;
-      ackdata[1] = 0;
-      ackdata[2] = ((uint8_t *)packetbuf_hdrptr())[2];
-      LOG_DBG("SENDING ACK\n");
-      NETSTACK_RADIO.send(ackdata, CSMA_ACK_LEN);
-    }
-    LOG_DBG("DONE SENDING ACK\n");
-#endif /* CSMA_SEND_SOFT_ACK */
-    if (!duplicate)
-    {
-      LOG_INFO("received packet from ");
-      LOG_INFO_LLADDR(packetbuf_addr(PACKETBUF_ADDR_SENDER));
-      LOG_INFO_(", seqno %u, len %u\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO), packetbuf_datalen());
-      NETSTACK_NETWORK.input();
-    }
-  }
+  LOG_FUNC("Function call: %s\n", __func__);
+  NETSTACK_NETWORK.input();
 }
 /*---------------------------------------------------------------------------*/
 static int
 on(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   return NETSTACK_RDC.on();
 }
 /*---------------------------------------------------------------------------*/
 static int
 off(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   return NETSTACK_RDC.off();
 }
 /*---------------------------------------------------------------------------*/
@@ -209,7 +149,7 @@ off(void)
 static int
 max_payload(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   int framer_hdrlen;
   radio_value_t max_radio_payload_len;
   radio_result_t res;

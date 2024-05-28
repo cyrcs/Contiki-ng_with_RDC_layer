@@ -73,7 +73,6 @@
 
 #define ACK_LEN 3
 
-bool packet_received;
 bool radio_on;
 
 /*---------------------------------------------------------------------------*/
@@ -83,14 +82,14 @@ static int on(void);
 static void
 init(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   on();
 }
 /*---------------------------------------------------------------------------*/
 static int
 send_one_packet(mac_callback_t sent, void *ptr)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   // create 2 required variables
   int ret;
   int last_sent_ok = 0;
@@ -152,15 +151,15 @@ send_one_packet(mac_callback_t sent, void *ptr)
           /* Check for ack */
 
           /* Wait for max CSMA_ACK_WAIT_TIME */
-          // RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet, CSMA_ACK_WAIT_TIME);
+          RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet, CSMA_ACK_WAIT_TIME);
 
-          uint32_t time = 0;
-          while ((time < CSMA_ACK_WAIT_TIME) || !(NETSTACK_RADIO.pending_packet))
-          {
-            watchdog_periodic();
-            clock_delay_usec(500);
-            time++;
-          }
+          // uint32_t time = 0;
+          // while ((time < CSMA_ACK_WAIT_TIME) || !(NETSTACK_RADIO.pending_packet))
+          // {
+          //   watchdog_periodic();
+          //   clock_delay_usec(500);
+          //   time++;
+          // }
 
           ret = MAC_TX_NOACK;
 
@@ -214,14 +213,14 @@ send_one_packet(mac_callback_t sent, void *ptr)
 static void
 send_packet(mac_callback_t sent, void *ptr)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   send_one_packet(sent, ptr);
 }
 /*---------------------------------------------------------------------------*/
 static void
 send_list(mac_callback_t sent, void *ptr, struct packet_queue *q)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   while (q != NULL)
   {
     /* We backup the next pointer, as it may be nullified by
@@ -246,15 +245,73 @@ send_list(mac_callback_t sent, void *ptr, struct packet_queue *q)
 static void
 packet_input(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
-  NETSTACK_MAC.input();
-  packet_received = true;
+  LOG_FUNC("Function call: %s\n", __func__);
+#if CSMA_SEND_SOFT_ACK
+  uint8_t ackdata[CSMA_ACK_LEN];
+#endif
+
+  if (packetbuf_datalen() == CSMA_ACK_LEN)
+  {
+    /* Ignore ack packets */
+    LOG_DBG("ignored ack\n");
+  }
+  else if (csma_security_parse_frame() < 0)
+  {
+    LOG_ERR("failed to parse %u\n", packetbuf_datalen());
+  }
+  else if (!linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
+                         &linkaddr_node_addr) &&
+           !packetbuf_holds_broadcast())
+  {
+    LOG_WARN("not for us\n");
+  }
+  else if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_SENDER), &linkaddr_node_addr))
+  {
+    LOG_WARN("frame from ourselves\n");
+  }
+  else
+  {
+    int duplicate = 0;
+
+    /* Check for duplicate packet. */
+    duplicate = mac_sequence_is_duplicate();
+    if (duplicate)
+    {
+      /* Drop the packet. */
+      LOG_WARN("drop duplicate link layer packet from ");
+      LOG_WARN_LLADDR(packetbuf_addr(PACKETBUF_ADDR_SENDER));
+      LOG_WARN_(", seqno %u\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO));
+    }
+    else
+    {
+      mac_sequence_register_seqno();
+    }
+
+#if CSMA_SEND_SOFT_ACK
+    if (packetbuf_attr(PACKETBUF_ATTR_MAC_ACK))
+    {
+      ackdata[0] = FRAME802154_ACKFRAME;
+      ackdata[1] = 0;
+      ackdata[2] = ((uint8_t *)packetbuf_hdrptr())[2];
+      LOG_DBG("SENDING ACK\n");
+      NETSTACK_RADIO.send(ackdata, CSMA_ACK_LEN);
+    }
+    LOG_DBG("DONE SENDING ACK\n");
+#endif /* CSMA_SEND_SOFT_ACK */
+    if (!duplicate)
+    {
+      LOG_INFO("received packet from ");
+      LOG_INFO_LLADDR(packetbuf_addr(PACKETBUF_ADDR_SENDER));
+      LOG_INFO_(", seqno %u, len %u\n", packetbuf_attr(PACKETBUF_ATTR_MAC_SEQNO), packetbuf_datalen());
+      NETSTACK_MAC.input();
+    }
+  }
 }
 /*---------------------------------------------------------------------------*/
 static int
 on(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
 
   NETSTACK_RADIO.on();
 
@@ -264,7 +321,7 @@ on(void)
 static int
 off(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   LOG_DBG("\n\n\n\n");
 
   radio_on = false;
@@ -274,7 +331,7 @@ off(void)
 static unsigned short
 channel_check_interval(void)
 {
-  LOG_DBG("Function call: %s\n", __func__);
+  LOG_FUNC("Function call: %s\n", __func__);
   return 0;
 }
 /*---------------------------------------------------------------------------*/
