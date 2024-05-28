@@ -64,16 +64,10 @@
 #define LOG_MODULE "NULLRDC"
 #define LOG_LEVEL LOG_LEVEL_RDC
 
-#ifndef RECEIVER
-#define RECEIVER 0
-#endif
-
 #include "sys/rtimer.h"
 #include "dev/watchdog.h"
 
 #define ACK_LEN 3
-
-bool radio_on;
 
 /*---------------------------------------------------------------------------*/
 static int on(void);
@@ -151,15 +145,7 @@ send_one_packet(mac_callback_t sent, void *ptr)
           /* Check for ack */
 
           /* Wait for max CSMA_ACK_WAIT_TIME */
-          RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet, CSMA_ACK_WAIT_TIME);
-
-          // uint32_t time = 0;
-          // while ((time < CSMA_ACK_WAIT_TIME) || !(NETSTACK_RADIO.pending_packet))
-          // {
-          //   watchdog_periodic();
-          //   clock_delay_usec(500);
-          //   time++;
-          // }
+          RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_ACK_WAIT_TIME);
 
           ret = MAC_TX_NOACK;
 
@@ -324,7 +310,6 @@ off(void)
   LOG_FUNC("Function call: %s\n", __func__);
   LOG_DBG("\n\n\n\n");
 
-  radio_on = false;
   return NETSTACK_RADIO.off();
 }
 /*---------------------------------------------------------------------------*/

@@ -88,19 +88,19 @@ void sx128x_interrupt_opmode_receiver_ack()
     case SX128X_IRQ_REG_RX_DONE:
         LOG_INFO("Flag: RX DONE\n");
         SX128X_DEV._internal.rx_timestamp = RTIMER_NOW();
-        sx128x_set_standby(&SX128X_DEV);
         sx128x_cmd_get_packet_status(&SX128X_DEV);
         sx128x_cmd_get_rx_buffer_status(&SX128X_DEV);
+        sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
         sx128x_set_state_event(&SX128X_DEV, SX128X_RX_DONE);
 
-        process_poll(&sx128x_rf_process);
+        // process_poll(&sx128x_rf_process);
         break;
     case SX128X_IRQ_REG_RX_TX_TIMEOUT:
         LOG_INFO("Flag: RX TIMEOUT\n");
         sx128x_set_standby(&SX128X_DEV);
         sx128x_set_state_event(&SX128X_DEV, SX128X_RX_TIMEOUT);
         sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
-        process_poll(&sx128x_rf_process);
+        // process_poll(&sx128x_rf_process);
         break;
     }
 }
@@ -137,7 +137,7 @@ void sx128x_interrupt_opmode_transmitter()
     {
     case SX128X_IRQ_REG_TX_DONE:
         sx128x_set_state_event(&SX128X_DEV, SX128X_TX_DONE);
-        LOG_INFO("Flag set: TX DONE, took %llu ticks\n", (RTIMER_NOW()) - SX128X_DEV._internal.tx_timestamp);
+        LOG_INFO("Flag set: TX DONE\n");
         break;
     case SX128X_IRQ_REG_RX_TX_TIMEOUT:
         sx128x_set_state_event(&SX128X_DEV, SX128X_TX_TIMEOUT);
@@ -150,7 +150,6 @@ void sx128x_interrupt_opmode_transmitter()
 
 static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask)
 {
-    LOG_INFO("Interrupt on DIO1\n");
     LOG_FUNC("Function call: %s\n", __func__);
     // printf("inside interrupt\n");
     // get irq status and then reset it
@@ -251,6 +250,8 @@ sx128x_transmit(unsigned short payload_len)
         {
 #if CSMA_CONF_SEND_SOFT_ACK
             sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_ACK);
+            // sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_SINGLE);
+
 #endif
         }
         else
@@ -287,6 +288,7 @@ static int
 sx128x_pending_packet(void)
 {
     LOG_FUNC("Function call: %s\n", __func__);
+    watchdog_periodic();
     if (SX128X_DEV.state.event == SX128X_RX_DONE)
     {
         return true;
@@ -323,7 +325,6 @@ static int
 sx128x_read_packet(void *buf, unsigned short bufsize)
 {
     LOG_FUNC("Function call: %s\n", __func__);
-
     if (!sx128x_pending_packet())
     {
         LOG_DBG("No packet pending...\n");

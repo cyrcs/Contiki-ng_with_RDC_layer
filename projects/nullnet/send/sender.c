@@ -80,7 +80,7 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
   /* Initialize NullNet */
   nullnet_buf = (uint8_t *)&count;
   nullnet_len = sizeof(count);
-  NETSTACK_RDC.on();
+  // NETSTACK_RDC.on();
 
   if (!linkaddr_cmp(&dest_addr, &linkaddr_node_addr))
   {

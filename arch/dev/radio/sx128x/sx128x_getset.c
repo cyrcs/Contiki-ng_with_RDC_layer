@@ -380,43 +380,43 @@ void sx128x_set_state_opmode(sx128x_t *dev, sx128x_opmode_t op_mode)
     switch (op_mode)
     {
     case SX128X_OPMODE_SLEEP:
-        LOG_DBG_("Set op mode: SLEEP\n");
+        LOG_DBG("Set op mode: SLEEP\n");
         sx128x_cmd_set_sleep(dev, 0);
         break;
     case SX128X_OPMODE_STANDBY:
-        LOG_DBG_("set op mode: STANDBY\n");
+        LOG_DBG("set op mode: STANDBY\n");
         _cmd_sx128x_set_standby(dev, 0);
         break;
     case SX128X_OPMODE_CAD:
-        LOG_DBG_("set op mode: CAD\n");
+        LOG_DBG("set op mode: CAD\n");
         sx128x_cmd_set_cad(dev);
         break;
     case SX128X_OPMODE_TX:
-        LOG_DBG_("set op mode: TRANSMITTER WITH TIMOUT %d\n", _sx128x_get_timeout_in_s(PERIOD_BASE_04_MS, 2500));
+        LOG_DBG("set op mode: TRANSMITTER WITH TIMOUT %d\n", _sx128x_get_timeout_in_s(PERIOD_BASE_04_MS, 2500));
         sx128x_cmd_set_tx(dev, PERIOD_BASE_04_MS, 2500);
         break;
     case SX128X_OPMODE_RX_SINGLE:
-        LOG_DBG_("set op mode: RECEIVER SINGLE\n");
+        LOG_DBG("set op mode: RECEIVER SINGLE\n");
         sx128x_configure_rx(dev);
         _sx128x_cmd_set_rx(dev, 0, 0);
         break;
     case SX128X_OPMODE_RX:
-        LOG_DBG_("set op mode: RECEIVER WITH TIMEOUT %d\n", _sx128x_get_timeout_in_s(PERIOD_BASE_04_MS, 2500));
+        LOG_DBG("set op mode: RECEIVER WITH TIMEOUT %d\n", _sx128x_get_timeout_in_s(PERIOD_BASE_04_MS, 2500));
         sx128x_configure_rx(dev);
         _sx128x_cmd_set_rx(dev, PERIOD_BASE_04_MS, 2500);
         break;
     case SX128X_OPMODE_RX_ACK:
-        LOG_DBG_("set op mode: RECEIVER WITH TIMEOUT %d\n", _sx128x_get_timeout_in_s(PERIOD_BASE_04_MS, 2500));
+        LOG_DBG("set op mode: RECEIVER WITH TIMEOUT %d\n", _sx128x_get_timeout_in_s(PERIOD_BASE_04_MS, 2500));
         sx128x_configure_rx(dev);
         _sx128x_cmd_set_rx(dev, PERIOD_BASE_04_MS, 2500);
         break;
     case SX128X_OPMODE_RX_CONTINUOUS:
-        LOG_DBG_("set op mode: RECEIVER CONTINUOUS\n");
+        LOG_DBG("set op mode: RECEIVER CONTINUOUS\n");
         sx128x_configure_rx(dev);
         _sx128x_cmd_set_rx(dev, 0, 65535);
         break;
     default:
-        LOG_DBG_("\n\n\nset op mode: UNKNOWN (%d)\n", op_mode);
+        LOG_DBG("\n\n\nset op mode: UNKNOWN (%d)\n", op_mode);
         break;
     }
 }
