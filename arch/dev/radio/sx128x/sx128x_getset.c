@@ -376,6 +376,8 @@ uint8_t sx128x_get_state_rx(const sx128x_t *dev)
 void sx128x_set_state_opmode(sx128x_t *dev, sx128x_opmode_t op_mode)
 {
     LOG_FUNC("Function call: %s\n", __func__);
+    sx128x_set_state_event(&SX128X_DEV, SX128X_NO_EVENT);
+
     dev->state.opmode = op_mode;
     switch (op_mode)
     {

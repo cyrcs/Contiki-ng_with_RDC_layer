@@ -93,14 +93,14 @@ void sx128x_interrupt_opmode_receiver_ack()
         sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
         sx128x_set_state_event(&SX128X_DEV, SX128X_RX_DONE);
 
-        // process_poll(&sx128x_rf_process);
+        process_poll(&sx128x_rf_process);
         break;
     case SX128X_IRQ_REG_RX_TX_TIMEOUT:
         LOG_INFO("Flag: RX TIMEOUT\n");
         sx128x_set_standby(&SX128X_DEV);
         sx128x_set_state_event(&SX128X_DEV, SX128X_RX_TIMEOUT);
         sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
-        // process_poll(&sx128x_rf_process);
+        process_poll(&sx128x_rf_process);
         break;
     }
 }
@@ -210,6 +210,8 @@ sx128x_prepare(const void *payload, unsigned short payload_len)
     {
         sx128x_set_standby(&SX128X_DEV);
     }
+    // reset state event
+    // sx128x_set_state_event(&SX128X_DEV, SX128X_NO_EVENT);
     // reset address pointer
     sx128x_cmd_set_buffer_base_address(&SX128X_DEV, 0, 0);
     // configure Tx mode
@@ -367,6 +369,10 @@ static void sx128x_poll_handler(void)
             LOG_DBG("Restarting RX\n");
             sx128x_on();
         }
+    }
+    else if (sx128x_pending_packet() && sx128x_get_state_rx(&SX128X_DEV) == SX128X_RX_OFF) // Poll while in ACK RX mode
+    {
+        // sx128x_on();
     }
     else if (sx128x_get_state_event(&SX128X_DEV) == SX128X_RX_TIMEOUT)
     {

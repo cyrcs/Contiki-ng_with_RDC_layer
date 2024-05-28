@@ -62,7 +62,7 @@
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 /* Configuration */
-#define SEND_INTERVAL (20 * CLOCK_SECOND)
+#define SEND_INTERVAL (10 * CLOCK_SECOND)
 // static linkaddr_t dest_addr = {{ 0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0xa5 }};
 static linkaddr_t dest_addr = {{0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0x88}};
 
@@ -87,6 +87,8 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
     etimer_set(&periodic_timer, SEND_INTERVAL);
     while (count < 50)
     {
+      // NETSTACK_RADIO.on();
+
       PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
 
       LOG_INFO("Sending %u to ", count);
