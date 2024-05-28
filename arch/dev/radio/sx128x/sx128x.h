@@ -171,9 +171,9 @@ extern "C"
      */
     typedef struct
     {
-        sx128x_opmode_t opmode;
-        sx128x_rx_state_t rx;
-        sx128x_event_state_t event;
+        volatile sx128x_opmode_t opmode;
+        volatile sx128x_rx_state_t rx;
+        volatile sx128x_event_state_t event;
     } sx128x_state_t;
 
 #endif

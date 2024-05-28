@@ -62,7 +62,7 @@
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 /* Configuration */
-#define SEND_INTERVAL (10 * CLOCK_SECOND)
+#define SEND_INTERVAL (60 * CLOCK_SECOND)
 // static linkaddr_t dest_addr = {{ 0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0xa5 }};
 static linkaddr_t dest_addr = {{0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0x88}};
 

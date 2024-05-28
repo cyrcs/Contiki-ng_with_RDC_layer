@@ -364,7 +364,7 @@ static void sx128x_poll_handler(void)
             NETSTACK_RDC.input();
         }
         // ! hack for continuous mode while using single mode
-        if ((&SX128X_DEV)->settings.rx_mode == SX128X_RX_MODE_CONTINUOUS)
+        if ((&SX128X_DEV)->settings.rx_mode == SX128X_RX_MODE_CONTINUOUS && sx128x_get_state_opmode(&SX128X_DEV) != SX128X_OPMODE_STANDBY)
         {
             LOG_DBG("Restarting RX\n");
             sx128x_on();

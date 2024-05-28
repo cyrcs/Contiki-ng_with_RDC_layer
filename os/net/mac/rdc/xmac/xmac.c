@@ -92,7 +92,7 @@
 #ifdef XMAC_CONF_ON_TIME
 #define DEFAULT_ON_TIME (XMAC_CONF_ON_TIME)
 #else
-#define DEFAULT_ON_TIME (4 * RTIMER_ARCH_SECOND)
+#define DEFAULT_ON_TIME (8 * RTIMER_ARCH_SECOND)
 #endif // ToA depends on the SF and BW config but can vary from < 1ms to 5s
 
 #ifdef XMAC_CONF_OFF_TIME
@@ -111,7 +111,7 @@
 #define DEFAULT_PERIOD 1
 #endif
 
-#define DEFAULT_STROBE_WAIT_TIME (RTIMER_ARCH_SECOND * 3)
+#define DEFAULT_STROBE_WAIT_TIME (RTIMER_ARCH_SECOND * 4)
 #endif
 
 #define DISPATCH 0
@@ -150,15 +150,14 @@ static struct ctimer cpowercycle_ctimer;
 #define CSCHEDULE_POWERCYCLE(rtime) cschedule_powercycle((1ul * CLOCK_SECOND * (rtime)) / RTIMER_ARCH_SECOND)
 static char cpowercycle(void *ptr);
 
-static int32_t time_to_ms(clock_time_t time)
-{
-  return (time * 1000) / CLOCK_SECOND;
-}
+// static int32_t time_to_ms(clock_time_t time)
+// {
+//   return (time * 1000) / CLOCK_SECOND;
+// }
 
 static void cschedule_powercycle(clock_time_t time)
 {
   LOG_FUNC("Function call: %s\n", __func__);
-  LOG_DBG("Period: %ld ms\n", time_to_ms(time));
 
   if (xmac_is_on)
   {
@@ -190,7 +189,7 @@ static void turn_radio_on(void)
     LOG_INFO("Turning radio on\n");
     radio_is_on = 1;
     NETSTACK_RADIO.on();
-    LEDS_ON(LEDS_BLUE);
+    LEDS_ON(LEDS_GREEN);
   }
 }
 static void powercycle_turn_radio_on(void)
@@ -221,7 +220,7 @@ static void turn_radio_off(void)
     LOG_INFO("Turning radio off\n");
     radio_is_on = 0;
     NETSTACK_RADIO.off();
-    LEDS_OFF(LEDS_RED);
+    LEDS_OFF(LEDS_GREEN);
   }
 }
 static void powercycle_turn_radio_off(void)
@@ -300,6 +299,8 @@ send_one_packet()
   int is_already_streaming = 0;
   uint8_t collisions;
 
+  LEDS_ON(LEDS_BLUE);
+
   /* Create the X-MAC header for the data packet. */
 #if !NETSTACK_CONF_BRIDGE_MODE
   /* If NETSTACK_CONF_BRIDGE_MODE is set, assume PACKETBUF_ADDR_SENDER is already set. */
@@ -355,9 +356,6 @@ send_one_packet()
   t0 = RTIMER_NOW();
   strobes = 0;
 
-  LEDS_OFF(LEDS_RED);
-  LEDS_ON(LEDS_BLUE);
-
   /* Send a train of strobes until the receiver answers with an ACK. */
 
   /* Turn on the radio to listen for the strobe ACK. */
@@ -404,7 +402,7 @@ send_one_packet()
               if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
                                &linkaddr_node_addr))
               {
-                LOG_INFO("received strobe ack\n");
+                LOG_DBG("received strobe ack\n");
                 got_strobe_ack = 1;
                 /* We got an ACK from the receiver, so we can immediately send
                    the packet. */
@@ -437,7 +435,8 @@ send_one_packet()
 #if WITH_STROBE_BROADCAST
           NETSTACK_RADIO.send(strobe, strobe_len);
 #else
-          /* restore the packet to send */
+          /* restore the packet to  if (collisions == 0)
+ send */
           queuebuf_to_packetbuf(packet);
           NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen());
 #endif
@@ -462,7 +461,7 @@ send_one_packet()
   /* Send the data packet. */
   if ((is_broadcast || got_strobe_ack) && collisions == 0)
   {
-    LOG_INFO("Sending data packet\n");
+    LOG_DBG("Sending data packet\n");
     NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen());
   }
 
@@ -474,6 +473,7 @@ send_one_packet()
   we_are_sending = 0;
 
   LEDS_OFF(LEDS_BLUE);
+
   if (collisions == 0)
   {
     if (!is_broadcast && !got_strobe_ack)
@@ -532,6 +532,8 @@ packet_input(void)
   LOG_FUNC("Function call: %s\n", __func__);
   struct cxmac_hdr *hdr;
 
+  LEDS_ON(LEDS_RED);
+
   if (csma_security_parse_frame() < 0)
   {
     LOG_ERR("failed to parse %u\n", packetbuf_datalen());
@@ -561,6 +563,8 @@ packet_input(void)
 
       // once packet is received, force to off state
       // on();
+
+      LEDS_OFF(LEDS_RED);
 
       return;
     }
@@ -623,6 +627,8 @@ packet_input(void)
 
     /* We are done processing the strobe and we therefore return
  to the caller. */
+    LEDS_OFF(LEDS_RED);
+
     return;
   }
   else if (hdr->type == TYPE_STROBE_ACK)
@@ -634,6 +640,7 @@ packet_input(void)
     LOG_INFO("unknown type %u (%u): %s\n", hdr->type,
              packetbuf_datalen(), (char *)packetbuf_dataptr());
   }
+  LEDS_OFF(LEDS_RED);
 }
 
 /*---------------------------------------------------------------------------*/

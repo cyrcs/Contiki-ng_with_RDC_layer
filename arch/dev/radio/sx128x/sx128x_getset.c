@@ -298,7 +298,7 @@ void sx128x_set_standby(sx128x_t *dev)
     (void)(dev);
     LOG_DBG("Set standby\n");
 
-    sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
+    // sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
     sx128x_set_state_opmode(dev, SX128X_OPMODE_STANDBY);
 }
 
