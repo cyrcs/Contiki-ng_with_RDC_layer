@@ -73,7 +73,7 @@ AUTOSTART_PROCESSES(&nullnet_example_process);
 PROCESS_THREAD(nullnet_example_process, ev, data)
 {
   static struct etimer periodic_timer;
-  static unsigned count = 0;
+  static unsigned count = 1;
 
   PROCESS_BEGIN();
 

@@ -92,14 +92,14 @@
 #ifdef XMAC_CONF_ON_TIME
 #define DEFAULT_ON_TIME (XMAC_CONF_ON_TIME)
 #else
-#define DEFAULT_ON_TIME (3 * RTIMER_ARCH_SECOND)
+#define DEFAULT_ON_TIME (4 * RTIMER_ARCH_SECOND)
 #endif // ToA depends on the SF and BW config but can vary from < 1ms to 5s
 
 #ifdef XMAC_CONF_OFF_TIME
 #define DEFAULT_OFF_TIME (XMAC_CONF_OFF_TIME)
 #else
 // #define DEFAULT_OFF_TIME (CLOCK_SECOND / NETSTACK_RDC_CHANNEL_CHECK_RATE - DEFAULT_ON_TIME)
-#define DEFAULT_OFF_TIME (3 * RTIMER_ARCH_SECOND)
+#define DEFAULT_OFF_TIME (15 * RTIMER_ARCH_SECOND)
 
 #endif
 
@@ -111,12 +111,12 @@
 #define DEFAULT_PERIOD 1
 #endif
 
-#define DEFAULT_STROBE_WAIT_TIME (DEFAULT_ON_TIME / 2)
+#define DEFAULT_STROBE_WAIT_TIME (RTIMER_ARCH_SECOND * 3)
 #endif
 
 #define DISPATCH 0
 #define TYPE_STROBE 0x10
-#define TYPE_DATA 0x11
+// #define TYPE_DATA 0x11
 #define TYPE_ANNOUNCEMENT 0x12
 #define TYPE_STROBE_ACK 0x13
 
@@ -190,7 +190,7 @@ static void turn_radio_on(void)
     LOG_INFO("Turning radio on\n");
     radio_is_on = 1;
     NETSTACK_RADIO.on();
-    LEDS_ON(LEDS_RED);
+    LEDS_ON(LEDS_BLUE);
   }
 }
 static void powercycle_turn_radio_on(void)
@@ -379,11 +379,14 @@ send_one_packet()
       while (got_strobe_ack == 0 &&
              RTIMER_CLOCK_LT(RTIMER_NOW(), t + cxmac_config.strobe_wait_time))
       {
-        watchdog_periodic();
 
-        // rtimer_clock_t now = RTIMER_NOW();
+        if (NETSTACK_RADIO.pending_packet())
+        {
+          continue;
+        }
+        // watchdog_periodic();
 
-        /* See if we got an ACK */
+        // If we have a pending packet, check if it is an ACK for the strobe
         packetbuf_clear();
         len = NETSTACK_RADIO.read(packetbuf_dataptr(), PACKETBUF_SIZE);
         if (len > 0)
@@ -442,13 +445,15 @@ send_one_packet()
         }
         else
         {
-          // LOG_INFO("")
           NETSTACK_RADIO.send(strobe, strobe_len);
           turn_radio_on();
         }
       }
     }
   }
+
+  packetbuf_clear();
+  // packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &linkaddr_node_addr);
 
   /* restore the packet to send */
   queuebuf_to_packetbuf(packet);
@@ -461,7 +466,7 @@ send_one_packet()
     NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen());
   }
 
-  watchdog_start();
+  // watchdog_start();
 
   LOG_INFO("send (strobes=%u,len=%u,%s), done\n", strobes,
            packetbuf_totlen(), got_strobe_ack ? "ack" : "no ack");
@@ -527,106 +532,107 @@ packet_input(void)
   LOG_FUNC("Function call: %s\n", __func__);
   struct cxmac_hdr *hdr;
 
-  if (csma_security_parse_frame() >= 0)
+  if (csma_security_parse_frame() < 0)
   {
-    hdr = packetbuf_dataptr();
+    LOG_ERR("failed to parse %u\n", packetbuf_datalen());
+  }
 
-    if (hdr->dispatch != DISPATCH)
+  hdr = packetbuf_dataptr();
+
+  if (hdr->dispatch != DISPATCH)
+  {
+    someone_is_sending = 0;
+    if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
+                     &linkaddr_node_addr) ||
+        linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
+                     &linkaddr_null))
     {
-      LOG_DBG("header: dispatch != DISPATCH\n");
-      someone_is_sending = 0;
-      if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
-                       &linkaddr_node_addr) ||
-          linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
-                       &linkaddr_null))
-      {
-        /* This is a regular packet that is destined to us or to the
-           broadcast address. */
+      /* This is a regular packet that is destined to us or to the
+         broadcast address. */
 
-        /* We have received the final packet, so we can go back to being
-           asleep. */
-        turn_radio_off();
+      /* We have received the final packet, so we can go back to being
+         asleep. */
+      turn_radio_off();
 
-        waiting_for_packet = 0;
+      waiting_for_packet = 0;
 
-        LOG_DBG("data(%u)\n", packetbuf_datalen());
-        NETSTACK_MAC.input();
-        return;
-      }
-      else
-      {
-        LOG_DBG("data not for us\n");
-      }
-    }
-    else if (hdr->type == TYPE_STROBE)
-    {
-      LOG_DBG("header type: strobe\n");
-      someone_is_sending = 2;
+      LOG_DBG("data(%u)\n", packetbuf_datalen());
+      NETSTACK_MAC.input();
 
-      if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
-                       &linkaddr_node_addr))
-      {
-        LOG_DBG("strobes for us\n");
-        // packetbuf_clear();
+      // once packet is received, force to off state
+      // on();
 
-        /* This is a strobe packet for us. */
-
-        /* If the sender address is someone else, we should
-           acknowledge the strobe and wait for the packet. By using
-           the same address as both sender and receiver, we flag the
-           message is a strobe ack. */
-        hdr->type = TYPE_STROBE_ACK;
-        packetbuf_set_addr(PACKETBUF_ADDR_RECEIVER,
-                           packetbuf_addr(PACKETBUF_ADDR_SENDER));
-        packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &linkaddr_node_addr);
-        packetbuf_compact();
-        if (csma_security_create_frame() >= 0)
-        {
-          /* We turn on the radio in anticipation of the incoming
-             packet. */
-          someone_is_sending = 1;
-          waiting_for_packet = 1;
-          // turn_radio_on();
-          NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen());
-          LOG_DBG("send strobe ack %u\n", packetbuf_totlen());
-        }
-        else
-        {
-          LOG_INFO("failed to send strobe ack\n");
-        }
-      }
-      else if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
-                            &linkaddr_null))
-      {
-        /* If the receiver address is null, the strobe is sent to
-           prepare for an incoming broadcast packet. If this is the
-           case, we turn on the radio and wait for the incoming
-           broadcast packet. */
-        waiting_for_packet = 1;
-        turn_radio_on();
-      }
-      else
-      {
-        LOG_DBG("strobe not for us\n");
-      }
-
-      /* We are done processing the strobe and we therefore return
-   to the caller. */
       return;
-    }
-    else if (hdr->type == TYPE_STROBE_ACK)
-    {
-      LOG_DBG("header type: strobe ack\n");
     }
     else
     {
-      LOG_INFO("unknown type %u (%u): %s\n", hdr->type,
-               packetbuf_datalen(), (char *)packetbuf_dataptr());
+      LOG_DBG("data not for us\n");
     }
+  }
+  else if (hdr->type == TYPE_STROBE)
+  {
+    LOG_DBG("header type: strobe\n");
+    someone_is_sending = 2;
+
+    if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
+                     &linkaddr_node_addr))
+    {
+      LOG_DBG("strobes for us\n");
+      // packetbuf_clear();
+
+      /* This is a strobe packet for us. */
+
+      /* If the sender address is someone else, we should
+         acknowledge the strobe and wait for the packet. By using
+         the same address as both sender and receiver, we flag the
+         message is a strobe ack. */
+      hdr->type = TYPE_STROBE_ACK;
+      packetbuf_set_addr(PACKETBUF_ADDR_RECEIVER,
+                         packetbuf_addr(PACKETBUF_ADDR_SENDER));
+      packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &linkaddr_node_addr);
+      packetbuf_compact();
+      if (csma_security_create_frame() >= 0)
+      {
+        /* We turn on the radio in anticipation of the incoming
+           packet. */
+        someone_is_sending = 1;
+        waiting_for_packet = 1;
+        // turn_radio_on();
+        NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen());
+        LOG_DBG("send strobe ack %u\n", packetbuf_totlen());
+      }
+      else
+      {
+        LOG_INFO("failed to send strobe ack\n");
+      }
+    }
+    else if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
+                          &linkaddr_null))
+    {
+      /* If the receiver address is null, the strobe is sent to
+         prepare for an incoming broadcast packet. If this is the
+         case, we turn on the radio and wait for the incoming
+         broadcast packet. */
+      waiting_for_packet = 1;
+      turn_radio_on();
+    }
+    else
+    {
+      LOG_DBG("strobe not for us\n");
+    }
+
+    /* We are done processing the strobe and we therefore return
+ to the caller. */
+    return;
+  }
+  else if (hdr->type == TYPE_STROBE_ACK)
+  {
+    LOG_DBG("header type: strobe ack\n");
   }
   else
   {
-    LOG_INFO("failed to parse (%u)\n", packetbuf_totlen());
+    LOG_INFO("unknown type %u (%u): %s\n", hdr->type,
+             packetbuf_datalen(), (char *)packetbuf_dataptr());
   }
 }
 
@@ -635,7 +641,8 @@ static unsigned short
 channel_check_interval(void)
 {
   LOG_FUNC("Function call: %s\n", __func__);
-  return (1ul * CLOCK_SECOND * DEFAULT_PERIOD) / RTIMER_ARCH_SECOND;
+  // printf("%lu\n", (1ul * CLOCK_SECOND * DEFAULT_PERIOD) / RTIMER_ARCH_SECOND);
+  return 1;
 }
 /*---------------------------------------------------------------------------*/
 static void
