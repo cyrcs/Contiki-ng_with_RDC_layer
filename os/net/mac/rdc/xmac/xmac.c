@@ -111,7 +111,7 @@
 #define DEFAULT_PERIOD 1
 #endif
 
-#define DEFAULT_STROBE_WAIT_TIME (RTIMER_ARCH_SECOND * 4)
+#define DEFAULT_STROBE_WAIT_TIME (5 * RTIMER_ARCH_SECOND)
 #endif
 
 #define DISPATCH 0
@@ -149,11 +149,6 @@ struct cxmac_hdr
 static struct ctimer cpowercycle_ctimer;
 #define CSCHEDULE_POWERCYCLE(rtime) cschedule_powercycle((1ul * CLOCK_SECOND * (rtime)) / RTIMER_ARCH_SECOND)
 static char cpowercycle(void *ptr);
-
-// static int32_t time_to_ms(clock_time_t time)
-// {
-//   return (time * 1000) / CLOCK_SECOND;
-// }
 
 static void cschedule_powercycle(clock_time_t time)
 {
@@ -389,7 +384,7 @@ send_one_packet()
         len = NETSTACK_RADIO.read(packetbuf_dataptr(), PACKETBUF_SIZE);
         if (len > 0)
         {
-          LOG_DBG("received packet of length: %d => anaylzing\n", len);
+          LOG_DBG("received packet (%d) => anaylzing\n", len);
           packetbuf_set_datalen(len);
           if (csma_security_parse_frame() >= 0)
           {
@@ -536,10 +531,12 @@ packet_input(void)
 
   if (csma_security_parse_frame() < 0)
   {
-    LOG_ERR("failed to parse %u\n", packetbuf_datalen());
+    LOG_ERR("failed to parse (%u)\n", packetbuf_datalen());
   }
 
   hdr = packetbuf_dataptr();
+
+  LOG_INFO("received packet: (%u)\n", packetbuf_datalen());
 
   if (hdr->dispatch != DISPATCH)
   {
@@ -581,7 +578,7 @@ packet_input(void)
     if (linkaddr_cmp(packetbuf_addr(PACKETBUF_ADDR_RECEIVER),
                      &linkaddr_node_addr))
     {
-      LOG_DBG("strobes for us\n");
+      LOG_INFO("Received strobe for us\n");
       // packetbuf_clear();
 
       /* This is a strobe packet for us. */
@@ -603,7 +600,7 @@ packet_input(void)
         waiting_for_packet = 1;
         // turn_radio_on();
         NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen());
-        LOG_DBG("send strobe ack %u\n", packetbuf_totlen());
+        LOG_INFO("send strobe ack (%u)\n", packetbuf_totlen());
       }
       else
       {

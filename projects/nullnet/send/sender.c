@@ -45,6 +45,7 @@
 #include "dev/spi.h"
 #include "net/netstack.h"
 #include "process.h"
+#include "lib/random.h"
 #include "rtimer-arch.h"
 #include "shell.h"
 #include "shell-commands.h"
@@ -62,7 +63,8 @@
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 /* Configuration */
-#define SEND_INTERVAL (60 * CLOCK_SECOND)
+#define SEND_INTERVAL (30 * CLOCK_SECOND)
+#define DELAY_MAX 5
 // static linkaddr_t dest_addr = {{ 0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0xa5 }};
 static linkaddr_t dest_addr = {{0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0x88}};
 
@@ -73,7 +75,9 @@ AUTOSTART_PROCESSES(&nullnet_example_process);
 PROCESS_THREAD(nullnet_example_process, ev, data)
 {
   static struct etimer periodic_timer;
+  static struct etimer delay_timer;
   static unsigned count = 1;
+  clock_time_t delay;
 
   PROCESS_BEGIN();
 
@@ -85,11 +89,16 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
   if (!linkaddr_cmp(&dest_addr, &linkaddr_node_addr))
   {
     etimer_set(&periodic_timer, SEND_INTERVAL);
-    while (count < 50)
+    while (count < 101)
     {
       // NETSTACK_RADIO.on();
 
       PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
+
+      delay = random_rand() % (DELAY_MAX * CLOCK_SECOND);
+      LOG_INFO("Delaying for %lu ticks\n", delay);
+      etimer_set(&delay_timer, delay);
+      PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&delay_timer));
 
       LOG_INFO("Sending %u to ", count);
       LOG_INFO_LLADDR(&dest_addr);

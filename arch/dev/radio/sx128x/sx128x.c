@@ -86,7 +86,7 @@ void sx128x_interrupt_opmode_receiver_ack()
     switch (SX128X_DEV.irq)
     {
     case SX128X_IRQ_REG_RX_DONE:
-        LOG_INFO("Flag: RX DONE\n");
+        LOG_INFO("Flag set: RX DONE\n");
         SX128X_DEV._internal.rx_timestamp = RTIMER_NOW();
         sx128x_cmd_get_packet_status(&SX128X_DEV);
         sx128x_cmd_get_rx_buffer_status(&SX128X_DEV);
@@ -96,7 +96,7 @@ void sx128x_interrupt_opmode_receiver_ack()
         process_poll(&sx128x_rf_process);
         break;
     case SX128X_IRQ_REG_RX_TX_TIMEOUT:
-        LOG_INFO("Flag: RX TIMEOUT\n");
+        LOG_INFO("Flag set: RX TIMEOUT\n");
         sx128x_set_standby(&SX128X_DEV);
         sx128x_set_state_event(&SX128X_DEV, SX128X_RX_TIMEOUT);
         sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
