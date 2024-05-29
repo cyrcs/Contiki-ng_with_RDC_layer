@@ -81,7 +81,7 @@ void sx128x_interrupt_opmode_receiver()
 
 void sx128x_interrupt_opmode_receiver_ack()
 {
-    LOG_DBG("OPMODE RECEIVER\n");
+    LOG_DBG("OPMODE RECEIVER ACK\n");
 
     switch (SX128X_DEV.irq)
     {
@@ -92,7 +92,6 @@ void sx128x_interrupt_opmode_receiver_ack()
         sx128x_cmd_get_rx_buffer_status(&SX128X_DEV);
         sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
         sx128x_set_state_event(&SX128X_DEV, SX128X_RX_DONE);
-
         process_poll(&sx128x_rf_process);
         break;
     case SX128X_IRQ_REG_RX_TX_TIMEOUT:
@@ -231,7 +230,7 @@ sx128x_transmit(unsigned short payload_len)
     sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_TX);
 
     unsigned int ticks = 0;
-    unsigned int timeoutValue = 100000; // in 100us => 10s
+    unsigned int timeoutValue = 100000; // in 100us => 10s (largest LoRa packet is 5.63s)
     while ((sx128x_get_state_event(&SX128X_DEV) != SX128X_TX_DONE) && (ticks < timeoutValue))
     {
         watchdog_periodic();
@@ -239,21 +238,15 @@ sx128x_transmit(unsigned short payload_len)
         ticks++;
     }
     LOG_DBG("Transmitted after %d ticks\n", ticks);
-    // this part could be put in the process poll handler instead of here.
+
     if (sx128x_get_state_event(&SX128X_DEV) == SX128X_TX_DONE)
     {
 
         LOG_DBG("Transmitted %d bytes with success\n", payload_len);
-        // if (payload_len == 44)
-        // {
-        //     sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_SINGLE);
-        // }
         if (payload_len != 3)
         {
 #if CSMA_CONF_SEND_SOFT_ACK
             sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_ACK);
-            // sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_SINGLE);
-
 #endif
         }
         else

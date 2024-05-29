@@ -92,7 +92,7 @@
 #ifdef XMAC_CONF_ON_TIME
 #define DEFAULT_ON_TIME (XMAC_CONF_ON_TIME)
 #else
-#define DEFAULT_ON_TIME (8 * RTIMER_ARCH_SECOND)
+#define DEFAULT_ON_TIME (6 * RTIMER_ARCH_SECOND)
 #endif // ToA depends on the SF and BW config but can vary from < 1ms to 5s
 
 #ifdef XMAC_CONF_OFF_TIME
@@ -111,7 +111,7 @@
 #define DEFAULT_PERIOD 1
 #endif
 
-#define DEFAULT_STROBE_WAIT_TIME (5 * RTIMER_ARCH_SECOND)
+#define DEFAULT_STROBE_WAIT_TIME (1.2 * RTIMER_ARCH_SECOND)
 #endif
 
 #define DISPATCH 0
@@ -361,22 +361,18 @@ send_one_packet()
     // watchdog_stop();
     watchdog_periodic();
     got_strobe_ack = 0;
-    t = RTIMER_NOW();
     for (strobes = 0, collisions = 0;
          got_strobe_ack == 0 && collisions == 0 &&
          RTIMER_CLOCK_LT(RTIMER_NOW(), t0 + cxmac_config.strobe_time);
          strobes++)
     {
-      watchdog_periodic();
+      // watchdog_periodic();
+      t = RTIMER_NOW();
 
       while (got_strobe_ack == 0 &&
              RTIMER_CLOCK_LT(RTIMER_NOW(), t + cxmac_config.strobe_wait_time))
       {
-
-        if (NETSTACK_RADIO.pending_packet())
-        {
-          continue;
-        }
+        /* If the device keeps on resetting due to the watchdog timer suspecting a lock-up, uncomment the following line */
         // watchdog_periodic();
 
         // If we have a pending packet, check if it is an ACK for the strobe
@@ -420,7 +416,6 @@ send_one_packet()
         }
       }
 
-      t = RTIMER_NOW();
       /* Send the strobe packet. */
       if (got_strobe_ack == 0 && collisions == 0)
       {
@@ -462,7 +457,7 @@ send_one_packet()
 
   // watchdog_start();
 
-  LOG_INFO("send (strobes=%u,len=%u,%s), done\n", strobes,
+  LOG_INFO("send (strobes=%u,len=%u,%s), done\n", strobes - got_strobe_ack,
            packetbuf_totlen(), got_strobe_ack ? "ack" : "no ack");
 
   we_are_sending = 0;
