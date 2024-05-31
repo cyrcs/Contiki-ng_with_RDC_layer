@@ -83,6 +83,12 @@ void input_callback(const void *data, uint16_t len,
     LOG_INFO_LLADDR(src);
     LOG_INFO_("\n");
   }
+  else
+  {
+    char buf[255];
+    memcpy(buf, data, len);
+    LOG_INFO("Received (%d bytes): '%s'\n", len, buf);
+  }
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(nullnet_example_process, ev, data)

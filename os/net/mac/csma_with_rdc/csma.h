@@ -63,7 +63,7 @@
 #ifdef CSMA_CONF_ACK_WAIT_TIME
 #define CSMA_ACK_WAIT_TIME CSMA_CONF_ACK_WAIT_TIME
 #else /* CSMA_CONF_ACK_WAIT_TIME */
-#define CSMA_ACK_WAIT_TIME RTIMER_SECOND * 4
+#define CSMA_ACK_WAIT_TIME RTIMER_SECOND * 1.1
 #endif /* CSMA_CONF_ACK_WAIT_TIME */
 
 #ifdef CSMA_CONF_AFTER_ACK_DETECTED_WAIT_TIME
@@ -82,6 +82,8 @@ extern const struct mac_driver csma_driver;
 /* CSMA security framer functions */
 int csma_security_create_frame(void);
 int csma_security_parse_frame(void);
+
+// static int receive_ack(void);
 
 /* key management for CSMA */
 int csma_security_set_key(uint8_t index, const uint8_t *key);

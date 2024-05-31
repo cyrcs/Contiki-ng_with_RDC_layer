@@ -237,23 +237,17 @@ sx128x_transmit(unsigned short payload_len)
         clock_delay_usec(100);
         ticks++;
     }
-    LOG_DBG("Transmitted after %d ticks\n", ticks);
+    LOG_DBG("Transmitted after %d ms\n", ticks / 10);
 
     if (sx128x_get_state_event(&SX128X_DEV) == SX128X_TX_DONE)
     {
 
         LOG_DBG("Transmitted %d bytes with success\n", payload_len);
-        if (payload_len != 3)
-        {
 #if CSMA_CONF_SEND_SOFT_ACK
-            sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_ACK);
+        sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_ACK);
+#else
+         sx128x_set_standby(&SX128X_DEV);
 #endif
-        }
-        else
-        {
-
-            sx128x_set_standby(&SX128X_DEV);
-        }
         return RADIO_TX_OK;
     }
     else if (sx128x_get_state_event(&SX128X_DEV) == SX128X_TX_TIMEOUT)
@@ -288,15 +282,7 @@ sx128x_pending_packet(void)
     {
         return true;
     }
-
     return false;
-
-    // if (SX128X_DEV.state.rx == sx128x_rx_received) { // this is set in the interrupt function
-    //   return true;
-    // } else if (SX128X_DEV.state.rx == sx128x_rx_listening) {
-    //   sx128x_receiving_packet();
-    //   return false;
-    // }
 }
 
 static int

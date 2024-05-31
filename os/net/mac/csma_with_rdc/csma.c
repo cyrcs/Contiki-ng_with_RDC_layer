@@ -124,6 +124,44 @@ send_packet(mac_callback_t sent, void *ptr)
   csma_output_packet(sent, ptr);
 }
 /*---------------------------------------------------------------------------*/
+// static int receive_ack(void)
+// {
+//   int ret;
+
+//   uint8_t dsn = ((uint8_t *)packetbuf_hdrptr())[2] & 0xff;
+
+//   // wait for CSMA ACK
+//   RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_ACK_WAIT_TIME);
+//   ret = MAC_TX_NOACK;
+
+//   if (NETSTACK_RADIO.receiving_packet() ||
+//       NETSTACK_RADIO.pending_packet() ||
+//       NETSTACK_RADIO.channel_clear() == 0)
+//   {
+//     int len;
+//     uint8_t ackbuf[CSMA_ACK_LEN];
+
+//     LOG_INFO("Waiting for data packet ACK\n");
+//     if (NETSTACK_RADIO.pending_packet())
+//     {
+//       len = NETSTACK_RADIO.read(ackbuf, CSMA_ACK_LEN);
+//       if (len == CSMA_ACK_LEN && ackbuf[2] == dsn)
+//       {
+//         /* Ack received */
+//         LOG_INFO("ACK received\n");
+//         ret = MAC_TX_OK;
+//       }
+//       else
+//       {
+//         /* Not an ack or ack not for us: collision */
+//         LOG_INFO("NO ACK or not for us\n");
+//         ret = MAC_TX_COLLISION;
+//       }
+//     }
+//     return ret;
+//   }
+// }
+/*---------------------------------------------------------------------------*/
 static void
 input_packet(void)
 {

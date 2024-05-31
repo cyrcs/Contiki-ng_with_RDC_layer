@@ -68,6 +68,8 @@
 // static linkaddr_t dest_addr = {{ 0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0xa5 }};
 static linkaddr_t dest_addr = {{0x00, 0x12, 0x4b, 0x00, 0x18, 0xEC, 0x28, 0x88}};
 
+// char test[] = "helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld helloworld";
+
 /*---------------------------------------------------------------------------*/
 PROCESS(nullnet_example_process, "NullNet unicast example");
 AUTOSTART_PROCESSES(&nullnet_example_process);
@@ -82,6 +84,7 @@ PROCESS_THREAD(nullnet_example_process, ev, data)
   PROCESS_BEGIN();
 
   /* Initialize NullNet */
+  // nullnet_buf = (uint8_t *)&test;
   nullnet_buf = (uint8_t *)&count;
   nullnet_len = sizeof(count);
   // NETSTACK_RDC.on();

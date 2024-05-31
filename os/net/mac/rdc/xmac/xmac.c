@@ -76,6 +76,8 @@
 #undef LEDS_OFF
 #undef LEDS_TOGGLE
 #define DEBUG_LEDS 1
+#include <stdio.h>
+#include <math.h>
 #if DEBUG_LEDS
 #define LEDS_ON(x) leds_on(x)
 #define LEDS_OFF(x) leds_off(x)
@@ -92,18 +94,22 @@
 #ifdef XMAC_CONF_ON_TIME
 #define DEFAULT_ON_TIME (XMAC_CONF_ON_TIME)
 #else
-#define DEFAULT_ON_TIME (6 * RTIMER_ARCH_SECOND)
+#define DEFAULT_ON_TIME (7 * RTIMER_ARCH_SECOND / 2)
 #endif // ToA depends on the SF and BW config but can vary from < 1ms to 5s
 
 #ifdef XMAC_CONF_OFF_TIME
 #define DEFAULT_OFF_TIME (XMAC_CONF_OFF_TIME)
 #else
 // #define DEFAULT_OFF_TIME (CLOCK_SECOND / NETSTACK_RDC_CHANNEL_CHECK_RATE - DEFAULT_ON_TIME)
-#define DEFAULT_OFF_TIME (15 * RTIMER_ARCH_SECOND)
+#define DEFAULT_OFF_TIME (20 * RTIMER_ARCH_SECOND)
+
+#define DEFAULT_DATA_WAIT_TIME (6 * RTIMER_ARCH_SECOND)
 
 #endif
 
 #define DEFAULT_PERIOD (DEFAULT_OFF_TIME + DEFAULT_ON_TIME)
+
+#define DEFAULT_STROBE_PERIOD DEFAULT_PERIOD + DEFAULT_ON_TIME
 
 // check if period is not 0 since this will cause issues
 #if DEFAULT_PERIOD == 0
@@ -111,7 +117,7 @@
 #define DEFAULT_PERIOD 1
 #endif
 
-#define DEFAULT_STROBE_WAIT_TIME (1.2 * RTIMER_ARCH_SECOND)
+#define DEFAULT_STROBE_WAIT_TIME (1.1 * RTIMER_ARCH_SECOND)
 #endif
 
 #define DISPATCH 0
@@ -125,8 +131,6 @@
 
 static volatile uint8_t xmac_is_on = 0;
 
-static uint8_t is_listening = 0;
-
 static volatile unsigned char waiting_for_packet = 0;
 static volatile unsigned char someone_is_sending = 0;
 static volatile unsigned char we_are_sending = 0;
@@ -137,7 +141,7 @@ static struct pt pt;
 struct cxmac_config cxmac_config = {
     DEFAULT_ON_TIME,
     DEFAULT_OFF_TIME,
-    2 * (DEFAULT_ON_TIME + DEFAULT_OFF_TIME),
+    DEFAULT_STROBE_PERIOD,
     DEFAULT_STROBE_WAIT_TIME};
 
 struct cxmac_hdr
@@ -210,7 +214,7 @@ static void turn_radio_off(void)
 {
   LOG_FUNC("Function call: %s\n", __func__);
 
-  if (xmac_is_on && radio_is_on && !is_listening)
+  if (radio_is_on)
   {
     LOG_INFO("Turning radio off\n");
     radio_is_on = 0;
@@ -300,6 +304,8 @@ send_one_packet()
 #if !NETSTACK_CONF_BRIDGE_MODE
   /* If NETSTACK_CONF_BRIDGE_MODE is set, assume PACKETBUF_ADDR_SENDER is already set. */
   packetbuf_set_addr(PACKETBUF_ADDR_SENDER, &linkaddr_node_addr);
+  packetbuf_set_attr(PACKETBUF_ATTR_MAC_ACK, 1);
+
 #endif
   if (packetbuf_holds_broadcast())
   {
@@ -352,8 +358,6 @@ send_one_packet()
   strobes = 0;
 
   /* Send a train of strobes until the receiver answers with an ACK. */
-
-  /* Turn on the radio to listen for the strobe ACK. */
   turn_radio_on();
   collisions = 0;
   if (!is_already_streaming)
@@ -366,6 +370,27 @@ send_one_packet()
          RTIMER_CLOCK_LT(RTIMER_NOW(), t0 + cxmac_config.strobe_time);
          strobes++)
     {
+
+      /* Send the strobe packet. */
+      if (got_strobe_ack == 0 && collisions == 0)
+      {
+        LOG_INFO("sending strobe\n");
+        if (is_broadcast)
+        {
+#if WITH_STROBE_BROADCAST
+          NETSTACK_RADIO.send(strobe, strobe_len);
+#else
+          queuebuf_to_packetbuf(packet);
+          NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen());
+#endif
+          turn_radio_off();
+        }
+        else
+        {
+          NETSTACK_RADIO.send(strobe, strobe_len);
+        }
+      }
+
       // watchdog_periodic();
       t = RTIMER_NOW();
 
@@ -415,29 +440,6 @@ send_one_packet()
           }
         }
       }
-
-      /* Send the strobe packet. */
-      if (got_strobe_ack == 0 && collisions == 0)
-      {
-        LOG_INFO("sending strobe\n");
-        if (is_broadcast)
-        {
-#if WITH_STROBE_BROADCAST
-          NETSTACK_RADIO.send(strobe, strobe_len);
-#else
-          /* restore the packet to  if (collisions == 0)
- send */
-          queuebuf_to_packetbuf(packet);
-          NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen());
-#endif
-          turn_radio_off();
-        }
-        else
-        {
-          NETSTACK_RADIO.send(strobe, strobe_len);
-          turn_radio_on();
-        }
-      }
     }
   }
 
@@ -449,18 +451,19 @@ send_one_packet()
   queuebuf_free(packet);
 
   /* Send the data packet. */
+  uint8_t dsn = 0;
+  int ret;
   if ((is_broadcast || got_strobe_ack) && collisions == 0)
   {
     LOG_DBG("Sending data packet\n");
+    dsn = ((uint8_t *)packetbuf_hdrptr())[2] & 0xff;
     NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen());
+    // turn radio on to receive ACK
+    // turn_radio_on();
   }
-
-  // watchdog_start();
 
   LOG_INFO("send (strobes=%u,len=%u,%s), done\n", strobes - got_strobe_ack,
            packetbuf_totlen(), got_strobe_ack ? "ack" : "no ack");
-
-  we_are_sending = 0;
 
   LEDS_OFF(LEDS_BLUE);
 
@@ -468,18 +471,56 @@ send_one_packet()
   {
     if (!is_broadcast && !got_strobe_ack)
     {
-      return MAC_TX_NOACK;
+      we_are_sending = 0;
+
+      ret = MAC_TX_NOACK;
+    }
+    else if (is_broadcast)
+    {
+      we_are_sending = 0;
+      ret = MAC_TX_OK;
     }
     else
     {
-      return MAC_TX_OK;
+      RTIMER_BUSYWAIT_UNTIL(NETSTACK_RADIO.pending_packet(), CSMA_ACK_WAIT_TIME);
+      ret = MAC_TX_NOACK;
+
+      if (NETSTACK_RADIO.receiving_packet() ||
+          NETSTACK_RADIO.pending_packet() ||
+          NETSTACK_RADIO.channel_clear() == 0)
+      {
+        int len;
+        uint8_t ackbuf[ACK_LEN];
+
+        LOG_INFO("Waiting for data packet ACK\n");
+        if (NETSTACK_RADIO.pending_packet())
+        {
+          len = NETSTACK_RADIO.read(ackbuf, ACK_LEN);
+          if (len == ACK_LEN && ackbuf[2] == dsn)
+          {
+            /* Ack received */
+            LOG_INFO("ACK received\n");
+            ret = MAC_TX_OK;
+          }
+          else
+          {
+            /* Not an ack or ack not for us: collision */
+            LOG_INFO("NO ACK or not for us\n");
+            ret = MAC_TX_COLLISION;
+          }
+        }
+      }
     }
   }
   else
   {
     someone_is_sending++;
-    return MAC_TX_COLLISION;
+    ret = MAC_TX_COLLISION;
   }
+
+  // return
+  we_are_sending = 0;
+  return ret;
 }
 /*---------------------------------------------------------------------------*/
 static void
@@ -524,6 +565,9 @@ packet_input(void)
 
   LEDS_ON(LEDS_RED);
 
+  // once a packet is received, the radio should go to sleep
+  // turn_radio_off();
+
   if (csma_security_parse_frame() < 0)
   {
     LOG_ERR("failed to parse (%u)\n", packetbuf_datalen());
@@ -544,11 +588,23 @@ packet_input(void)
       /* This is a regular packet that is destined to us or to the
          broadcast address. */
 
-      /* We have received the final packet, so we can go back to being
-         asleep. */
-      turn_radio_off();
+#if CSMA_SEND_SOFT_ACK
+      uint8_t ackdata[CSMA_ACK_LEN];
+      if (packetbuf_attr(PACKETBUF_ATTR_MAC_ACK))
+      {
+        ackdata[0] = FRAME802154_ACKFRAME;
+        ackdata[1] = 0;
+        ackdata[2] = ((uint8_t *)packetbuf_hdrptr())[2];
+        LOG_DBG("SENDING ACK\n");
+        NETSTACK_RADIO.send(ackdata, CSMA_ACK_LEN);
+      }
+      LOG_DBG("DONE SENDING ACK\n");
 
-      waiting_for_packet = 0;
+      // if ACK is send, turn off radio again
+      turn_radio_off();
+#endif /* CSMA_SEND_SOFT_ACK */
+
+      // waiting_for_packet = 0;
 
       LOG_DBG("data(%u)\n", packetbuf_datalen());
       NETSTACK_MAC.input();
@@ -593,9 +649,10 @@ packet_input(void)
            packet. */
         someone_is_sending = 1;
         waiting_for_packet = 1;
-        // turn_radio_on();
         NETSTACK_RADIO.send(packetbuf_hdrptr(), packetbuf_totlen());
         LOG_INFO("send strobe ack (%u)\n", packetbuf_totlen());
+        // if strobe ACK is send, we expect a data packet so the radio should be on
+        turn_radio_on();
       }
       else
       {
@@ -648,6 +705,12 @@ static void
 init(void)
 {
   LOG_FUNC("Function call: %s\n", __func__);
+
+  LOG_INFO("Initializing XMAC with ON: %lu ms, OFF: %lu ms, STROBE: %lu ms, STROBE_WAIT: %lu ms\n",
+           (unsigned long)cxmac_config.on_time * 1000 / RTIMER_ARCH_SECOND,
+           (unsigned long)cxmac_config.off_time * 1000 / RTIMER_ARCH_SECOND,
+           (unsigned long)cxmac_config.strobe_time * 1000 / RTIMER_ARCH_SECOND,
+           (unsigned long)cxmac_config.strobe_wait_time * 1000 / RTIMER_ARCH_SECOND);
 
   radio_is_on = 0;
   waiting_for_packet = 0;
