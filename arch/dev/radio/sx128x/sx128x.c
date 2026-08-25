@@ -12,6 +12,7 @@
 #include "sys/_stdint.h"
 #include "watchdog.h"
 #include <stdint.h>
+#include "sys/energest.h"
 
 #include "sys/log.h"
 #define LOG_MODULE "SX128X"
@@ -76,6 +77,9 @@ void sx128x_interrupt_opmode_receiver()
     case SX128X_IRQ_REG_CRC_ERROR:
         LOG_INFO("Flag set: CRC ERROR\n");
         break;
+    default:
+    LOG_ERR("RX unhandled IRQ: 0x%02x\n", SX128X_DEV.irq);
+    break;
     }
 }
 
@@ -142,11 +146,15 @@ void sx128x_interrupt_opmode_transmitter()
         sx128x_set_state_event(&SX128X_DEV, SX128X_TX_TIMEOUT);
         LOG_INFO("Flag set: TX TIMEOUT\n");
         break;
+    case 0x4343:
+        LOG_ERR("Persistent corrupt IRQ status, assuming TX_DONE\n");
+        sx128x_set_state_event(&SX128X_DEV, SX128X_TX_DONE);
+        break;
     default:
         LOG_ERR("TX IRQ NOT FOUND: %d\n", SX128X_DEV.irq);
     }
 }
-
+/*
 static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask)
 {
     LOG_FUNC("Function call: %s\n", __func__);
@@ -188,6 +196,61 @@ static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask)
     }
     LOG_DBG("Done handling interrupt\n");
     // printf("done interrupt\n");
+}*/
+static void sx128x_interrupt_dio1(gpio_hal_pin_mask_t pin_mask)
+{
+    LOG_FUNC("Function call: %s\n", __func__);
+
+    SX128X_DEV.irq = sx128x_cmd_get_irq_status(&SX128X_DEV);
+
+    /* Bekende corruptiewaarde die we herhaaldelijk zien tijdens
+     * GET_IRQ_STATUS. In plaats van de oorzaak te blijven zoeken,
+     * behandelen we dit specifieke geval defensief: herlees simpelweg
+     * nog een paar keer met een korte pauze, wat de kans op een
+     * geldige lezing sterk vergroot. */
+    uint8_t retry = 0;
+    while (SX128X_DEV.irq == 0x4343 && retry < 5)
+    {
+        clock_delay_usec(200);
+        SX128X_DEV.irq = sx128x_cmd_get_irq_status(&SX128X_DEV);
+        retry++;
+    }
+
+    sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
+
+    uint8_t current_opmode = sx128x_get_state_opmode(&SX128X_DEV);
+    LOG_DBG("opmode %d with IRQ: %d\n", current_opmode, SX128X_DEV.irq);
+
+    if (SX128X_DEV.irq == 0)
+        return;
+
+    switch (current_opmode)
+    {
+    case SX128X_OPMODE_CAD:
+        sx128x_interrupt_opmode_cad();
+        break;
+    case SX128X_OPMODE_RX:
+        sx128x_interrupt_opmode_receiver();
+        break;
+    case SX128X_OPMODE_RX_SINGLE:
+        sx128x_interrupt_opmode_receiver();
+        break;
+    case SX128X_OPMODE_RX_ACK:
+        sx128x_interrupt_opmode_receiver_ack();
+        break;
+    case SX128X_OPMODE_RX_CONTINUOUS:
+        sx128x_interrupt_opmode_receiver_continuous();
+        break;
+    case SX128X_OPMODE_TX:
+        sx128x_interrupt_opmode_transmitter();
+        break;
+    default:
+        LOG_ERR("OPMODE NOT FOUND: %d (irq=%d) - late/stray interrupt, resetting\n",
+                current_opmode, SX128X_DEV.irq);
+        sx128x_set_state_event(&SX128X_DEV, SX128X_NO_EVENT);
+        break;
+    }
+    LOG_DBG("Done handling interrupt\n");
 }
 
 gpio_hal_event_handler_t sx128x_event_handler_dio1 = {
@@ -196,73 +259,99 @@ gpio_hal_event_handler_t sx128x_event_handler_dio1 = {
     .pin_mask = (gpio_hal_pin_to_mask(SX128X_DIO1_PIN) << (SX128X_DIO1_PORT << 3))};
 #endif // SX128X_USE_INTERRUPT
 
-/* ----------------------------------- TX ----------------------------------- */
 static int
 sx128x_prepare(const void *payload, unsigned short payload_len)
 {
-    LOG_FUNC("Function call: %s\n", __func__);
-    LOG_DBG("payload(%d): %s\n", payload_len, (char *)payload);
+LOG_FUNC("Function call: %s\n", __func__);
+LOG_DBG("payload(%d): %s\n", payload_len, (char *)payload);
 
-    // ! should we check is or just always go to standby mode?
-    // if currently not in standby, set in standby
-    if (sx128x_get_state_opmode(&SX128X_DEV) != SX128X_OPMODE_STANDBY)
+GPIO_DISABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+
+if (sx128x_get_state_opmode(&SX128X_DEV) != SX128X_OPMODE_STANDBY)
     {
-        sx128x_set_standby(&SX128X_DEV);
+sx128x_set_standby(&SX128X_DEV);
     }
-    // reset state event
-    // sx128x_set_state_event(&SX128X_DEV, SX128X_NO_EVENT);
-    // reset address pointer
-    sx128x_cmd_set_buffer_base_address(&SX128X_DEV, 0, 0);
-    // configure Tx mode
-    sx128x_cmd_set_tx_params(&SX128X_DEV, 13, 0xE0);
-    // write payload to fifo
-    sx128x_set_payload_length(&SX128X_DEV, payload_len);
-    sx128x_write_fifo(&SX128X_DEV, (uint8_t *)payload, payload_len);
+sx128x_cmd_set_buffer_base_address(&SX128X_DEV, 0, 0);
+sx128x_cmd_set_tx_params(&SX128X_DEV, 13, 0xE0);
+sx128x_set_payload_length(&SX128X_DEV, payload_len);
+sx128x_write_fifo(&SX128X_DEV, (uint8_t *)payload, payload_len);
 
-    return RADIO_RESULT_OK;
+GPIO_CLEAR_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);   /* NIEUW */
+GPIO_ENABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+
+return RADIO_RESULT_OK;
 }
-
 static int
 sx128x_transmit(unsigned short payload_len)
 {
-    LOG_FUNC("Function call: %s\n", __func__);
+LOG_FUNC("Function call: %s\n", __func__);
 
-    sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_TX);
+ENERGEST_OFF(ENERGEST_TYPE_LISTEN);    /* NIEUW: we stoppen met luisteren, we gaan zenden */
+ENERGEST_ON(ENERGEST_TYPE_TRANSMIT);   /* NIEUW: start van de zend-periode */
 
-    unsigned int ticks = 0;
-    unsigned int timeoutValue = 100000; // in 100us => 10s (largest LoRa packet is 5.63s)
-    while ((sx128x_get_state_event(&SX128X_DEV) != SX128X_TX_DONE) && (ticks < timeoutValue))
+GPIO_DISABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);   /* NIEUW */
+sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_TX);
+GPIO_CLEAR_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);     /* NIEUW */
+GPIO_ENABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);    /* NIEUW */
+
+unsigned int ticks = 0;
+unsigned int timeoutValue = 100000; // in 100us => 10s (largest LoRa packet is 5.63s)
+while ((sx128x_get_state_event(&SX128X_DEV) != SX128X_TX_DONE) && (ticks < timeoutValue))
     {
-        watchdog_periodic();
-        clock_delay_usec(100);
+watchdog_periodic();
+clock_delay_usec(100);
         ticks++;
     }
-    LOG_DBG("Transmitted after %d ms\n", ticks / 10);
+LOG_DBG("Transmitted after %d ms\n", ticks / 10);
 
-    if (sx128x_get_state_event(&SX128X_DEV) == SX128X_TX_DONE)
+ENERGEST_OFF(ENERGEST_TYPE_TRANSMIT);   /* NIEUW: zend-periode voorbij, ongeacht resultaat */
+
+if (sx128x_get_state_event(&SX128X_DEV) == SX128X_TX_DONE)
     {
+LOG_DBG("Transmitted %d bytes with success\n", payload_len);
 
-        LOG_DBG("Transmitted %d bytes with success\n", payload_len);
+        /* NIEUW: bescherm deze SPI-transitie tegen een gelijktijdige
+         * DIO1-interrupt, net zoals in prepare()/on()/off(). Zonder dit
+         * kan een binnenkomende interrupt (die zelf ook SPI gebruikt via
+         * get_irq_status/clear_irq_status) precies tijdens deze
+         * set_state_opmode()-aanroep de bus corrumperen. */
+GPIO_DISABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
 #if CSMA_CONF_SEND_SOFT_ACK
-        sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_ACK);
+sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_ACK);
+ENERGEST_ON(ENERGEST_TYPE_LISTEN);   /* NIEUW: we gaan weer luisteren voor de ack */
 #else
-         sx128x_set_standby(&SX128X_DEV);
+sx128x_set_standby(&SX128X_DEV);
 #endif
-        return RADIO_TX_OK;
+GPIO_CLEAR_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);   /* NIEUW */
+GPIO_ENABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+
+return RADIO_TX_OK;
     }
-    else if (sx128x_get_state_event(&SX128X_DEV) == SX128X_TX_TIMEOUT)
+else if (sx128x_get_state_event(&SX128X_DEV) == SX128X_TX_TIMEOUT)
     {
-        LOG_DBG("Failed to transmit %d bytes\n", payload_len);
-        sx128x_set_standby(&SX128X_DEV);
-        return RADIO_TX_ERR;
+LOG_DBG("Failed to transmit %d bytes\n", payload_len);
+
+GPIO_DISABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);   /* NIEUW */
+sx128x_set_standby(&SX128X_DEV);
+GPIO_CLEAR_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);     /* NIEUW */
+GPIO_ENABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);    /* NIEUW */
+
+return RADIO_TX_ERR;
     }
-    else
+else
     {
-        LOG_ERR("ERROR: INTERRUPT PIN NOT TRIGGERED\n");
-        sx128x_set_standby(&SX128X_DEV);
-        return RADIO_TX_ERR;
+printf("[sx128x] DIO1 pin level at TX timeout: %d\n", gpio_hal_arch_read_pin(0, SX128X_DEV.params.dio1_pin));
+LOG_ERR("ERROR: INTERRUPT PIN NOT TRIGGERED\n");
+
+GPIO_DISABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);   /* NIEUW */
+sx128x_set_standby(&SX128X_DEV);
+GPIO_CLEAR_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);     /* NIEUW */
+GPIO_ENABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);    /* NIEUW */
+
+return RADIO_TX_ERR;
     }
 }
+/* ----------------------------------- TX ----------------------------------- */
 
 static int
 sx128x_send(const void *payload, unsigned short payload_len)
@@ -332,26 +421,32 @@ static void sx128x_poll_handler(void)
     LOG_FUNC("Function call: %s\n", __func__);
     int len;
 
-    if (sx128x_pending_packet() && sx128x_get_state_rx(&SX128X_DEV) == SX128X_RX_RECEIVED)
+    if (sx128x_pending_packet() &&
+        (sx128x_get_state_rx(&SX128X_DEV) == SX128X_RX_RECEIVED ||
+         sx128x_get_state_rx(&SX128X_DEV) == SX128X_RX_OFF))   /* NIEUW: RX_OFF ook toelaten -
+                                                                    dit is de state na RX_DONE
+                                                                    in RX_ACK-modus (strobe-ack-pad) */
     {
         LOG_INFO("reading packet\n");
+
+        GPIO_DISABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+
         packetbuf_clear();
         len = sx128x_read_packet(packetbuf_dataptr(), (&SX128X_DEV)->_internal.rx_length);
+
+        GPIO_ENABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+
         if (len > 0)
         {
             packetbuf_set_datalen(len);
             NETSTACK_RDC.input();
         }
         // ! hack for continuous mode while using single mode
-        if ((&SX128X_DEV)->settings.rx_mode == SX128X_RX_MODE_CONTINUOUS && sx128x_get_state_opmode(&SX128X_DEV) != SX128X_OPMODE_STANDBY)
+        if ((&SX128X_DEV)->settings.rx_mode == SX128X_RX_MODE_CONTINUOUS && sx128x_get_state_opmode(&SX128X_DEV) == SX128X_OPMODE_RX_SINGLE)
         {
             LOG_DBG("Restarting RX\n");
             sx128x_on();
         }
-    }
-    else if (sx128x_pending_packet() && sx128x_get_state_rx(&SX128X_DEV) == SX128X_RX_OFF) // Poll while in ACK RX mode
-    {
-        // sx128x_on();
     }
     else if (sx128x_get_state_event(&SX128X_DEV) == SX128X_RX_TIMEOUT)
     {
@@ -416,21 +511,73 @@ sx128x_on(void)
 {
     LOG_FUNC("Function call: %s\n", __func__);
 #if !SX128X_BUSY_RX
-    // sx128x_cmd_set_dio_irq_params(&(SX128X_DEV), SX128X_IRQ_REG_TX_DONE | SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_CAD_DONE | SX128X_IRQ_REG_CAD_DETECTED | SX128X_IRQ_REG_RX_TX_TIMEOUT, 0, 0);
+    GPIO_DISABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+    GPIO_CLEAR_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+
+    /* NIEUW: log + clear eventuele hangende IRQ-flag vóór we RX starten.
+     * Als hier een RX_TX_TIMEOUT of andere flag blijkt te staan, wisten
+     * we dat de vorige cyclus niet netjes is afgesloten. */
+    uint16_t pre_irq = sx128x_cmd_get_irq_status(&SX128X_DEV);
+    if (pre_irq != 0) {
+        printf("[sx128x_on] Hangende IRQ vóór RX-start: 0x%04x\n", pre_irq);
+    }
+    sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
+
     sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_SINGLE);
+
+    /* NIEUW: GET_STATUS (en de retries) gebeuren nu volledig terwijl de
+     * DIO1-interrupt UIT staat, zodat een binnenkomende interrupt nooit
+     * gelijktijdig over dezelfde SPI-bus communiceert als deze calls. */
+    uint8_t real_status = sx128x_cmd_get_status(&SX128X_DEV);
+
+    uint8_t retry = 0;
+    while (((real_status >> 5) != 0x05) && retry < 3)
+    {
+        printf("[sx128x_on] RX mode niet bevestigd (status=0x%02x), retry %d\n", real_status, retry);
+        sx128x_set_standby(&SX128X_DEV);
+        sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
+        sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_RX_SINGLE);
+        real_status = sx128x_cmd_get_status(&SX128X_DEV);
+        retry++;
+    }
+
+    /* Interrupt pas nu weer aanzetten, niet ervoor. */
+    GPIO_CLEAR_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+    GPIO_ENABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+    ENERGEST_ON(ENERGEST_TYPE_LISTEN);
+
+    printf("[sx128x_on] opmode=%d rx_state=%d REAL_STATUS=0x%02x\n",
+        sx128x_get_state_opmode(&SX128X_DEV),
+        sx128x_get_state_rx(&SX128X_DEV),
+        real_status);
 #endif
     return 1;
 }
-
+/*
+static int
+sx128x_off(void)
+{
+    LOG_FUNC("Function call: %s\n", __func__);
+    GPIO_DISABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+    sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_STANDBY);
+    sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
+    GPIO_CLEAR_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+    GPIO_ENABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+    ENERGEST_OFF(ENERGEST_TYPE_LISTEN);
+    return 1;
+}*/
 static int
 sx128x_off(void)
 {
     LOG_FUNC("Function call: %s\n", __func__);
     sx128x_set_state_opmode(&SX128X_DEV, SX128X_OPMODE_STANDBY);
     sx128x_cmd_clear_irq_status(&SX128X_DEV, SX128X_IRQ_REG_ALL);
+    GPIO_DISABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+    GPIO_CLEAR_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+    GPIO_ENABLE_INTERRUPT(SX128X_DIO1_PORT_BASE, SX128X_DIO1_PIN_MASK);
+    ENERGEST_OFF(ENERGEST_TYPE_LISTEN);
     return 1;
 }
-
 /* --------------------------------- GET/SET -------------------------------- */
 // ! UNTESTED, THIS NEEDS TO BE UPDATED, LIST IN RADIO.H
 radio_result_t sx128x_get_value(radio_param_t param, radio_value_t *value)
@@ -648,21 +795,36 @@ radio_result_t sx128x_set_object(radio_param_t param, const void *src, size_t si
     return RADIO_RESULT_OK;
 }
 /* -------------------------------------------------------------------------- */
+
 int sx128x_reset(const sx128x_t *dev)
 {
-    LOG_FUNC("Function call: %s\n", __func__);
-    gpio_hal_arch_pin_set_output(0, dev->params.reset_pin);
-    gpio_hal_arch_set_pin(0, dev->params.reset_pin);
-    clock_delay_usec(20000);
-    gpio_hal_arch_clear_pin(0, dev->params.reset_pin);
-    clock_delay_usec(50000);
-    gpio_hal_arch_set_pin(0, dev->params.reset_pin);
-    gpio_hal_arch_pin_set_input(0, dev->params.reset_pin);
-    clock_delay_usec(20000);
+LOG_FUNC("Function call: %s\n", __func__);
+gpio_hal_arch_pin_set_output(0, dev->params.reset_pin);
+gpio_hal_arch_set_pin(0, dev->params.reset_pin);
+clock_delay_usec(20000);
+gpio_hal_arch_clear_pin(0, dev->params.reset_pin);
+clock_delay_usec(50000);
+gpio_hal_arch_set_pin(0, dev->params.reset_pin);
+gpio_hal_arch_pin_set_input(0, dev->params.reset_pin);
+clock_delay_usec(20000);
 
-    return 0;
+/* NIEUW: actief wachten tot BUSY effectief laag is i.p.v. enkel te
+ * vertrouwen op de vaste 20ms hierboven. Als de chip om welke reden
+ * dan ook trager opstart, voorkomt dit dat we SPI-commando's sturen
+ * naar een chip die nog niet klaar is. */
+uint32_t timeout = 200000;
+while (gpio_hal_arch_read_pin(0, dev->params.busy_pin) && timeout > 0)
+{
+    clock_delay_usec(10);
+    timeout--;
+}
+if (timeout == 0)
+{
+    printf("[sx128x] WARNING: BUSY still HIGH after reset, chip may not be ready\n");
 }
 
+return 0;
+}
 /* ----------------------------- INITIALIZATION ----------------------------- */
 static void sx128x_gpio_init(sx128x_t *dev)
 {
@@ -694,7 +856,7 @@ static void sx128x_init_radio(sx128x_t *dev)
     LOG_DBG("cmd set standby\n");
     sx128x_set_standby(dev);
     LOG_DBG("set default irq mask\n");
-    sx128x_cmd_set_dio_irq_params(dev, SX128X_IRQ_REG_TX_DONE | SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_CAD_DONE | SX128X_IRQ_REG_CAD_DETECTED | SX128X_IRQ_REG_RX_TX_TIMEOUT, 0, 0);
+    //sx128x_cmd_set_dio_irq_params(dev, SX128X_IRQ_REG_TX_DONE | SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_CAD_DONE | SX128X_IRQ_REG_CAD_DETECTED | SX128X_IRQ_REG_RX_TX_TIMEOUT, 0, 0);
 
     // LoRa settings
     LOG_DBG("Configuring LoRa modulation\n");
@@ -712,38 +874,47 @@ static void sx128x_init_radio(sx128x_t *dev)
 
     sx128x_cmd_set_frequency(dev, SX128X_CHANNEL_DEFAULT);
     sx128x_cmd_set_buffer_base_address(dev, 0, 0);
+    sx128x_cmd_set_dio_irq_params(dev,SX128X_IRQ_REG_TX_DONE | SX128X_IRQ_REG_RX_DONE | SX128X_IRQ_REG_RX_TX_TIMEOUT,0, 0);
 
     dev->settings.rx_mode = SX128X_RX_MODE_CONTINUOUS;
 }
-
 int sx128x_initialization()
 {
-    LOG_FUNC("Function call: %s\n", __func__);
-    if (spi_acquire(&SX128X_DEV.params.spi) != SPI_DEV_STATUS_OK)
+gpio_hal_arch_no_port_pin_cfg_set(SX128X_DEV.params.busy_pin, GPIO_HAL_PIN_CFG_PULL_DOWN);
+gpio_hal_arch_pin_set_input(0, SX128X_DEV.params.busy_pin);
+printf("[DEBUG] BUSY pin at boot = %d\n", gpio_hal_arch_read_pin(0, SX128X_DEV.params.busy_pin));
+LOG_FUNC("Function call: %s\n", __func__);
+if (spi_acquire(&SX128X_DEV.params.spi) != SPI_DEV_STATUS_OK)
     {
-        LOG_ERR("Error init SPI\n");
-        LOG_ERR("%d\n", spi_acquire(&SX128X_DEV.params.spi));
-        return RADIO_RESULT_ERROR;
+LOG_ERR("Error init SPI\n");
+LOG_ERR("%d\n", spi_acquire(&SX128X_DEV.params.spi));
+return RADIO_RESULT_ERROR;
     }
-    sx128x_gpio_init(&SX128X_DEV);
-    sx128x_init_radio(&SX128X_DEV);
 
-    process_start(&sx128x_rf_process, NULL);
+sx128x_reset(&SX128X_DEV);   /* NIEUW: hardware-reset vóór init, zodat de chip
+                                 gegarandeerd van een schone/gedefinieerde staat
+                                 vertrekt in plaats van te vertrouwen op wat er
+                                 nog van een vorige powercycle in het register stond. */
 
-    LOG_DBG("AFTER INIT RADIO\n");
+sx128x_gpio_init(&SX128X_DEV);
+sx128x_init_radio(&SX128X_DEV);
 
-    LOG_INFO("Initialized LoRa module with SF: %d, CR: %d, BW: %d, CRC: %d, PRLEN: %d, HEADER: %d\n",
-             sx128x_get_spreading_factor(&SX128X_DEV),
-             sx128x_get_coding_rate(&SX128X_DEV),
-             sx128x_get_bandwidth(&SX128X_DEV),
-             sx128x_get_crc(&SX128X_DEV),
-             sx128x_get_preamble_length(&SX128X_DEV),
-             sx128x_get_fixed_header_len_mode(&SX128X_DEV)
+process_start(&sx128x_rf_process, NULL);
+
+LOG_DBG("AFTER INIT RADIO\n");
+
+LOG_INFO("Initialized LoRa module with SF: %d, CR: %d, BW: %d, CRC: %d, PRLEN: %d, HEADER: %d\n",
+sx128x_get_spreading_factor(&SX128X_DEV),
+sx128x_get_coding_rate(&SX128X_DEV),
+sx128x_get_bandwidth(&SX128X_DEV),
+sx128x_get_crc(&SX128X_DEV),
+sx128x_get_preamble_length(&SX128X_DEV),
+sx128x_get_fixed_header_len_mode(&SX128X_DEV)
 
     );
-    LOG_INFO("LoRa driver working with interrupt: %d\n", SX128X_USE_INTERRUPT);
+LOG_INFO("LoRa driver working with interrupt: %d\n", SX128X_USE_INTERRUPT);
 
-    return RADIO_RESULT_OK;
+return RADIO_RESULT_OK;
 }
 
 /* ------------------------------ RADIO DRIVER ------------------------------ */

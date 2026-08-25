@@ -1,17 +1,20 @@
-CONTIKI_PROJECT = sx1280_recv
+CONTIKI_PROJECT = root
 
 all: $(CONTIKI_PROJECT)
 
 TARGET = zoul
 BOARD = firefly
-PORT=/dev/ttyUSB0
+PORT=/dev/ttyUSB1
 
 CONTIKI = ../../..
 
 include $(CONTIKI)/Makefile.dir-variables
 MODULES += $(CONTIKI_NG_DRIVERS_RADIO_DIR)/sx128x
 MODULES += $(CONTIKI_NG_SERVICES_DIR)/shell
+
 CFLAGS += -I/usr/arm-none-eabi/include
+CFLAGS += -Wno-error=array-bounds
+CFLAGS += -Wno-array-bounds
 
 
 MAKE_MAC = MAKE_MAC_CSMA

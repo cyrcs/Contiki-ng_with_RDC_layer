@@ -1,0 +1,118 @@
+Flashing /dev/ttyUSB0
+rlwrap ../../../../..//tools/serial-io/serialdump -b115200 /dev/ttyUSB0
+
+
+
+
+STARTING NETSTACK
+[INFO: XMAC      ] Initializing XMAC with ON: 3500 ms, OFF: 20000 ms, STROBE: 50500 ms, STROBE_WAIT: 1099 ms
+[INFO: XMAC      ] sizeof(struct cxmac_hdr) = 6
+[INFO: XMAC      ] frame_counter geinitialiseerd op 19532
+[INFO: Main      ] Starting Contiki-NG-5672fb4e-dirty
+[INFO: Main      ] - Routing: nullrouting
+[INFO: Main      ] - Net: nullnet
+[INFO: Main      ] - MAC: nullmac
+[INFO: Main      ] - 802.15.4 PANID: 0xabcd
+[INFO: Main      ] - 802.15.4 Default channel: 26
+[INFO: Main      ] Node ID: 10405
+[INFO: Main      ] Link-layer address: 0012.4b00.18ec.28a5
+[INFO: Zoul      ] Zolertia Firefly platform
+[INFO: XMAC      ] send immediately.
+[INFO: XMAC      ] TX: frame_id = 40342 naar28:a5
+[INFO: XMAC      ] CACHE-MIS, geen encounter bekend, volledige strobe-trein
+[INFO: XMAC      ] Turning radio on
+[INFO: XMAC      ] Andere node is al aan het strobe'n, wij wachten
+[INFO: XMAC      ] Turning radio off
+APP: packet sent
+[INFO: XMAC      ] Turning radio on
+[INFO: XMAC      ] RX: nieuw frame_id=3514 van 28:88
+[INFO: XMAC      ] received packet: (6)
+[INFO: XMAC      ] Received strobe for us
+[INFO: XMAC      ] send strobe ack (27)
+[INFO: XMAC      ] Encounter cache bijgewerkt (ontvangkant) voor 28:88
+[INFO: XMAC      ] received data packet: (10)
+[INFO: XMAC      ] send immediately.
+[INFO: XMAC      ] TX: frame_id = 40343 naar28:a5
+[INFO: XMAC      ] Turning radio off
+[INFO: XMAC      ] CACHE-MIS, geen encounter bekend, volledige strobe-trein
+[INFO: XMAC      ] Turning radio on
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] send failed to parse 27
+[INFO: XMAC      ] send (strobes=21,len=31,no ack), done
+APP: packet sent
+[INFO: XMAC      ] Turning radio off
+[INFO: XMAC      ] should queue packet, now just dropping 0 1 0 0.
+APP: packet sent
+[INFO: XMAC      ] should queue packet, now just dropping 0 1 0 0.
+APP: packet sent
+[INFO: XMAC      ] Turning radio on
+[INFO: XMAC      ] RX: nieuw frame_id=3515 van 28:88
+[INFO: XMAC      ] received packet: (6)
+[INFO: XMAC      ] Received strobe for us
+[INFO: XMAC      ] send strobe ack (27)
+[INFO: XMAC      ] Encounter cache bijgewerkt (ontvangkant) voor 28:88
+[INFO: XMAC      ] received data packet: (10)
+[INFO: XMAC      ] Turning radio off
+[INFO: XMAC      ] send immediately.
+[INFO: XMAC      ] TX: frame_id = 40344 naar28:a5
+[INFO: XMAC      ] CACHE-MIS, geen encounter bekend, volledige strobe-trein
+[INFO: XMAC      ] Turning radio on
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] send failed to parse 27
+[INFO: XMAC      ] send (strobes=13,len=31,no ack), done
+APP: packet sent
+[INFO: XMAC      ] RX: nieuw frame_id=3516 van 28:88
+[INFO: XMAC      ] received packet: (6)
+[INFO: XMAC      ] Received strobe for us
+[INFO: XMAC      ] send strobe ack (27)
+[INFO: XMAC      ] Encounter cache bijgewerkt (ontvangkant) voor 28:88
+[INFO: XMAC      ] received data packet: (10)
+[INFO: XMAC      ] Turning radio off
+[INFO: XMAC      ] send immediately.
+[INFO: XMAC      ] TX: frame_id = 40345 naar28:a5
+[INFO: XMAC      ] CACHE-MIS, geen encounter bekend, volledige strobe-trein
+[INFO: XMAC      ] Turning radio on
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe
+[INFO: XMAC      ] sending strobe

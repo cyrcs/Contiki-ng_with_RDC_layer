@@ -10,7 +10,7 @@
 #include <stddef.h>
 
 #define NETSTACK_CONF_RADIO sx128x_radio_driver
-
+//#define SX128X_SPI_CONTROLLER_CONF 0  // NIEUW
 // extern int tsch_packet_duration(size_t len);
 // #define TSCH_PACKET_DURATION(len) tsch_packet_duration(len)
 

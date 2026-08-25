@@ -1,0 +1,24 @@
+  CC        xmac_test.c
+  LD        build/zoul/firefly/xmac_test.zoul
+  OBJCOPY   build/zoul/firefly/xmac_test.zoul --> build/zoul/firefly/xmac_test.bin
+Flashing /dev/ttyUSB1
+rlwrap ../../../../..//tools/serial-io/serialdump -b115200 /dev/ttyUSB1
+
+
+
+
+STARTING NETSTACK
+[INFO: XMAC      ] Initializing XMAC with ON: 3500 ms, OFF: 20000 ms, STROBE: 50500 ms, STROBE_WAIT: 1099 ms
+[INFO: XMAC      ] sizeof(struct cxmac_hdr) = 6
+[INFO: XMAC      ] frame_counter geinitialiseerd op 14652
+[INFO: Main      ] Starting Contiki-NG-5672fb4e-dirty
+[INFO: Main      ] - Routing: nullrouting
+[INFO: Main      ] - Net: nullnet
+[INFO: Main      ] - MAC: nullmac
+[INFO: Main      ] - 802.15.4 PANID: 0xabcd
+[INFO: Main      ] - 802.15.4 Default channel: 26
+[INFO: Main      ] Node ID: 10376
+[INFO: Main      ] Link-layer address: 0012.4b00.18ec.2888
+[INFO: Zoul      ] Zolertia Firefly platform
+[INFO: XMAC      ] Turning radio on
+[INFO: XMAC      ] Turning radio off

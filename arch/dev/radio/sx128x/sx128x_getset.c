@@ -203,14 +203,21 @@ void sx128x_cmd_set_tx(const sx128x_t *dev, uint8_t period_base, uint16_t period
     LOG_FUNC("Function call: %s\n", __func__);
 
     sx128x_set_state_event(&SX128X_DEV, SX128X_NO_EVENT);
+    sx128x_set_state_rx(&SX128X_DEV, SX128X_RX_OFF);
+    sx128x_cmd_set_buffer_base_address(dev, 0, 0);
 
-    // prepare params to set device in TX mode
     uint8_t params[3] = {period_base, (period_base_count >> 8) & 0xFF, (period_base_count & 0xFF)};
-
-    // set device in TX mode
     sx128x_cmd_burst(dev, SX128X_CMD_SET_TX, params, 3, NULL, 0);
 
-    // store internal timestamp of TX start
+    /* NIEUW: net als bij SET_RX, verifiëren of de chip echt TX-mode
+     * heeft aangenomen (top-3-bits van status == 0b110 = 6). Zo niet,
+     * loggen we dat expliciet — dit toont of SET_TX hetzelfde
+     * "genegeerd commando"-probleem heeft als SET_RX. */
+    uint8_t real_status = sx128x_cmd_get_status(dev);
+    if ((real_status >> 5) != 0x06) {
+        printf("[sx128x_set_tx] TX mode niet bevestigd (status=0x%02x)\n", real_status);
+    }
+
     SX128X_DEV._internal.tx_timestamp = RTIMER_NOW();
 }
 
@@ -403,15 +410,50 @@ void sx128x_set_state_opmode(sx128x_t *dev, sx128x_opmode_t op_mode)
         _sx128x_cmd_set_rx(dev, 0, 0);
         break;
     case SX128X_OPMODE_RX:
+    {
         LOG_DBG("set op mode: RECEIVER WITH TIMEOUT %d\n", _sx128x_get_timeout_in_s(PERIOD_BASE_04_MS, 2500));
         sx128x_configure_rx(dev);
         _sx128x_cmd_set_rx(dev, PERIOD_BASE_04_MS, 2500);
+
+        /* NIEUW: net als bij sx128x_on(), verifiëren of de chip echt
+         * RX-mode heeft aangenomen (top-3-bits van status == 0b101 = 5).
+         * Zo niet, opnieuw proberen tot 3 keer. */
+        uint8_t real_status = sx128x_cmd_get_status(dev);
+        uint8_t retry = 0;
+        while (((real_status >> 5) != 0x05) && retry < 3)
+        {
+            printf("[sx128x_set_opmode] RX niet bevestigd (status=0x%02x), retry %d\n",
+                   real_status, retry);
+            sx128x_configure_rx(dev);
+            _sx128x_cmd_set_rx(dev, PERIOD_BASE_04_MS, 2500);
+            real_status = sx128x_cmd_get_status(dev);
+            retry++;
+        }
         break;
+    }
     case SX128X_OPMODE_RX_ACK:
+    {
         LOG_DBG("set op mode: RECEIVER WITH TIMEOUT %d\n", _sx128x_get_timeout_in_s(PERIOD_BASE_04_MS, 2500));
         sx128x_configure_rx(dev);
         _sx128x_cmd_set_rx(dev, PERIOD_BASE_04_MS, 2500);
+
+        /* NIEUW: zelfde verificatie/retry als hierboven — dit is exact
+         * het pad dat aangeroepen wordt na elke verstuurde strobe
+         * (sx128x_transmit() -> RX_ACK), waar een genegeerd SET_RX-
+         * commando ervoor zorgt dat de sender nooit de strobe-ack hoort. */
+        uint8_t real_status = sx128x_cmd_get_status(dev);
+        uint8_t retry = 0;
+        while (((real_status >> 5) != 0x05) && retry < 3)
+        {
+            printf("[sx128x_set_opmode] RX_ACK niet bevestigd (status=0x%02x), retry %d\n",
+                   real_status, retry);
+            sx128x_configure_rx(dev);
+            _sx128x_cmd_set_rx(dev, PERIOD_BASE_04_MS, 2500);
+            real_status = sx128x_cmd_get_status(dev);
+            retry++;
+        }
         break;
+    }
     case SX128X_OPMODE_RX_CONTINUOUS:
         LOG_DBG("set op mode: RECEIVER CONTINUOUS\n");
         sx128x_configure_rx(dev);

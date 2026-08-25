@@ -74,37 +74,39 @@ char test2[] = "helloworld_helloworld";
 int value = 0;
 // #endregion ------------------------------------------------------------------
 // #region Process -------------------------------------------------------------
-PROCESS(node_process, "Shell");
-AUTOSTART_PROCESSES(&node_process);
-
-PROCESS_THREAD(node_process, ev, data) {
-
+PROCESS(sender_process, "Shell");
+AUTOSTART_PROCESSES(&sender_process);
+//printf("check 1");
+PROCESS_THREAD(sender_process, ev, data)
+{
   static struct etimer et;
+
   PROCESS_BEGIN();
 
-  /* Delay*/
+  printf("check 2\n");
+  LOG_DBG("process started\n");
+
   etimer_set(&et, CLOCK_SECOND * 2);
 
-  while (1) {
+  while(1) {
+
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-    /* Reset the etimer to trig again in 1 second */
     etimer_reset(&et);
+
     LOG_DBG("trying to send\n");
+
     value++;
-    if (value > 999) {
-      value = 0;
-    }
-    // String manipulation
-    char test3[3];
+    if(value > 999) value = 0;
+
+    char test3[8];
     sprintf(test3, "%d", value);
-    char result[strlen(test2) + strlen(test3)];
+
+    char result[64];
     strcpy(result, test2);
     strcat(result, " ");
     strcat(result, test3);
 
-    // transmit string
     NETSTACK_RADIO.send(result, strlen(result));
-
   }
 
   PROCESS_END();
